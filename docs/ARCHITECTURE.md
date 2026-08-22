@@ -26,7 +26,7 @@ seed  (topic query | url list)
 │  b. fetch    HN Algolia ──► resolve site ──► dedup            │
 │                                                                │
 │  out: runs/<run_id>/candidates.jsonl                          │
-│       { name, url, one_liner, provenance{source,query,at} }   │
+│       { name, url, one_liner, provenance[{source,query,at}] } │
 └────────────────────────────────────────────────────────────────┘
   │
   ▼
@@ -81,7 +81,7 @@ invalidates the caches downstream of it.
 ```ts
 QueryPlan   { original_seed, probe{hits,usable}, clarified,
               options_offered[], chosen, chosen_by }
-Candidate   { slug, name, url, one_liner, provenance }
+Candidate   { slug, name, url, one_liner, provenance[] }
 Evidence    { id, url, type, retrieved_at, status, title, text, meta }
 Fact        { key, statement, value, evidence_ids: string[], confidence }
 Analysis    { candidate, facts, dimensions[], score, coverage,
@@ -91,6 +91,13 @@ Memo        { markdown, citations[] }
 
 `Evidence.id` is `sha256(url + retrieved_at)` truncated — content-addressed, so
 the same fetch is never stored twice and a citation is a stable pointer.
+
+`Candidate.provenance` is a non-empty list, **primary first**, at
+`schema_version` 2. Dedup produces a group rather than a post (§1b): two posts
+about one company collapse to one candidate, and the singular field v1 shipped
+could record only one of them. The primary is the group's strongest post — the
+one whose link is the candidate's `url` — so the order is load-bearing and not
+presentational.
 
 `Fact.key` is a stable identifier — `founder.prior_exit`, `github.stars` — and is
 what the rubric switches on. It was added at TICKET-0005: this section previously

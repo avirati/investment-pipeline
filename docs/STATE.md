@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `1b96809` · **Phase: stage 1 has started — the HN adapter is written but has never fetched**
+Last updated: 2026-08-22 · at commit `76006ca` · **Phase: stage 1 — the HN adapter is complete; nothing has yet touched the live API**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -49,18 +49,31 @@ accepting throughout, so the usable count D-6 is compared against is an upper
 bound. One false positive class it structurally cannot see is pinned by a test
 rather than papered over.
 
-**Nothing in `src/source/` has fetched anything yet.** The paginated `searchHn`
-over `httpGet` is all that is left of 0009, which stays Ready. 0010 is Ready and
-independent.
+`searchHn` closes it. It runs the four arms, paginates each to
+`HN_MAX_PAGES_PER_ARM` (2) or to whichever stop condition fires first — the page
+count Algolia reports, a short page, or a failure — dedups by `objectID` and
+records on every hit *which arms* found it, plus a per-arm `new_hits` count that
+says what an arm actually contributed. Failures come back as data: a page that
+did not return is an entry in `failures[]`, not a thrown error, because one 500
+on the funding arm's second page must not cost the three arms that worked. The
+run-level "is this enough to continue" decision that ARCHITECTURE §5 describes
+belongs to TICKET-0012, which is the only layer that can see the whole picture.
+The injection point is `HttpOptions`, not a swappable fetch function, so the
+network choke point stays literally true and the tests exercise the real url
+builder and the real cache path. **TICKET-0009 is Done.**
+
+**Nothing in `src/source/` has touched the live API yet** — every test drives a
+stub transport over one topic's committed fixtures. 0011's probe half is now
+unblocked, and 0010 is Ready and independent of it.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 153 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 30 HN parse and classifier (0009). Offline, no key |
-| Worklogs 0001–0015 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 8 Done, 3 Ready (0009, 0010, 0018), 19 Blocked. Status is in each ticket header |
+| Test strategy | Written; 163 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009). Offline, no key |
+| Worklogs 0001–0016 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 9 Done, 3 Ready (0010, 0011, 0018), 18 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -68,9 +81,9 @@ independent.
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
-| HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier; **nothing fetches yet** (0009, most) |
+| HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier, paginated `searchHn` with failures as data (0009, Done) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | Not wired — every command still exits 70. Stage 1's first module exists (0009, most) |
+| Stages 1–3 | Not wired — every command still exits 70. Stage 1's source adapter is complete (0009) |
 | Sample run, walkthrough video | Not started |
 
 ---
@@ -270,6 +283,27 @@ Real defects, listed rather than silently patched.
     test asserting the *wrong* answer on purpose, so 0013 meets it rather than
     inherits it silently.
 
+23. **`HN_MAX_PAGES_PER_ARM` is a fourth unmeasured guess, and the cheapest one
+    to be wrong about.** `searchHn` reads at most two pages an arm — eight
+    requests and up to 400 hits for one seed. Page 2 of a relevance ranking is
+    already past what a human would read and `--limit` cuts far below it, but
+    that is an argument, not a measurement. Same class as 14, 16 and 17; one
+    constant, labelled in the code. TICKET-0012 may lower it from the CLI, and
+    the first real run (TICKET-0013) should say whether page 1 earned its
+    requests at all.
+
+24. **`searchHn` does not fail the run, and ARCHITECTURE §5 says something
+    fails it.** §5's row reads *"Source API 429/5xx → retry with backoff,
+    bounded. Then fail the run — no candidates means no pipeline."* The adapter
+    retries (via `httpGet`) and then returns the dead page in `failures[]`
+    rather than throwing, because four arms over two pages is up to eight
+    requests and one failure among them is not "no candidates". The decision §5
+    describes is therefore **owed by TICKET-0012**, which sees the whole result
+    set — and until 0012 ships, a run with every arm dead would return an empty
+    list with a full `failures[]` and nothing would act on it. Flagged rather
+    than assumed: a reviewer who reads §5 strictly would put the throw in the
+    adapter, and that is a small change here plus a `try` in 0012.
+
 22. **A repo counts as a company.** `github.com/...` and `*.github.io` classify
     as `code_repo` and are usable, which TICKET-0009's own wording neither
     requires nor forbids. The reasoning is the thesis — "adopted before it is
@@ -290,15 +324,21 @@ repo runnable. **0001–0007 are Done.**
 half and is still Ready; [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md),
 the LLM seam and response cache, is the other Ready one.
 
-**0008 is Done; 0009 is most of the way in.** Resume at its last piece:
-`searchHn` over `httpGet` — pagination past page 1, the four expansion arms
-deduped by `objectID`, source failures returned as data rather than thrown
-(ARCHITECTURE §5). That closes 0009 and unblocks
-[TICKET-0011](./tickets/0011-ticket-query-planning.md)'s probe half.
-[TICKET-0010](./tickets/0010-ticket-url-resolution-and-dedup.md) is Ready in
-parallel and independent of it. 0015 and 0016 no longer wait on 0008 but still
-wait on 0014, which waits on the gate. 0018 still only unblocks 0011's
-clarifier, which 0011 is designed to ship without.
+**0009 is Done.** Three tickets are Ready and two of them are on the path to
+the gate:
+
+- [TICKET-0011](./tickets/0011-ticket-query-planning.md) — the probe half.
+  `searchHn` plus `classifyHits` is exactly the number `--min-hits` counts
+  against (D-6). Ship it without the LLM clarifier; 0018 gates only that call
+  and the ticket is designed to work without it.
+- [TICKET-0010](./tickets/0010-ticket-url-resolution-and-dedup.md) — url
+  resolution and dedup, independent of 0011 and doable in either order.
+- [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — still Ready,
+  still off the critical path to the gate.
+
+0012 then needs both 0010 and 0011, and it owes the run-level failure decision
+that `searchHn` deliberately does not make (inconsistency 24). 0015 and 0016
+still wait on 0014, which waits on the gate.
 
 The shape is unchanged from what this section said before the backlog existed:
 

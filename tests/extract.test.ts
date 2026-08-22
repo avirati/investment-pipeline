@@ -2,11 +2,12 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { z } from "zod";
 import {
   EXTRACTION_SCHEMA_VERSION,
-  ExtractionResponse,
   type ExtractOptions,
   extractFacts,
+  extractionSchema,
   parseFacts,
   renderCompany,
   renderEvidence,
@@ -135,6 +136,20 @@ function stubModel(
     },
   };
 }
+
+/**
+ * A model that answers without checking the schema it was handed — a provider
+ * that treats a JSON schema as documentation rather than as a grammar. The
+ * client-side checks have to hold against this one.
+ */
+const looseModel = (answer: unknown): LlmModel => ({
+  provider: "openai",
+  model: "gpt-5-mini",
+  invoke: async () => ({
+    value: answer as never,
+    usage: { input_tokens: 10, output_tokens: 5 },
+  }),
+});
 
 /** A model whose invocation fails the test. Used where nothing should be spent. */
 const forbiddenModel = (): LlmModel => ({
@@ -421,9 +436,19 @@ describe("extractFacts", () => {
     ]);
   });
 
-  it("rejects a citation to a record that failed to fetch", async () => {
+  // Two halves of the same guarantee. The schema stops a provider that honours
+  // it; `parseFacts` stops one that does not, and stops a cached answer written
+  // before the schema moved.
+  it("cannot be answered with a citation to a record that failed to fetch", async () => {
     const model = stubModel([answer([dead.id])]);
     const result = await extractFacts(bundle([home, dead]), options(model));
+    expect(result.status).toBe("partial");
+    expect(result.facts).toEqual([]);
+    expect(model.inputs[1]).toContain("The previous answer could not be read");
+  });
+
+  it("drops a lenient provider's citation to a record it was not shown", async () => {
+    const result = await extractFacts(bundle([home, dead]), options(looseModel(answer([dead.id]))));
     expect(result.status).toBe("ok");
     expect(result.facts).toEqual([]);
     expect(result.dropped[0]?.kind).toBe("unknown_evidence_id");
@@ -530,14 +555,32 @@ describe("extractFacts", () => {
   });
 });
 
-describe("the response schema", () => {
+describe("the requested schema", () => {
   it("is permissive at the item level, so one bad fact survives transport", () => {
     // Rule 2: the strict check is ours, item by item. If the provider's schema
     // rejected the whole response, one malformed fact would cost the other ten.
-    const parsed = ExtractionResponse.safeParse({
+    const parsed = extractionSchema([home.id]).safeParse({
       facts: [{ statement: "no key, no ids" }, { key: "product.one_liner" }],
     });
     expect(parsed.success).toBe(true);
+  });
+
+  // The author's note on worklog 0030: the citable ids belong in the schema,
+  // not only in the prose. Under constrained decoding an id that does not
+  // exist is a shape the model cannot leave, rather than a rule it is asked to
+  // follow. `parseFacts` still checks, for providers that treat a schema as
+  // advice and for answers cached before the schema moved.
+  it("names the citable ids as an enum, and rejects one it was not shown", () => {
+    const schema = extractionSchema([home.id, readme.id]);
+    expect(schema.safeParse({ facts: [{ evidence_ids: [home.id] }] }).success).toBe(true);
+    expect(schema.safeParse({ facts: [{ evidence_ids: ["0000000000000000"] }] }).success).toBe(
+      false,
+    );
+  });
+
+  it("carries the ids into the JSON schema the provider is sent", () => {
+    const json = JSON.stringify(z.toJSONSchema(extractionSchema([home.id, readme.id])));
+    expect(json).toContain(`"enum":["${home.id}","${readme.id}"]`);
   });
 
   it("is versioned, and the version reaches the cache key", () => {

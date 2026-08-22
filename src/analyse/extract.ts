@@ -84,32 +84,62 @@ import { FactKeyEnum, renderKeys } from "./keys.js";
 export const EXTRACTION_SCHEMA_VERSION = 1;
 
 /**
- * What the provider is asked for. Permissive on purpose (rule 2): every field
- * is optional, so a single defective fact arrives to be dropped here with a
- * reason instead of failing the whole response and costing a retry. The
- * descriptions are the ask — they reach the provider as the JSON schema's
- * documentation, and the prompt says the same things at length.
+ * The response, as a type. The *schema* is built per bundle
+ * (`extractionSchema`), because one of its fields depends on which records this
+ * candidate was shown.
  */
-const RequestedFact = z
-  .object({
-    key: z.string().describe("One of the keys listed in the prompt. Anything else is discarded."),
-    statement: z.string().describe("One observation, one sentence, true to the record it cites."),
-    value: FactValue.describe(
-      "The same observation as a scalar — number, boolean, short string or ISO date — or null when it has none.",
-    ),
-    evidence_ids: z
-      .array(z.string())
-      .describe("At least one id, each one an id shown in the evidence section."),
-    confidence: z.string().describe("high, medium or low — about the evidence, not the company."),
-  })
-  .partial();
+export type ExtractionResponse = {
+  facts: {
+    key?: string | undefined;
+    statement?: string | undefined;
+    value?: FactValue | undefined;
+    evidence_ids?: string[] | undefined;
+    confidence?: string | undefined;
+  }[];
+};
 
-export const ExtractionResponse = z.object({
-  facts: z
-    .array(RequestedFact)
-    .describe("Every fact the evidence supports. An empty list is a valid answer."),
-});
-export type ExtractionResponse = z.infer<typeof ExtractionResponse>;
+/**
+ * What the provider is asked for, for one bundle.
+ *
+ * **The citable ids are an enum**, built from the records this candidate was
+ * actually shown. Under constrained decoding the model then cannot emit an id
+ * that does not exist — the closed world stops being a rule it is asked to
+ * follow and becomes a shape it cannot leave. (Author's note on worklog 0030,
+ * which is where this was asked for.) The client-side check in `parseFacts`
+ * stays regardless: a provider that treats the schema as advice, and every
+ * cached answer written before the schema moved, still reach us unconstrained.
+ *
+ * Everything *else* is permissive on purpose (rule 2): every field is optional,
+ * so a fact with an invented key or a missing statement arrives to be dropped
+ * here with a reason instead of failing the whole response. The ids are the one
+ * deliberate exception — an out-of-enum id fails the response and costs the
+ * retry, which is the price of the constraint being real, and the complaint the
+ * retry carries names the id and the allowed set.
+ *
+ * The descriptions reach the provider as the JSON schema's documentation; the
+ * prompt says the same things at length.
+ */
+export function extractionSchema(ids: readonly string[]): z.ZodType<ExtractionResponse> {
+  const evidenceId = ids.length === 0 ? z.string() : z.enum([...ids] as [string, ...string[]]);
+  const fact = z
+    .object({
+      key: z.string().describe("One of the keys listed in the prompt. Anything else is discarded."),
+      statement: z.string().describe("One observation, one sentence, true to the record it cites."),
+      value: FactValue.describe(
+        "The same observation as a scalar — number, boolean, short string or ISO date — or null when it has none.",
+      ),
+      evidence_ids: z
+        .array(evidenceId)
+        .describe("At least one id, each one the id of a record shown above."),
+      confidence: z.string().describe("high, medium or low — about the evidence, not the company."),
+    })
+    .partial();
+  return z.object({
+    facts: z
+      .array(fact)
+      .describe("Every fact the evidence supports. An empty list is a valid answer."),
+  });
+}
 
 /**
  * What a fact must be to survive. Stricter than `Fact` in two ways, both
@@ -436,12 +466,14 @@ export async function extractFacts(
     evidence: renderEvidence(items),
   });
 
+  const schema = extractionSchema(base.shown_ids);
+
   const attempt = async (text: string, number: number) => {
     base.attempts = number;
     const reply = await callModel<ExtractionResponse>({
       model: options.model,
       prompt: prompt.ref,
-      schema: ExtractionResponse,
+      schema,
       schema_version: String(EXTRACTION_SCHEMA_VERSION),
       input: text,
       name: OUTPUT_NAME,

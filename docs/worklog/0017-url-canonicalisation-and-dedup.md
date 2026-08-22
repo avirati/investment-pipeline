@@ -19,18 +19,18 @@ transport, so it lands as one reviewable commit with no network surface.
 New `src/source/resolve.ts` (~330 lines) and `tests/resolve.test.ts` (48 tests,
 211 in the suite).
 
-| Export                                    | What it is                                                                    |
-| ----------------------------------------- | ----------------------------------------------------------------------------- |
-| `canonicaliseUrl(raw)`                    | One url → `{ canonical_url, host, domain, path, key }`, or `null`             |
-| `registrableDomain(host)`                 | `docs.acme.co.uk` → `acme.co.uk`; `alice.github.io` → `alice.github.io`       |
-| `siteKey(host, path)`                     | What two urls are compared on — a domain, or `host/owner/repo` on a code host |
-| `classifySite(site)`                      | The rejections only this layer can reach: personal, link-in-bio, academic     |
-| `dedupeHits(hits)`                        | `SourcedHit[]` → `{ sites: ResolvedSite[], rejected: RejectedHit[] }`         |
-| `TRACKING_PARAMS`, `SHARED_SUFFIXES`, `PERSONAL_HOSTS` | The lists, exported so 0013 can argue with them in one place     |
+| Export                                                 | What it is                                                                    |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `canonicaliseUrl(raw)`                                 | One url → `{ canonical_url, host, domain, path, key }`, or `null`             |
+| `registrableDomain(host)`                              | `docs.acme.co.uk` → `acme.co.uk`; `alice.github.io` → `alice.github.io`       |
+| `siteKey(host, path)`                                  | What two urls are compared on — a domain, or `host/owner/repo` on a code host |
+| `classifySite(site)`                                   | The rejections only this layer can reach: personal, link-in-bio, academic     |
+| `dedupeHits(hits)`                                     | `SourcedHit[]` → `{ sites: ResolvedSite[], rejected: RejectedHit[] }`         |
+| `TRACKING_PARAMS`, `SHARED_SUFFIXES`, `PERSONAL_HOSTS` | The lists, exported so 0013 can argue with them in one place                  |
 
 `dedupeHits` calls `classifyHit` from `hn.ts` first rather than reimplementing
 "unusable", so there is still one definition of it and this layer only ever
-*adds* rejections. Every rejection carries the same `{ kind, reason }` pair the
+_adds_ rejections. Every rejection carries the same `{ kind, reason }` pair the
 url classifier produces, so both feed one audit trail.
 
 ## Four judgement calls, in descending order of how much they need review
@@ -38,8 +38,8 @@ url classifier produces, so both feed one audit trail.
 **1. A code host keys on the repo, not the owner.** `github.com/acme/one` and
 `github.com/acme/two` stay two candidates even though an org is usually one
 company. The asymmetry is the same one `classifyHit` is built around, pointed
-the other way: a wrong *split* costs one duplicate analysis that a human sees in
-the memo list, while a wrong *collapse* deletes a company and leaves no trace
+the other way: a wrong _split_ costs one duplicate analysis that a human sees in
+the memo list, while a wrong _collapse_ deletes a company and leaves no trace
 anywhere. Org-level collapse is a call TICKET-0013 can make against real data.
 The join this layer structurally cannot make is `acme.dev` ↔
 `github.com/acme/acme` — nothing in either url says they are the same thing, and
@@ -121,9 +121,8 @@ consequences past this file.
 
 ## Reflection
 
-TODO(author) — worth a line on whether repo-level keying is the right call, and
-on the `Candidate.provenance` plurality question before 0012 answers it by
-default.
+Canonicalisation will help avoid duplicate domains. Strips tracking params and
+normalises ports, and two posts about one company collapse to one candidate.
 
 ## Next
 

@@ -1,4 +1,6 @@
-import { classifyHit, type HitKind, type HnHit, type SourcedHit } from "./hn.js";
+import type { HttpOptions } from "../evidence/fetch.js";
+import { httpGet } from "../evidence/fetch.js";
+import { classifyHit, classifyUrl, type HitKind, type HnHit, type SourcedHit } from "./hn.js";
 
 /**
  * URL canonicalisation and dedup (TICKET-0010). TESTING §3 calls this "classic
@@ -483,4 +485,167 @@ export function dedupeHits(hits: readonly SourcedHit[]): {
   }
 
   return { sites: [...sites.values()], rejected };
+}
+
+// ---------------------------------------------------------------------------
+// Redirect resolution.
+//
+// The half of this ticket that needs the network. It runs on *sites* and not on
+// hits, which is the whole reason `dedupeHits` above is pure and cheap: a seed
+// can return 200 hits and this makes one request each, so TICKET-0012 dedups
+// first, applies `--limit`, and only then resolves what survived.
+//
+// The request is not wasted work. `httpGet` writes the body to the same cache
+// the evidence fetch will read (`fetch.ts` rule 2), so resolving a candidate's
+// url and later fetching its page as evidence is one network round trip, and
+// the evidence record carries the `retrieved_at` this request minted.
+//
+// Requests are sequential. One at a time is polite to a stranger's site, and
+// the batch here is a run's `--limit`, not a crawl.
+// ---------------------------------------------------------------------------
+
+/** What resolving one site's url found. Attached to the site, never discarded. */
+export interface SiteResolution {
+  /** The canonical url as requested. */
+  requested_url: string;
+  /** Where it landed, canonicalised. Equal to `requested_url` if nothing moved. */
+  resolved_url: string;
+  /** HTTP status, or 0 when the request never got one. */
+  status: number;
+  /** True when the response came from a different url than the one requested. */
+  redirected: boolean;
+  /**
+   * True when the landing url canonicalised to a *different dedup key* — which
+   * is the case that can merge two candidates. A redirect within one key
+   * (`launch.acme.dev` → `acme.dev`, `/hn` → `/`) is `redirected` but not
+   * `rekeyed`, because canonicalisation had already collapsed those.
+   */
+  rekeyed: boolean;
+  /** Set when the request failed. The site keeps its pre-resolution url. */
+  reason: string | null;
+}
+
+export interface ResolvedSiteWithRedirect extends ResolvedSite {
+  resolution: SiteResolution;
+}
+
+export interface ResolveSitesOptions {
+  /** Passed through to `httpGet` — transport, cache dir, clock, retry policy. */
+  http?: HttpOptions;
+}
+
+/**
+ * Follow each site's url and re-key it on where it landed.
+ *
+ * Three outcomes, and none of them throws:
+ *
+ * - **The request failed.** The site is kept, unchanged, with the reason on its
+ *   resolution. A company whose site 403s a bot user-agent is still a company,
+ *   and ARCHITECTURE §5 already has a place for the failure — the evidence
+ *   fetch will record it as `fetch_failed` with a citation.
+ * - **It landed somewhere unusable.** A shortener that resolves to `medium.com`
+ *   is rejected by `classifyUrl` — the same rules that would have rejected it
+ *   had it been posted directly — and every post in the group is rejected with
+ *   that reason.
+ * - **It moved.** The site takes the landing url as its own. When the landing
+ *   url also carries a *different dedup key*, the site takes that key, host,
+ *   domain and kind too,
+ *   and any two groups that now share a key are merged: their posts are
+ *   concatenated and re-ranked, so the strongest post across both becomes the
+ *   primary. This is the case the ticket exists for — two vanity domains, or a
+ *   `launch.acme.dev` and an `acme.dev`, becoming one candidate.
+ */
+export async function resolveSites(
+  sites: readonly ResolvedSite[],
+  options: ResolveSitesOptions = {},
+): Promise<{ sites: ResolvedSiteWithRedirect[]; rejected: RejectedHit[] }> {
+  const { http = {} } = options;
+  const merged = new Map<string, ResolvedSiteWithRedirect>();
+  const rejected: RejectedHit[] = [];
+
+  const rejectGroup = (site: ResolvedSite, kind: SiteKind, reason: string) => {
+    for (const post of site.posts) {
+      rejected.push({ hit: post.hit, found_by: post.found_by, kind, reason });
+    }
+  };
+
+  const absorb = (site: ResolvedSiteWithRedirect) => {
+    const existing = merged.get(site.key);
+    if (!existing) {
+      merged.set(site.key, site);
+      return;
+    }
+    existing.posts.push(...site.posts);
+    existing.posts.sort(strongerPost);
+  };
+
+  for (const site of sites) {
+    const requested = site.canonical_url;
+    const result = await httpGet(requested, http);
+
+    if (!result.ok) {
+      absorb({
+        ...site,
+        resolution: {
+          requested_url: requested,
+          resolved_url: requested,
+          status: result.status,
+          redirected: false,
+          rekeyed: false,
+          reason: result.reason,
+        },
+      });
+      continue;
+    }
+
+    // `final_url` is only set when it differs from the url requested, so an
+    // absent one means the server answered at the address we asked for.
+    const landed = result.final_url ? canonicaliseUrl(result.final_url) : null;
+    const resolution: SiteResolution = {
+      requested_url: requested,
+      resolved_url: landed?.canonical_url ?? requested,
+      status: result.status,
+      redirected: landed !== null && landed.canonical_url !== requested,
+      rekeyed: landed !== null && landed.key !== site.key,
+      reason: null,
+    };
+
+    if (landed === null) {
+      absorb({ ...site, resolution });
+      continue;
+    }
+
+    // Re-classified only when the key moved. Within one key the landing url is
+    // the same surface by construction, and re-running the rules on it would
+    // let a company's own `/blog` redirect reject the company.
+    if (resolution.rekeyed) {
+      const classification = classifyUrl(landed.canonical_url);
+      if (!classification.usable) {
+        rejectGroup(site, classification.kind, `redirected to ${classification.reason}`);
+        continue;
+      }
+      const verdict = classifySite(landed);
+      if (!verdict.usable) {
+        rejectGroup(site, verdict.kind, `redirected to ${verdict.reason}`);
+        continue;
+      }
+      absorb({
+        ...site,
+        key: landed.key,
+        canonical_url: landed.canonical_url,
+        host: landed.host,
+        domain: landed.domain,
+        kind: classification.kind,
+        resolution,
+      });
+      continue;
+    }
+
+    // Same key, different url: the run fetches where the server actually
+    // answered, so the next request is not a second redirect — and the body is
+    // already in the cache under the url requested here.
+    absorb({ ...site, canonical_url: landed.canonical_url, resolution });
+  }
+
+  return { sites: [...merged.values()], rejected };
 }

@@ -387,12 +387,17 @@ function hostMatches(host: string, domains: readonly string[]): boolean {
 }
 
 /**
- * Classify one hit from its url alone. The order of the rules is the point: a
- * PDF hosted on a company domain is still a paper, and an article path on a
- * code host is still a repo, so the narrow rules run before the broad ones.
+ * Classify one url. The order of the rules is the point: a PDF hosted on a
+ * company domain is still a paper, and an article path on a code host is still
+ * a repo, so the narrow rules run before the broad ones.
+ *
+ * Split out from `classifyHit` so TICKET-0010 can re-run the same verdict on
+ * the url a redirect actually landed on — a shortener that resolves to
+ * `medium.com` has to be rejected by the same rules that would have rejected it
+ * had it been posted directly.
  */
-export function classifyHit(hit: HnHit): HitClassification {
-  if (hit.url === null) {
+export function classifyUrl(url: string | null): HitClassification {
+  if (url === null) {
     return {
       usable: false,
       kind: "no_url",
@@ -405,9 +410,9 @@ export function classifyHit(hit: HnHit): HitClassification {
 
   let parsed: URL;
   try {
-    parsed = new URL(hit.url);
+    parsed = new URL(url);
   } catch {
-    return { usable: false, kind: "bad_url", reason: `unparseable url: ${hit.url}`, host: null };
+    return { usable: false, kind: "bad_url", reason: `unparseable url: ${url}`, host: null };
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
     return {
@@ -459,6 +464,11 @@ export function classifyHit(hit: HnHit): HitClassification {
   }
 
   return { usable: true, kind: "company_site", reason: `${host} looks like a company site`, host };
+}
+
+/** One hit, classified by its submitted link. Null url is an Ask HN or text post. */
+export function classifyHit(hit: HnHit): HitClassification {
+  return classifyUrl(hit.url);
 }
 
 export interface ClassifiedHit {

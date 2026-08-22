@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `909af18` · **Phase: stage 1 is closed and audited; TICKET-0018 has landed, so the pipeline can make an LLM call and — the part that matters — can decline to. Nothing calls it yet. TICKET-0014 is the one Ready ticket; 0011's clarifier wiring turned out to need the rubric, and stage 2 proper starts at 0015**
+Last updated: 2026-08-22 · at commit `4c3e463` · **Phase: stage 1 is closed and audited; the LLM seam (0018) and the fixture capture (0014) are in, so stage 2's two adapters are unblocked and both are Ready. Nothing calls the model yet. Next: TICKET-0015 and TICKET-0016**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -213,6 +213,31 @@ somebody fills a price table in from a price page on a date — a committed
 manifest is not the place for a guessed number. **Nothing calls any of this
 yet, and it has never talked to a live provider.** TICKET-0018 is Done.
 
+**The fixtures stage 2 needs are captured** ([worklog
+0026](./worklog/0026-fixture-capture.md), TICKET-0014). `pnpm capture-fixtures`
+is a twelve-entry spec list, a secret scan that refuses rather than redacts, and
+a generated `tests/fixtures/capture.json` recording url, status, date, size and
+digest for all 17 fixtures. **Rule 1 — a bare run never overwrites an existing
+fixture — is not a precaution.** Refreshing the four HN fixtures TICKET-0009 had
+captured three and a half hours earlier rewrote all four and broke five
+assertions in `tests/hn.test.ts`, including the classifier count D-6's argument
+rests on; Algolia is relevance-ranked and an afternoon is enough. Those four are
+now `legacy` and are *adopted* — their digest recorded from the committed bytes,
+`captured_by: "hand"`, their manifest url a transcription of the original
+`curl`. What was captured: `type: "Organization"` against `type: "User"`
+(inconsistency 22), `coroot/coroot`'s `homepage` and `nullswan/bpfsnitch`'s
+empty-string one (inconsistency 45), a real landing page and a real team page —
+three named people and a prior exit in prose — and the gate's thin `eBPF
+observability` probe, 6 hits and 3 usable, carrying the deep link and the
+`medium.com` post that beat canonicalisation. The malformed **model** outputs are
+authored rather than captured, eight items with one defect each; seven are
+dropped at parse time and the eighth is well-formed and still wrong — an
+`evidence_ids` entry that resolves to nothing, which is the argument for
+TICKET-0025 existing, now a fixture. Two of the ticket's acceptance criteria are
+mechanical: every fixture is re-scanned for credentials and must match its
+recorded digest on every `pnpm test`, so a hand-edited fixture fails the suite.
+**TICKET-0014 is Done.**
+
 **Wiring the clarifier costs a prompt v2.** `withStructuredOutput` requires an
 object schema, and `prompts/clarify-query.v1.md` ends by asking for a bare JSON
 array (inconsistency 52). That plus the `{{thesis}}` placeholder — which needs
@@ -225,9 +250,9 @@ clarification options actually good?*) is **still** unanswered, and why the
 | Thesis and rubric | Written, **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 409 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0025 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 16 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 1 Ready (0014), 13 Blocked. Status is in each ticket header |
+| Test strategy | Written; 507 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0026 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 17 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 2 Ready (0015, 0016), 11 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -245,6 +270,8 @@ clarification options actually good?*) is **still** unanswered, and why the
 | LLM response cache | `src/llm/cache.ts` — committed and content-addressed on the whole call (provider, model, prompt id, prompt version, output schema version, rendered input); a hit is verified against the fields it was keyed on; the first answer wins; a miss says why (0018, Done). **No entry is committed yet** |
 | LLM provider seam | `src/llm/provider.ts` — `createModel(role)` behind `await import`, `callModel` through the cache, `--replay` fails loudly on a cold cache, tokens recorded per call, `PRICES` ships empty so `cost_usd` is `null` (0018, Done). **Never run against a live provider** |
 | Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
+| Fixture capture | `scripts/capture-fixtures.ts` and `scripts/fixtures.ts` — `pnpm capture-fixtures`, a secret scan that refuses rather than redacts, `--refresh` as a deliberate act, and a generated `tests/fixtures/capture.json` (0014, Done). Not wired into `pnpm test`, never in CI |
+| Fixtures | 17 recorded: 6 HN (4 hand-captured and adopted, 1 thin topic, 1 derived), 5 GitHub owner/repo payloads, 2 real company pages, 4 authored model outputs, plus the hand-written `company-site.html` (0008/0014). Two gaps recorded rather than filled: no empty-shell page and no 404 body |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
 | Stages 1–3 | **Stage 1 runs and has been audited** (TICKET-0013, four live topics): `./pipeline source` produces `candidates.jsonl`, `query_plan.json` and `manifest.json`, verified against the live API. Stages 2 and 3 still exit 70 (0022, 0026), and so does `run` (0027) |
 | Sample run, walkthrough video | Not started. Topic chosen (D-5): `AI agent infrastructure` |
@@ -858,6 +885,31 @@ Real defects, listed rather than silently patched.
     line saying where the numbers came from — deliberately not guessed, because
     a committed manifest is a number a reader will believe.
 
+55. **A bare `--refresh` breaks the suite, and only a convention stops it.**
+    `pnpm capture-fixtures --refresh` with no `--only` re-captures the four HN
+    fixtures TICKET-0009 took, and Algolia's relevance ranking moves fast enough
+    that this broke five `tests/hn.test.ts` assertions within one afternoon. The
+    `legacy` flag makes a *bare* run adopt them instead of re-fetching, but
+    `--refresh` deliberately overrides it — refreshing has to remain possible.
+    The mitigation is documentation plus a failing suite, not a lock. If that
+    stings, the smaller fix is to make `--refresh` require `--only`.
+
+56. **There is no empty-shell page fixture.** TESTING §6 names "company site …
+    serves an empty shell" as a missing-data path, and both pages TICKET-0014
+    captured render server-side (5,948 and 1,746 characters extracted). A real
+    one has to be found rather than written — a hand-written stub would test the
+    extractor against the author's idea of what a JavaScript-only page looks
+    like. It goes to TICKET-0023 and is recorded in
+    `tests/fixtures/README.md`.
+
+57. **`hn/search-thin.json`'s window moves with the capture date.** Its url is
+    built from `--since 180` against the clock, so a refresh next month asks a
+    different question than the committed file answers, while the four legacy
+    fixtures pin an absolute epoch. Deliberate — the spec should describe what
+    the run actually requests — but it means the file is only exactly
+    reproducible on the day it was taken. The manifest records the url that was
+    used, which is what makes this recoverable rather than lost.
+
 ---
 
 ## Next session — start here
@@ -899,24 +951,35 @@ express v1's bare JSON array — inconsistency 52) *and* the rubric behind
 `{{thesis}}`, which is TICKET-0021. So the 0011 re-open moved behind stage 2
 rather than in front of it.
 
-**Nothing is blocking. One Ready ticket:**
+**TICKET-0014 is Done** ([worklog
+0026](./worklog/0026-fixture-capture.md)) — `pnpm capture-fixtures`, 17 recorded
+fixtures, 98 tests. Three things a new session should carry out of it:
 
-- [TICKET-0014](./tickets/0014-ticket-fixture-capture-script.md) — **Ready.**
-  `pnpm capture-fixtures`. Capture `eBPF observability` alongside a rich topic:
-  it is the thin, awkward result set the suite has never had — 3 usable of 6, a
-  fallback that fires and a triple-counted company all in one payload — and it
-  is now an **11-candidate** run against `--limit 12` (inconsistency 51). The
-  fixes are all in, so a capture taken now records post-fix behaviour. Its scope
-  also names the deliberately malformed **model** outputs that TICKET-0020's
-  failure path needs — those are cheap to write now that the shape a call
-  returns is fixed.
+1. **A refresh is destructive and the script now says so.** Re-capturing the
+   four TICKET-0009 HN fixtures broke five `tests/hn.test.ts` assertions the
+   same afternoon they were taken. Use `--only <group>` and read the diff.
+2. **`coroot.com/about` is a better fixture than expected** — three named
+   people, roles, and a prior exit in prose. TICKET-0020 has a real
+   `founder.prior_exit` to extract without inventing one.
+3. **Two fixtures do not exist and were not faked.** No empty-shell page
+   (TESTING §6 wants one; both captured pages render server-side — TICKET-0023
+   has to find one) and no 404 body (`httpGet` drops it, so there is nothing to
+   hold).
+
+**Nothing is blocking. Two Ready tickets, and they are stage 2's front door:**
+
+- [TICKET-0015](./tickets/0015-ticket-github-adapter.md) — **Ready.** The GitHub
+  adapter. Its fixtures are committed: `type: "Organization" | "User"`
+  (inconsistency 22) and `homepage`, including the empty-string case
+  (inconsistency 45).
+- [TICKET-0016](./tickets/0016-ticket-company-site-adapter.md) — **Ready.** The
+  company site adapter, against a real landing page and a real team page.
 - [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
   does not, and `{{thesis}}` waits on 0021.
 
-Then stage 2 proper: 0015 and 0016 (adapters), 0017 (evidence gather), 0019/0020
-(extraction), 0021 (the rubric), 0022 (wiring). Two things the gate hands
-forward into them:
+Then the rest of stage 2: 0017 (evidence gather), 0019/0020 (extraction), 0021
+(the rubric), 0022 (wiring). Two things the gate hands forward into them:
 
 1. **`GET /users/<owner>` → `type: User | Organization`** separated all ten
    hobby projects from every real company in the gate's 48 (inconsistency 22).
@@ -938,7 +1001,8 @@ The shape of the whole thing, unchanged:
    — 10% junk, D-6 kept, D-5 taken, five fixes scoped back. Read
    [worklog 0022](./worklog/0022-gate-hand-check.md) before touching stage 2;
    it is the only place the input's real quality is written down.
-5. Capture fixtures from those runs — ticket 0014 — so the suite stays offline.
+5. Capture fixtures from those runs — ticket 0014. **Done**, and it recorded two
+   fixtures it could not take rather than faking them.
 6. **The provider seam and the committed response cache** — ticket 0018.
    **Done**, and outside the gate throughout: it encodes no thesis, no score
    and no prompt.

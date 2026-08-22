@@ -90,9 +90,23 @@ question, and this version does not attempt to measure it — see below.
 and repo payloads, a handful of company home and team pages, and both well-formed
 and deliberately malformed model outputs.
 
-Captured once by `pnpm capture-fixtures`, run manually and rarely. Fixtures are
-committed. They are what makes the suite offline, and they double as a record of
-what the external APIs actually returned on the day the code was written.
+Captured once by `pnpm capture-fixtures`, run manually and rarely — never in CI.
+Fixtures are committed. They are what makes the suite offline, and they double as
+a record of what the external APIs actually returned on the day the code was
+written.
+
+A bare run writes only what is missing; re-capturing an existing fixture is
+`--refresh` and is a deliberate act, because a relevance-ranked API returns
+different hits from one month to the next and the suite asserts on these files.
+`tests/fixtures/capture.json` records the url, status, date, size and digest of
+every file, and two tests run on every `pnpm test`: every fixture is re-scanned
+for credential-shaped content, and every fixture must match its recorded digest —
+so a hand-edited one fails the suite.
+
+The model outputs are **authored**, not captured: the interesting shapes are the
+ones a model produces on a bad day. Their defect tables live in
+`scripts/fixtures.ts` and `tests/model-fixtures.test.ts` asserts each row against
+the `Fact` contract. See [`tests/fixtures/README.md`](../tests/fixtures/README.md).
 
 ---
 

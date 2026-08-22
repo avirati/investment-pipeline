@@ -64,9 +64,9 @@ index of the same thing. Three values, and only three:
 | [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | Done — reopens to wire the clarifier once the rubric fills `{{thesis}}` (0021) |
 | [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | Done |
 | **[0013](./0013-ticket-gate-hand-check-candidates.md)** | **GATE — hand-check the candidates** | **Junk rate · D-5 · D-6** | Done — [worklog 0022](../worklog/0022-gate-hand-check.md) |
-| [0014](./0014-ticket-fixture-capture-script.md) | `pnpm capture-fixtures` | The suite stays offline | **Ready** |
-| [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | Blocked · 0014 |
-| [0016](./0016-ticket-company-site-adapter.md) | Company site adapter | Founders, positioning, self-serve path | Blocked · 0014 |
+| [0014](./0014-ticket-fixture-capture-script.md) | `pnpm capture-fixtures` | The suite stays offline | **Done** |
+| [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | **Ready** |
+| [0016](./0016-ticket-company-site-adapter.md) | Company site adapter | Founders, positioning, self-serve path | **Ready** |
 | [0017](./0017-ticket-evidence-gather.md) | Evidence gather (2a) | Bundles with ids, no LLM | Blocked · 0015, 0016 |
 | [0018](./0018-ticket-llm-provider-and-cache.md) | LLM seam and response cache | Replay costs nothing | Done |
 | [0019](./0019-ticket-extraction-prompt.md) | Extraction prompt + CHANGELOG | Versioned, thesis-free | Blocked · 0017 |

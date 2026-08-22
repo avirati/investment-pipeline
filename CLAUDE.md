@@ -1,8 +1,11 @@
 # CLAUDE.md
 
-Operating guide for AI assistants working in this repo. Read
-[docs/SPEC.md](docs/SPEC.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-before changing anything in `src/`.
+Operating guide for AI assistants working in this repo.
+
+**Starting a new session? Read [docs/STATE.md](docs/STATE.md) first** — it holds
+current phase, open decisions with a safe default for each, known inconsistencies,
+and the next concrete step. Then read [docs/SPEC.md](docs/SPEC.md) and
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before changing anything in `src/`.
 
 ## What this is
 
@@ -82,6 +85,11 @@ It must never prompt without a TTY, and never on replay.
   refactor with a feature. Do not commit without the author's review.
 - **Leave a trail.** A session that made a real decision gets a worklog entry in
   `docs/worklog/`. A decision that was hard or reversible-at-cost gets an ADR.
+- **Update `docs/STATE.md` at the end of every session.** It is the handoff, and
+  it is the one document allowed to go stale. If you took a documented default
+  for an open decision, say so there and in the worklog.
+- **Prefer a stated assumption to a blocked session.** Every open decision in
+  STATE.md has a default. Take it, record it, keep moving.
 - **Do not write the reflective sections of worklogs.** Fill in the factual
   record — what was attempted, what failed, what changed. The judgement and
   reflection paragraphs are the author's, and ghostwritten reflection is both

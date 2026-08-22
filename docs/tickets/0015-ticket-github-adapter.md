@@ -1,6 +1,6 @@
 # TICKET-0015 — GitHub adapter (`src/evidence/github.ts`)
 
-Status: **Ready** — 0014 is Done; `tests/fixtures/github/` holds the owner and repo payloads, including the `homepage` field of inconsistency 45 and the `type` field of inconsistency 22 · Depends on: 0008 (Done), 0014 (Done) · Blocks: 0017
+Status: **Done** — `src/evidence/github.ts`, 82 tests ([worklog 0027](../worklog/0027-github-adapter.md)) · Depends on: 0008 (Done), 0014 (Done) · Blocks: 0017
 Reads: [ADR-0004](../adr/0004-source-selection.md), [SCOPE](../SCOPE.md) in-scope #2, [SPEC §2](../SPEC.md) D1/D3/D5
 
 ## Why
@@ -28,3 +28,28 @@ dimensions: technical depth (D1), pull (D3), and the accumulating-asset read (D5
   exist yields no evidence and no throw; rate-limit response is handled by the
   fetch layer's policy, not re-implemented here.
 - Every emitted metric carries a date or is dropped.
+
+## Outcome
+
+`gatherGithub(ref)` reads up to five endpoints and returns evidence records,
+dated `Signal`s and a reason for every metric it could not produce. Both
+acceptance criteria hold: an org that does not exist yields a `fetch_failed`
+record and no throw, rate limiting stays the fetch layer's policy, and `add` is
+the only way a metric leaves the module — so an undateable one becomes an
+`unknown` rather than a number.
+
+Three departures from the scope above, each argued in
+[worklog 0027](../worklog/0027-github-adapter.md):
+
+- **"star velocity" ships as `stars_per_day_lifetime`.** A rate needs two
+  observations; GitHub charges per hundred stars for the second.
+- **No third-party integration keyword list.** That is a rubric, and the thesis
+  lives in one place (CLAUDE.md invariant 7). The README text and the topics are
+  in the bundle for TICKET-0020 to read.
+- **No per-contributor profile fetch.** The contributor list gives logins and
+  commit counts in one request; a profile each is N more against a 60/hour
+  budget, for a signal the company's own team page carries better (TICKET-0016).
+
+Degraded mode became a request budget rather than a note: without `GITHUB_TOKEN`
+the adapter reads two endpoints per candidate, because five against `--limit 12`
+is exactly the unauthenticated hourly limit.

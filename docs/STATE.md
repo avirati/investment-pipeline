@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `4c3e463` · **Phase: stage 1 is closed and audited; the LLM seam (0018) and the fixture capture (0014) are in, so stage 2's two adapters are unblocked and both are Ready. Nothing calls the model yet. Next: TICKET-0015 and TICKET-0016**
+Last updated: 2026-08-22 · at commit `8354717` · **Phase: stage 2 has started. The GitHub adapter (0015) is in and has run against the live API; the repo ↔ site join the gate lost a quarter of one run to is now made. Nothing calls the model yet. Next: TICKET-0016, then TICKET-0017**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -245,14 +245,53 @@ the rubric, TICKET-0021 — is why the gate's one unanswered question (*were the
 clarification options actually good?*) is **still** unanswered, and why the
 0011 re-open is not the next thing to pick up.
 
+**Stage 2 has a first module.** `src/evidence/github.ts` ([worklog
+0027](./worklog/0027-github-adapter.md), TICKET-0015) turns a candidate url into
+a GitHub account and reads up to five endpoints from it. Four rules shape it.
+Everything the rubric reads carries a date — `add` is the only way a metric
+leaves the module, so a value that is null, blank or not finite becomes an
+`unknown` with a reason rather than a zero, which is SPEC D3's "an undated claim
+scores 0" made structural. The evidence text is a **projection**, not the
+response: `GET /repos` is 7 KB of API urls and `…/contributors` is 36 KB of
+avatar links, so each payload renders to a compact `key: value` block with
+`meta.projection` naming the renderer — the same departure `extractHtml` already
+makes for a web page (inconsistency 18). Failure is data: 404, 202, 204 and a
+200 of the wrong shape are four recorded outcomes. And the module concludes
+nothing — no keyword list, no threshold, no opinion about what a good repo looks
+like.
+
+What it emits is a **`Signal`**, not a `Fact`: a star count read off a payload or
+an age computed by subtraction, carrying the moment it was observed and the id of
+the record it came from, with no model involved and nothing to be confident
+about. Where signals meet facts is inconsistency 58 and belongs to
+TICKET-0020/0021. **`repo.homepage` closes the gate's inconsistency 45** at the
+one point it can be closed, and `owner.type` — the field that separated all ten
+hobby projects from every real company in the gate's 48 — is now a dated,
+citable signal rather than an observation in a worklog.
+
+**Degraded mode became a request budget.** Unauthenticated GitHub is 60 requests
+an hour and five calls against `--limit 12` is exactly 60, so without a token the
+adapter reads two endpoints per candidate and records the other three as unknowns
+naming `GITHUB_TOKEN`. A uniformly thinner run that says why beats one whose
+coverage depends on where in the list a company sat.
+
+**The first live run against the API changed the code.** Three of the gate's own
+candidates, unauthenticated: `coroot/coroot` produced the homepage join in 2
+requests, `nullswan/bpfsnitch` made the **202 path fire live** (`commit_activity`
+is computed on demand), and `anilatambharii/argus-ai` — the gate's 404 candidate
+— turned out to have a **LinkedIn profile in its `blog` field**. That last one
+had been a fallback for `homepage`, which would have sent TICKET-0016 to extract
+founders from a personal profile page. Only `repo.homepage` makes the join now;
+`blog` survives as a signal. **TICKET-0015 is Done.**
+
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 507 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0026 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 17 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 2 Ready (0015, 0016), 11 Blocked. Status is in each ticket header |
+| Test strategy | Written; 595 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0027 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 18 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 1 Ready (0016), 11 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -268,10 +307,11 @@ clarification options actually good?*) is **still** unanswered, and why the
 | Stage 1 wiring | `src/source/index.ts` — `runSource`: plan → search → dedup → rank → cut → resolve → candidates, the run-level failure decision, the thin-yield fallback (0012, Done) |
 | Run manifest | `src/manifest.ts` — git sha, flags, per-arm yields, per-candidate status; `writeStage` merges so later stages append (0012, Done) |
 | LLM response cache | `src/llm/cache.ts` — committed and content-addressed on the whole call (provider, model, prompt id, prompt version, output schema version, rendered input); a hit is verified against the fields it was keyed on; the first answer wins; a miss says why (0018, Done). **No entry is committed yet** |
+| GitHub adapter | `src/evidence/github.ts` — `parseGithubRef`, five API calls, tolerant schemas, evidence projections, dated `Signal`s, `defaultCalls(mode)` as the degraded-mode budget (0015, Done). Verified against the live API on three of the gate's own candidates |
 | LLM provider seam | `src/llm/provider.ts` — `createModel(role)` behind `await import`, `callModel` through the cache, `--replay` fails loudly on a cold cache, tokens recorded per call, `PRICES` ships empty so `cost_usd` is `null` (0018, Done). **Never run against a live provider** |
 | Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
 | Fixture capture | `scripts/capture-fixtures.ts` and `scripts/fixtures.ts` — `pnpm capture-fixtures`, a secret scan that refuses rather than redacts, `--refresh` as a deliberate act, and a generated `tests/fixtures/capture.json` (0014, Done). Not wired into `pnpm test`, never in CI |
-| Fixtures | 17 recorded: 6 HN (4 hand-captured and adopted, 1 thin topic, 1 derived), 5 GitHub owner/repo payloads, 2 real company pages, 4 authored model outputs, plus the hand-written `company-site.html` (0008/0014). Two gaps recorded rather than filled: no empty-shell page and no 404 body |
+| Fixtures | 20 recorded: 6 HN (4 hand-captured and adopted, 1 thin topic, 1 derived), 8 GitHub payloads (owner, repo, README, contributors, commit activity), 2 real company pages, 4 authored model outputs, plus the hand-written `company-site.html` (0008/0014). Two gaps recorded rather than filled: no empty-shell page and no 404 body |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
 | Stages 1–3 | **Stage 1 runs and has been audited** (TICKET-0013, four live topics): `./pipeline source` produces `candidates.jsonl`, `query_plan.json` and `manifest.json`, verified against the live API. Stages 2 and 3 still exit 70 (0022, 0026), and so does `run` (0027) |
 | Sample run, walkthrough video | Not started. Topic chosen (D-5): `AI agent infrastructure` |
@@ -429,6 +469,12 @@ Real defects, listed rather than silently patched.
     labelled as a guess in the code. Revise at the first real extraction call
     (TICKET-0020), not before. Not raised to an open decision: there is no fork
     behind it, only a number.
+    **It binds.** The first live GitHub run (TICKET-0015) fetched
+    `nullswan/bpfsnitch`'s README at 9,649 characters and stored 8,000 of them.
+    One README over the limit is not an argument for raising it — a README's
+    first 8,000 characters are its pitch and its install instructions — but the
+    limit is no longer purely theoretical, and `text_truncated` in that record's
+    `meta` is where a reviewer sees it.
 15. **`makeEvidence` is the only sanctioned constructor, by convention.**
     `Evidence.parse({ ... })` still works from anywhere, so an adapter that
     assembles a record literal can skip the id helper and the text limit. Fine
@@ -572,7 +618,8 @@ Real defects, listed rather than silently patched.
     memo list, a wrong collapse deletes a company with no trace. The related
     join this layer structurally cannot make is `acme.dev` ↔
     `github.com/acme/acme` — nothing in either url says they are the same thing.
-    TICKET-0015 reads a repo's homepage field, which is where that belongs.
+    TICKET-0015 reads a repo's homepage field, which is where that belongs, and
+    now does — but reading it and *acting* on it are different things; see 45.
 
 29. **`chosen_by: "non-interactive"` does three jobs.** ADR-0008's table gives it
     one meaning — no TTY — and `planQuery` reaches it from three places: no TTY,
@@ -787,7 +834,19 @@ Real defects, listed rather than silently patched.
     repo. Scoped as fix F3 on the reopened TICKET-0010. The demo-instance case
     is not fixed by F3 and needs the repo ↔ site join — see 45.
 
-45. **One company took three of twelve slots, and no url said they were one
+45. ~~**One company took three of twelve slots, and no url said they were one
+    company.**~~ **Fixed** in TICKET-0015 ([worklog
+    0027](./worklog/0027-github-adapter.md)): `gatherGithub` reads
+    `repo.homepage`, and `coroot/coroot` returns `https://coroot.com` on a live
+    call. The join now exists at the one layer that can make it. Two caveats a
+    reviewer should keep. It is **not yet applied** — nothing merges two
+    candidates on it, because merging is a stage-1 shape and this fact arrives
+    in stage 2; TICKET-0017 is where a bundle can carry both urls, and whether
+    the memo set ever collapses two candidates into one is a real open question
+    rather than a mechanical follow-on. And the third of Coroot's three slots,
+    `demo.coroot.com`, is a demo instance with no repo behind it, so
+    `repo.homepage` does not reach it. Original entry below.
+    **One company took three of twelve slots, and no url said they were one
     company.** On `eBPF observability` the gate produced Coroot three times:
     `github.com/coroot/coroot`, `coroot.ai` and `demo.coroot.com`. All three
     `siteKey`s are correct in isolation — a repo and a company site share
@@ -910,6 +969,52 @@ Real defects, listed rather than silently patched.
     reproducible on the day it was taken. The manifest records the url that was
     used, which is what makes this recoverable rather than lost.
 
+58. **Some facts are now mechanical, and the fact vocabulary does not know it
+    yet.** `src/evidence/github.ts` emits `Signal`s — `{ key, value, as_of,
+    evidence_id }` — which are facts in everything but name: dated, citable, and
+    produced without a model. `Fact` (`src/contracts/fact.ts`) is the model's
+    output surface and carries a `statement` and a `confidence`, neither of
+    which means anything for a star count. Two shapes that overlap is a
+    decision, not an oversight: putting a fact vocabulary in an adapter before
+    TICKET-0020 has written one would be guessing at the rubric's own keys. The
+    question TICKET-0020/0021 must answer is whether a mechanical signal becomes
+    a `Fact` with `confidence: "high"`, or whether the rubric reads two inputs.
+    Related: whether the model should be *shown* the signals it cannot
+    contradict, or only the evidence text underneath them.
+
+59. **`RESERVED_OWNERS` is the ninth hand-written list in this codebase.**
+    `github.com/topics/ebpf` would otherwise resolve to an account called
+    "topics". Same class of labelled guess as `REPO_SUBPATHS`, `SHARED_SUFFIXES`,
+    `REGISTRY_DEPTHS`, `GENERIC_REPO_SLUGS`, `PERSONAL_HOSTS`, `PAPER_HOSTS`,
+    `HN_MAX_PAGES_PER_ARM` and the three numeric constants at 14, 16 and 17. It
+    fails safe in the cheap direction — an unlisted reserved word costs one
+    request that 404s, which is what a candidate with no GitHub presence already
+    costs — and the number of these lists is now itself worth noticing: ten
+    hand-written stand-ins is a shape a reviewer is entitled to call out.
+
+60. **The GitHub request budget is decided per candidate and spent per run.**
+    `defaultCalls(mode)` reads two endpoints unauthenticated and five with a
+    token, which is the right answer for one candidate and only an *assumption*
+    about the run — it assumes roughly a dozen candidates. A `--limit 40` run
+    with a token is 200 requests against a 5,000/hour limit and fine; the same
+    run unauthenticated is 80 against 60 and is not. Nothing yet counts requests
+    across candidates or stops when the budget is gone, because nothing yet
+    loops over candidates. That loop is TICKET-0017 and the budget belongs to
+    it. Named here so 0017 decides it rather than inheriting whichever behaviour
+    falls out of the wiring — the same note inconsistency 31 made for
+    `--no-expand`.
+
+61. **`stars_per_day_lifetime` is an average wearing a rate's clothes.** The
+    ticket asked for star velocity. Velocity needs two observations and GitHub
+    charges for the second — the stargazer-timestamps endpoint paginates one
+    page per hundred stars — so what ships is stars ÷ age in days and is named
+    for what it is. The cost is precise: a repo that got 5,000 stars in its
+    first month four years ago and none since reads the same as one growing
+    steadily, and only `days_since_push` and the commit cadence separate them.
+    A real velocity is available cheaply to any run that has a **previous
+    committed run** to difference against, which is a TICKET-0028 shape rather
+    than an adapter one.
+
 ---
 
 ## Next session — start here
@@ -966,14 +1071,33 @@ fixtures, 98 tests. Three things a new session should carry out of it:
    has to find one) and no 404 body (`httpGet` drops it, so there is nothing to
    hold).
 
-**Nothing is blocking. Two Ready tickets, and they are stage 2's front door:**
+**TICKET-0015 is Done** ([worklog
+0027](./worklog/0027-github-adapter.md)) — `src/evidence/github.ts`, 82 tests,
+and the first stage-2 module to have run against a live API. Three things a new
+session should carry out of it:
 
-- [TICKET-0015](./tickets/0015-ticket-github-adapter.md) — **Ready.** The GitHub
-  adapter. Its fixtures are committed: `type: "Organization" | "User"`
-  (inconsistency 22) and `homepage`, including the empty-string case
-  (inconsistency 45).
+1. **The live run changed the code, and the change was a narrowing towards
+   safety.** The account's `blog` field had been a fallback for `homepage`;
+   `anilatambharii/argus-ai` — the gate's 404 candidate — has a **LinkedIn
+   profile** there, and promoting it would have sent TICKET-0016 to extract
+   founders from a personal profile page. Only `repo.homepage` makes the join
+   now. This is the third time a defect of this class has been found by running
+   the thing rather than by reading it.
+2. **Reading the join is not applying it.** `repo.homepage` comes back and
+   nothing merges two candidates on it — see inconsistency 45.
+3. **Degraded mode is a request budget** (`defaultCalls`), and it is decided per
+   candidate while it is spent per run. That is inconsistency 60 and it is
+   TICKET-0017's to settle.
+
+**Nothing is blocking. One Ready ticket:**
+
 - [TICKET-0016](./tickets/0016-ticket-company-site-adapter.md) — **Ready.** The
-  company site adapter, against a real landing page and a real team page.
+  company site adapter, against a real landing page and a real team page. It now
+  has a first customer: `gatherGithub` returns the homepage it should fetch, and
+  the reason that url is trustworthy is that the weaker route to it was removed.
+- [TICKET-0017](./tickets/0017-ticket-evidence-gather.md) — Blocked on 0016.
+  It owns the run-level request budget (inconsistency 60) and is where a bundle
+  can carry a repo and a site for one company.
 - [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
   does not, and `{{thesis}}` waits on 0021.
@@ -983,11 +1107,12 @@ Then the rest of stage 2: 0017 (evidence gather), 0019/0020 (extraction), 0021
 
 1. **`GET /users/<owner>` → `type: User | Organization`** separated all ten
    hobby projects from every real company in the gate's 48 (inconsistency 22).
-   It is a **fact for the rubric**, extracted in TICKET-0015 and scored in
-   TICKET-0021 — never a filter in stage 1.
+   It is a **fact for the rubric**, extracted in TICKET-0015 — where it is now
+   the dated signal `github.owner_type` — and scored in TICKET-0021. Never a
+   filter in stage 1.
 2. **The repo ↔ company-site join** (inconsistency 45) is TICKET-0015's
    `homepage` field, and it is the one gate defect stage 1 structurally cannot
-   fix.
+   fix. **The field is now read**; nothing acts on it yet.
 
 The shape of the whole thing, unchanged:
 
@@ -1006,7 +1131,9 @@ The shape of the whole thing, unchanged:
 6. **The provider seam and the committed response cache** — ticket 0018.
    **Done**, and outside the gate throughout: it encodes no thesis, no score
    and no prompt.
-7. Stage 2, then stage 3, then the sample run on `AI agent infrastructure`.
+7. **Stage 2's evidence layer** — ticket 0015 **Done**, 0016 Ready, 0017 next.
+8. Then extraction and the rubric, stage 3, and the sample run on
+   `AI agent infrastructure`.
 
 ## Invariants a new session must not break
 

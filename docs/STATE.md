@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `fd4fd1d` · **Phase: the gate at TICKET-0013 has reported and its canonicalisation fixes have landed (TICKET-0010, F3 and F5). Three fixes remain on TICKET-0009 — F1, F2 and F4-as-moved. Stage 2 is released once those land**
+Last updated: 2026-08-22 · at commit `4889328` · **Phase: the gate at TICKET-0013 has reported and all five of its fixes have landed. Junk over the gate's own 48 candidates is 5 → 1, measured on a re-run. Stage 1 is closed; stage 2 is released, and TICKET-0014 and TICKET-0018 are the two Ready tickets**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -198,9 +198,9 @@ field and must not be guessed at with name similarity.
 | Thesis and rubric | Written, **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 376 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 34 candidate derivation, 12 manifest and 28 stage-1 wiring (0012). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0023 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 14 Done, **1 Reopened** (0009 — three scoped fixes from the gate), 2 Ready (0014, 0018), 13 Blocked. Status is in each ticket header |
+| Test strategy | Written; 384 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0024 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 15 Done (0009 and 0010 reopened by the gate and closed again), 2 Ready (0014, 0018), 13 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -208,11 +208,11 @@ field and must not be guessed at with name similarity.
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
-| HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier, paginated `searchHn` with failures as data (0009, Done) |
+| HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier, paginated `searchHn` with failures as data (0009, Done, reopened and closed again by the 0013 gate: ACM's host and `BLOG_SUBDOMAIN`) |
 | URL resolution and dedup | `src/source/resolve.ts` — canonicalisation, site keys, `dedupeHits`, redirect-following `resolveSites`; `identityPath` collapses a url pointing inside a repo or a package (0010, Done, reopened and closed again by the 0013 gate) |
 | Query planning | `src/source/plan.ts` — `probeSeed`, `planQuery`, the `query_plan.json` artifact, the clarifier seam and the model-output sanitiser (0011, Done) |
 | Run identity | `src/run.ts` — `deriveRunId`/`validateRunId`, `runPaths` (ARCHITECTURE §4 in one place), `createRunDir` and ADR-0001's overwrite guard (0012, Done) |
-| Candidate derivation | `src/source/candidate.ts` — `deriveName` (lift or fall back to the domain; never compose), `slugFor`, `toCandidates`, and `candidatesFromUrls` for the `urls` seed form (0012, Done) |
+| Candidate derivation | `src/source/candidate.ts` — `deriveName` (lift or fall back to the domain; never compose), `nameFromKey` drops a generic repo slug to its owner (the gate's F1), `slugFor`, `toCandidates`, and `candidatesFromUrls` for the `urls` seed form (0012, Done) |
 | Stage 1 wiring | `src/source/index.ts` — `runSource`: plan → search → dedup → rank → cut → resolve → candidates, the run-level failure decision, the thin-yield fallback (0012, Done) |
 | Run manifest | `src/manifest.ts` — git sha, flags, per-arm yields, per-candidate status; `writeStage` merges so later stages append (0012, Done) |
 | Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011) |
@@ -618,7 +618,13 @@ Real defects, listed rather than silently patched.
     `camps.aptaracorp.com/ACM_PMS/…` is a paper on a host `PAPER_HOSTS` never
     heard of. Two narrow, nameable rules go back to TICKET-0009 and TICKET-0010
     (fixes F2 and F4); the classifier is **not** made smarter in general, which
-    is what tightening on two examples would have meant.
+    is what tightening on two examples would have meant. **Both landed**
+    ([worklog 0024](./worklog/0024-gate-fixes-classifier-and-naming.md)):
+    `aptaracorp.com` — ACM's typesetting vendor — joined `PAPER_HOSTS`, and
+    `BLOG_SUBDOMAIN` rejects a host that announces itself as a blog. F4 shipped
+    **without** its proposed `/p/<slug>` half: that is one publisher's
+    convention rather than a shape of the web, and `acme.dev/p/pricing` is a
+    product page. Both junk candidates are gone from a re-run.
 
 38. **On one topic the three expansion arms contributed nothing.** `show_hn`
     returned 42 hits and 0 new, `launch` 4 and 0, `funding` 0 and 0 — the `raw`
@@ -655,6 +661,20 @@ Real defects, listed rather than silently patched.
     the same shape. Two directions exist (accept `, ` as a separator when the
     head is short; or prefer the owner over a generic repo name) and both are
     guesses until the hand-check at TICKET-0013 says how often this happens.
+    **The gate measured it: 7 of 48 candidates, 15%, and half of all fallback
+    names.** The second direction was taken, as fix F1, and it landed in
+    `src/source/candidate.ts` — TICKET-0012's module, because that is where
+    naming lives, and not TICKET-0009 where the gate scoped it
+    ([worklog 0024](./worklog/0024-gate-fixes-classifier-and-naming.md)).
+    **It fixes 3 of the 7, not 7 of 7:** `torrix-ai/install` → `torrix-ai`,
+    `betterdb-inc/monitor` → `betterdb-inc`, `rocketgraph/rocketgraph` →
+    `rocketgraph`. The other four have *distinctive* repo slugs — `bpfsnitch`,
+    `autoagents`, `yantrikdb-server`, `xarray-sql` — and dropping those would
+    lose the only word that tells two repos from one owner apart, so they are
+    kept and pinned by a test. The comma-separator direction is still not
+    taken; see inconsistency 49. **This entry was amended a commit late**: the
+    same amendment was written during the gate and silently failed to apply,
+    so `fd4fd1d` shipped an entry that had already been measured.
 
 41. **Three failures share one exit code.** `SourceError` is `source_dead`,
     `no_hits` or `no_candidates`, and the CLI maps all three to exit 2, "the run
@@ -745,6 +765,33 @@ Real defects, listed rather than silently patched.
     loudly that it fired. It is an argument for reading `fallback.fired: true`
     in a manifest as *expect a worse list*, which nothing currently says.
 
+49. **F1 reaches the org, not the company.** `github.com/torrix-ai/install` is
+    now named `torrix-ai`, which is an improvement on `torrix-ai/install` and
+    is still not the company's name. Its own post title says it: *Show HN:
+    Torrix, self hosted, LLM Observability*. The rule that would reach "Torrix"
+    is the direction inconsistency 40 named and did not take — accept `, ` as a
+    title separator when the head is short. Not taken on n=1 across four
+    topics, and because a punctuation rule fires on every comma in every HN
+    title, which is a far wider change than a thirty-word list. `GENERIC_REPO_SLUGS`
+    is itself the eighth unmeasured guess in this codebase and fails safe: an
+    unlisted slug keeps `owner/repo`, exactly as before.
+
+50. **A version string can be lifted as a name.** The candidate backfilled into
+    the `eBPF observability` re-run after F2 and F4 removed two junk entries is
+    named `Aacyn v0.7.0`. `looksLikeName` counts words and characters and has
+    no opinion about version numbers, so the rule worked as specified and the
+    output is still wrong. One example, no fix, recorded rather than patched on
+    n=1 — the same discipline inconsistency 40 was held to, and 40 turned out
+    to be worth waiting on.
+
+51. **A thin topic gets thinner when junk is rejected.** `eBPF observability`
+    now returns **11 candidates against `--limit 12`**: it had 13 sites, two
+    were rejected by the new rules, and nothing goes back for a replacement
+    (inconsistency 43). Rejecting junk on a thin topic does not promote a better
+    candidate, it just shortens the list. Correct behaviour, and worth knowing
+    before stage 2 reads a manifest that says `limit: 12` above eleven
+    candidates.
+
 48. **The gate was specified as a human reading a list, and an assistant read
     it.** TICKET-0013 says *"this is not a coding ticket; its deliverable is a
     written finding"* — the finding in [worklog
@@ -766,39 +813,36 @@ from the documents in this directory, in dependency order, each one leaving the
 repo runnable. **0001–0013 are Done.** The gate has reported, so stage 2 is
 released — but two tickets reopened on the way out of it, and they are cheap.
 
-**The canonicalisation half of the gate fixes has landed** — TICKET-0010 is
-Done again ([worklog 0023](./worklog/0023-gate-fixes-canonicalisation.md)). F3
-collapses a code-host url to its repo and a registry url to its package, which
-matters more than the ticket first claimed: the key was never wrong, but stage 2
-would have fetched a markdown file as a company's evidence. F5 keys registries
-on the package (inconsistency 36). **F4 moved to TICKET-0009** — "is this an
-article" is `classifyUrl`'s question, and a blog rule in `resolve.ts` would have
-left D-6's usable count still counting blogs as companies.
+**All five gate fixes have landed** — worklogs
+[0023](./worklog/0023-gate-fixes-canonicalisation.md) and
+[0024](./worklog/0024-gate-fixes-classifier-and-naming.md). **Junk over the
+gate's own 48 candidates is 5 → 1**, measured by re-running the four topics
+rather than estimated. The survivor is `demo.coroot.com`, a demo instance of a
+company already in the same list, and it needs TICKET-0015's `homepage` field.
 
-**Do the TICKET-0009 half next.** One small commit against a ticket that already
-has tests, files and a shape:
+Three things a new session should carry out of that, because they are the parts
+that did not go as written:
 
-- [TICKET-0009](./tickets/0009-ticket-hn-algolia-adapter.md) — **Reopened.**
-  F1: prefer the repo **owner** over a generic repo slug (`install`, `monitor`,
-  `server`) — fixes 7 of the 13 fallback names, and `torrix-ai/install` is
-  Torrix. F2: add ACM's proceedings host to `PAPER_HOSTS`. F4: a `blog.`
-  subdomain and a `/p/<slug>` path are content, in `classifyUrl` so the probe
-  sees it too.
+1. **Two of the gate's three predictions were wrong.** Fallback names were
+   predicted 13 → 6 and measured **13 → 13** — F1 changes a fallback name's
+   shape, never turns it into a lifted one, and the count was the wrong measure.
+   F1's reach was predicted at 7 of 48 and measured at 3.
+2. **Two fixes were narrowed while being implemented**, both towards accepting
+   more: F4 shipped without its `/p/<slug>` half, and F1 keeps a distinctive
+   repo slug. Both are pinned by tests that say the omission is a decision.
+3. **Three fixes landed in a different file than the gate scoped them to.** F1
+   is naming, so it is in `candidate.ts`; F4 is classification, so it is in
+   `hn.ts`. Scoping a fix before opening the file was still cheap and still
+   worth doing — but the fix list was written faster than it was checked.
 
-Junk over the gate's 48 is **5 → 3** after TICKET-0010, and **5 → 1** once these
-land; the survivor is `demo.coroot.com`, which needs TICKET-0015's `homepage`
-field. That is measured on a re-run, not estimated. Each fix has real urls
-behind it in [worklog 0022](./worklog/0022-gate-hand-check.md); write the tests
-from those.
-
-Then, in either order:
+**Nothing is blocking.** Two Ready tickets, in either order:
 
 - [TICKET-0014](./tickets/0014-ticket-fixture-capture-script.md) — **Ready.**
   `pnpm capture-fixtures`. Capture `eBPF observability` alongside a rich topic:
   it is the thin, awkward result set the suite has never had — 3 usable of 6, a
-  fallback that fires, a paper, a blog and a triple-counted company all in one
-  payload. TICKET-0010 is done; finish TICKET-0009 first so the fixtures capture
-  the post-fix behaviour.
+  fallback that fires and a triple-counted company all in one payload — and it
+  is now an **11-candidate** run against `--limit 12` (inconsistency 51). The
+  fixes are all in, so a capture taken now records post-fix behaviour.
 - [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — **Ready**,
   still outside the gate. It turns the `Clarifier` seam in `plan.ts` into a real
   call, and it is the only way to answer the one question TICKET-0013 could not:
@@ -823,8 +867,8 @@ The shape of the whole thing, unchanged:
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** Two places where it is
    deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **Done**, with 0010
-   reopened and closed again by the gate's fixes.
+3. **Stage 1 against live HN** — tickets 0006–0012. **Done**, with 0009 and
+   0010 reopened and closed again by the gate's five fixes.
 4. **Hand-check the candidate list before writing a line of stage 2** —
    [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md). **Done**
    — 10% junk, D-6 kept, D-5 taken, five fixes scoped back. Read

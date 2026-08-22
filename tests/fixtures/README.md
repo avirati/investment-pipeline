@@ -45,6 +45,9 @@ on the same day they were taken, which is that rule earning its keep.
 | `github/user-foundation.json` | `ccfos` — an organisation that is a foundation, not a company. The exception that keeps `type` a signal rather than a rule |
 | `github/repo-with-homepage.json` | `coroot/coroot`, whose `homepage` is `https://coroot.com`: the repo ↔ company-site join stage 1 structurally cannot make (inconsistency 45) |
 | `github/repo-hobby.json` | `nullswan/bpfsnitch`, a personal-account repo from the gate's list. Its `homepage` is `""` — **an empty string, not null**, which is the missing-data path for the join and the kind of thing only a real payload tells you |
+| `github/readme-coroot.json` | `GET /repos/<owner>/<repo>/readme`. The README arrives base64-encoded inside a JSON envelope, so the adapter decodes it — the evidence record holds 5.2k characters of markdown, not the envelope |
+| `github/contributors-coroot.json` | One page of contributors (`per_page=100`), 33 of them. Two things a real payload teaches: the list is ranked by contributions, and `dependabot[bot]` is in it with `type: "Bot"` |
+| `github/commit-activity-coroot.json` | `GET /repos/<owner>/<repo>/stats/commit_activity` — 52 weeks, each with its own week boundary and a daily breakdown. The only dated cadence signal the API gives for free. **It answered `202` with an empty body the first two times it was asked**, while GitHub computed it; that path is tested with a stub, because a 202 cannot be captured on demand |
 | `sites/coroot-home.html` | A real company landing page: nav, footer, cookie banner, testimonials, and 5.9k characters of extractable text |
 | `sites/coroot-about.html` | The team page behind it — three named people with roles and one prior exit in prose. This is the surface founder facts are extracted from |
 | `model/facts-valid.json` | The extraction output a good day produces: five facts about Coroot, every evidence id resolving to a fixture in this directory |

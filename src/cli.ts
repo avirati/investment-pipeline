@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { pathToFileURL } from "node:url";
 import { Command, InvalidArgumentError } from "commander";
+import { loadDotEnv } from "./config.js";
 import { EXIT } from "./exit-codes.js";
 
 const TITLE = "investment-pipeline — startup triage";
@@ -120,5 +121,9 @@ function isEntrypoint(): boolean {
 }
 
 if (isEntrypoint()) {
+  // Only the entrypoint reads `.env`, so importing anything from `src/` leaves
+  // the caller's environment alone. Absent is fine — every offline path runs
+  // without it (TICKET-0006).
+  loadDotEnv();
   buildProgram().parse(process.argv);
 }

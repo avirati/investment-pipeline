@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `e616477` · **Phase: contracts pinned; no stage logic yet**
+Last updated: 2026-08-22 · at commit `6b0023b` · **Phase: contracts and config pinned; no stage logic yet**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -14,20 +14,24 @@ pass, and `./pipeline --help` is real — but every command still exits 70, so
 nothing has been run end to end. `./setup.sh` now takes a fresh clone from git
 to a type-checked tree without the operator knowing pnpm exists. The stage
 boundary now exists as six Zod schemas, so stage work can start against a fixed
-contract rather than inventing one as it goes. Tickets 0001–0005 are done.
+contract rather than inventing one as it goes. `src/config.ts` is the one place
+`process.env` is read: model choice is an env change (ADR-0006), a missing
+variable names itself, and nothing validates at import — the offline paths still
+run with no `.env` at all. Tickets 0001–0006 are done.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 45 tests — 17 CLI (0003), 28 contracts (0005). Offline, no key |
-| Worklogs 0001–0008 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets, 5 done |
+| Test strategy | Written; 59 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006). Offline, no key |
+| Worklogs 0001–0009 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets, 6 done |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
 | Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005) |
+| Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
 | Stages 1–3 | Not started — every command exits 70 |
 | Sample run, walkthrough video | Not started |
@@ -115,6 +119,25 @@ Real defects, listed rather than silently patched.
    rest before any real analysis exists. Resolve at TICKET-0022, before
    TICKET-0024 needs it. Adding fields to `Analysis` then is a `schema_version`
    bump, which is cheap now and not later.
+10. **ADR-0006 names three providers; two ship.** Its sketch line reads
+    `LLM_PROVIDER=openai | anthropic | ollama`, while its decision paragraph
+    names `@langchain/openai` as the default adapter and `.env.example` — the
+    file an operator actually reads — says `openai | anthropic`. TICKET-0006
+    shipped the two in `.env.example` rather than a third with no adapter behind
+    it. Adding `ollama` is a case in the factory (TICKET-0018) and a line in
+    `LLM_PROVIDERS`; until then the ADR line is aspirational and is flagged here
+    rather than quietly edited.
+11. **LLM config is validated per role, not per run.** `requireLlmConfig`
+    resolves only the variables the role about to run will read, so
+    `./pipeline source` does not fail on a blank `MODEL_EXTRACT` and
+    `./pipeline run` can get as far as stage 2 before discovering one is
+    missing. Deliberate — "fail late" cuts both ways and `source` is a complete
+    command on its own — but if it stings, a preflight check belongs in
+    TICKET-0027's `run`, not in `config.ts`.
+12. **`ConfigError` has no exit-code mapping yet.** The `--help` epilogue
+    promises exit 1 for a configuration error and `ConfigError` is built to be
+    caught, but nothing calls `requireLlmConfig` yet, so the handler would guard
+    an impossible throw. Lands with TICKET-0018, the first LLM call.
 
 ---
 
@@ -122,16 +145,15 @@ Real defects, listed rather than silently patched.
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0005 are done**; resume at
-[TICKET-0006](./tickets/0006-ticket-config-and-model-routing.md), config and
-model routing.
+repo runnable. **0001–0006 are done**; resume at
+[TICKET-0007](./tickets/0007-ticket-evidence-store.md), the evidence store.
 
 The shape is unchanged from what this section said before the backlog existed:
 
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012.
+3. **Stage 1 against live HN** — tickets 0006–0012. **0006 done**; 0007 next.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —
    [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md). This gate
    is deliberate. Stage 1 gates everything downstream, and the probe threshold

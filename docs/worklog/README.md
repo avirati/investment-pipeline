@@ -50,3 +50,4 @@ are unfinished, not delegated.
 | [0006](./0006-cli-skeleton.md) | 2026-08-22 | CLI skeleton and the `--help` contract |
 | [0007](./0007-setup-script-and-wrapper.md) | 2026-08-22 | `setup.sh` and the `./pipeline` wrapper |
 | [0008](./0008-zod-contracts.md) | 2026-08-22 | Zod contracts — the stage boundary |
+| [0009](./0009-config-and-model-routing.md) | 2026-08-22 | Config and model routing |

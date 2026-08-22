@@ -1,6 +1,6 @@
 # TICKET-0015 — GitHub adapter (`src/evidence/github.ts`)
 
-Status: Blocked · 0014 · Depends on: 0008 (Done), 0014 · Blocks: 0017
+Status: **Ready** — 0014 is Done; `tests/fixtures/github/` holds the owner and repo payloads, including the `homepage` field of inconsistency 45 and the `type` field of inconsistency 22 · Depends on: 0008 (Done), 0014 (Done) · Blocks: 0017
 Reads: [ADR-0004](../adr/0004-source-selection.md), [SCOPE](../SCOPE.md) in-scope #2, [SPEC §2](../SPEC.md) D1/D3/D5
 
 ## Why

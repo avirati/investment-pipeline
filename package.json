@@ -12,7 +12,8 @@
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
-    "format": "biome check --write ."
+    "format": "biome check --write .",
+    "capture-fixtures": "tsx scripts/capture-fixtures.ts"
   },
   "dependencies": {
     "@langchain/anthropic": "1.5.8",

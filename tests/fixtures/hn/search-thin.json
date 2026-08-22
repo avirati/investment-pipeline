@@ -1,0 +1,289 @@
+{
+  "exhaustive": {
+    "nbHits": false,
+    "typo": false
+  },
+  "exhaustiveNbHits": false,
+  "exhaustiveTypo": false,
+  "hits": [
+    {
+      "_highlightResult": {
+        "author": {
+          "matchLevel": "none",
+          "matchedWords": [],
+          "value": "forrestly"
+        },
+        "title": {
+          "fullyHighlighted": false,
+          "matchLevel": "full",
+          "matchedWords": [
+            "ebpf",
+            "observability"
+          ],
+          "value": "Show HN: AgentSight – <em>eBPF</em> <em>observability</em> for AI agents, no code changes"
+        },
+        "url": {
+          "fullyHighlighted": false,
+          "matchLevel": "partial",
+          "matchedWords": [
+            "observability"
+          ],
+          "value": "https://github.com/alibaba/anolisa/blob/main/docs/user-guide/en/agent-<em>observability</em>/agentsight.md"
+        }
+      },
+      "_tags": [
+        "story",
+        "author_forrestly",
+        "story_49389493",
+        "show_hn"
+      ],
+      "author": "forrestly",
+      "children": [
+        49390214
+      ],
+      "created_at": "2026-08-21T15:21:10Z",
+      "created_at_i": 1787325670,
+      "num_comments": 0,
+      "objectID": "49389493",
+      "points": 16,
+      "story_id": 49389493,
+      "title": "Show HN: AgentSight – eBPF observability for AI agents, no code changes",
+      "updated_at": "2026-08-22T09:25:49Z",
+      "url": "https://github.com/alibaba/anolisa/blob/main/docs/user-guide/en/agent-observability/agentsight.md"
+    },
+    {
+      "_highlightResult": {
+        "author": {
+          "matchLevel": "none",
+          "matchedWords": [],
+          "value": "mwiki"
+        },
+        "title": {
+          "fullyHighlighted": false,
+          "matchLevel": "full",
+          "matchedWords": [
+            "ebpf",
+            "observability"
+          ],
+          "value": "AgentBPF: <em>eBPF</em>-based <em>observability</em> for LLM agent trajectories"
+        },
+        "url": {
+          "matchLevel": "none",
+          "matchedWords": [],
+          "value": "https://github.com/pandyamarut/AgentBPF"
+        }
+      },
+      "_tags": [
+        "story",
+        "author_mwiki",
+        "story_47443374"
+      ],
+      "author": "mwiki",
+      "children": [
+        47443620
+      ],
+      "created_at": "2026-03-19T18:02:46Z",
+      "created_at_i": 1773943366,
+      "num_comments": 0,
+      "objectID": "47443374",
+      "points": 3,
+      "story_id": 47443374,
+      "title": "AgentBPF: eBPF-based observability for LLM agent trajectories",
+      "updated_at": "2026-03-19T18:32:06Z",
+      "url": "https://github.com/pandyamarut/AgentBPF"
+    },
+    {
+      "_highlightResult": {
+        "author": {
+          "matchLevel": "none",
+          "matchedWords": [],
+          "value": "tanelpoder"
+        },
+        "title": {
+          "fullyHighlighted": false,
+          "matchLevel": "full",
+          "matchedWords": [
+            "ebpf",
+            "observability"
+          ],
+          "value": "Why Kernel-Level <em>eBPF</em> Is Replacing User-Space Agents for Security <em>Observability</em>"
+        },
+        "url": {
+          "fullyHighlighted": false,
+          "matchLevel": "full",
+          "matchedWords": [
+            "ebpf",
+            "observability"
+          ],
+          "value": "https://www.infoq.com/articles/<em>ebpf</em>-for-security-<em>observability</em>/"
+        }
+      },
+      "_tags": [
+        "story",
+        "author_tanelpoder",
+        "story_48388639"
+      ],
+      "author": "tanelpoder",
+      "children": [
+        48389350
+      ],
+      "created_at": "2026-06-03T19:24:54Z",
+      "created_at_i": 1780514694,
+      "num_comments": 1,
+      "objectID": "48388639",
+      "points": 7,
+      "story_id": 48388639,
+      "title": "Why Kernel-Level eBPF Is Replacing User-Space Agents for Security Observability",
+      "updated_at": "2026-06-03T22:01:46Z",
+      "url": "https://www.infoq.com/articles/ebpf-for-security-observability/"
+    },
+    {
+      "_highlightResult": {
+        "author": {
+          "matchLevel": "none",
+          "matchedWords": [],
+          "value": "cheikhdev"
+        },
+        "title": {
+          "fullyHighlighted": false,
+          "matchLevel": "full",
+          "matchedWords": [
+            "ebpf",
+            "observability"
+          ],
+          "value": "Why <em>eBPF</em> Is the Future of <em>Observability</em>: A Practical Guide with Go and C"
+        },
+        "url": {
+          "fullyHighlighted": false,
+          "matchLevel": "full",
+          "matchedWords": [
+            "ebpf",
+            "observability"
+          ],
+          "value": "https://cheikhhseck.medium.com/<em>ebpf</em>-in-go-<em>observability</em>-for-ai-generated-services-9aae7573b823"
+        }
+      },
+      "_tags": [
+        "story",
+        "author_cheikhdev",
+        "story_48730655"
+      ],
+      "author": "cheikhdev",
+      "children": [
+        48741669
+      ],
+      "created_at": "2026-06-30T10:23:25Z",
+      "created_at_i": 1782815005,
+      "num_comments": 1,
+      "objectID": "48730655",
+      "points": 3,
+      "story_id": 48730655,
+      "title": "Why eBPF Is the Future of Observability: A Practical Guide with Go and C",
+      "updated_at": "2026-07-01T03:20:55Z",
+      "url": "https://cheikhhseck.medium.com/ebpf-in-go-observability-for-ai-generated-services-9aae7573b823"
+    },
+    {
+      "_highlightResult": {
+        "author": {
+          "matchLevel": "none",
+          "matchedWords": [],
+          "value": "adityamaru"
+        },
+        "title": {
+          "fullyHighlighted": false,
+          "matchLevel": "full",
+          "matchedWords": [
+            "ebpf",
+            "observability"
+          ],
+          "value": "Line-rate egress <em>observability</em> for hostile CI workloads with <em>eBPF</em> and TCX"
+        },
+        "url": {
+          "matchLevel": "none",
+          "matchedWords": [],
+          "value": "https://www.blacksmith.sh/blog/what-is-your-ci-job-talking-to"
+        }
+      },
+      "_tags": [
+        "story",
+        "author_adityamaru",
+        "story_49074763"
+      ],
+      "author": "adityamaru",
+      "created_at": "2026-07-27T19:53:13Z",
+      "created_at_i": 1785181993,
+      "num_comments": 0,
+      "objectID": "49074763",
+      "points": 2,
+      "story_id": 49074763,
+      "title": "Line-rate egress observability for hostile CI workloads with eBPF and TCX",
+      "updated_at": "2026-07-27T21:09:04Z",
+      "url": "https://www.blacksmith.sh/blog/what-is-your-ci-job-talking-to"
+    },
+    {
+      "_highlightResult": {
+        "author": {
+          "matchLevel": "none",
+          "matchedWords": [],
+          "value": "bneb-dev"
+        },
+        "story_text": {
+          "fullyHighlighted": false,
+          "matchLevel": "partial",
+          "matchedWords": [
+            "ebpf"
+          ],
+          "value": "Hey HN,<p>I wanted to try mapping telemetry ingestion to the bare metal. What started as an exploratory project turned into an explorartory product (maybe). I built aacyn, a single-binary engine that drops onto a $600 consumer Mini PC and confortably ingests and queries 5 million events per second without a cloud cluster.<p>Some info about how it works:<p>- the memory model: It writes directly to a file-backed mmap ring buffer using a strict Structure-of-Arrays (SoA) layout. You get a fixed disk footprint, safe wrap-arounds, and zero GC pauses.<p>- vectorized queries: Full-table scans are natively executed in C using AVX-512 SIMD instructions (~286μs to scan 5M events).<p>- drop-in ingestion: It speaks native OTLP (port 4318) via a lightweight FFI bridge. No custom SDKs—just point your existing OpenTelemetry collector at it.<p>- declarative filtering: A TOML file compiles into binary C-structs to drop noise or rollup metrics directly during the ingestion loop with virtually zero overhead.<p>ok, so as for the business the model:\nThe core engine, the unthrotttled 5M event/sec throughput, OTLP ingestion, and a local WebGPU dashboard are 100% free for individual developers.<p>Then if you want to use it for a team, hooking it into your central Grafana instance, enabling Linux <em>eBPF</em> auto-discovery, or streaming cold-storage backups to S3/R2—there's a $4/month license key (for now).<p>This (I hope) funds my time maintaining the enterprise features without artificial capacity limits.<p>You can spin it up in a few seconds:\ncurl -sSL <a href=\"https://aacyn.com/install.sh\" rel=\"nofollow\">https://aacyn.com/install.sh</a> | bash<p>We just had a sprint from version 0.5 to 0.7 overnight, so there might be some small bugs. Feel free to email feedback@aacyn.com<p>Thanks"
+        },
+        "title": {
+          "fullyHighlighted": false,
+          "matchLevel": "partial",
+          "matchedWords": [
+            "observability"
+          ],
+          "value": "Show HN: Aacyn v0.7.0 – A bare-metal <em>observability</em> engine (5M events/SEC)"
+        },
+        "url": {
+          "matchLevel": "none",
+          "matchedWords": [],
+          "value": "https://www.aacyn.com/"
+        }
+      },
+      "_tags": [
+        "story",
+        "author_bneb-dev",
+        "story_47337890",
+        "show_hn"
+      ],
+      "author": "bneb-dev",
+      "created_at": "2026-03-11T16:41:54Z",
+      "created_at_i": 1773247314,
+      "num_comments": 0,
+      "objectID": "47337890",
+      "points": 1,
+      "story_id": 47337890,
+      "story_text": "Hey HN,<p>I wanted to try mapping telemetry ingestion to the bare metal. What started as an exploratory project turned into an explorartory product (maybe). I built aacyn, a single-binary engine that drops onto a $600 consumer Mini PC and confortably ingests and queries 5 million events per second without a cloud cluster.<p>Some info about how it works:<p>- the memory model: It writes directly to a file-backed mmap ring buffer using a strict Structure-of-Arrays (SoA) layout. You get a fixed disk footprint, safe wrap-arounds, and zero GC pauses.<p>- vectorized queries: Full-table scans are natively executed in C using AVX-512 SIMD instructions (~286μs to scan 5M events).<p>- drop-in ingestion: It speaks native OTLP (port 4318) via a lightweight FFI bridge. No custom SDKs—just point your existing OpenTelemetry collector at it.<p>- declarative filtering: A TOML file compiles into binary C-structs to drop noise or rollup metrics directly during the ingestion loop with virtually zero overhead.<p>ok, so as for the business the model:\nThe core engine, the unthrotttled 5M event&#x2F;sec throughput, OTLP ingestion, and a local WebGPU dashboard are 100% free for individual developers.<p>Then if you want to use it for a team, hooking it into your central Grafana instance, enabling Linux eBPF auto-discovery, or streaming cold-storage backups to S3&#x2F;R2—there&#x27;s a $4&#x2F;month license key (for now).<p>This (I hope) funds my time maintaining the enterprise features without artificial capacity limits.<p>You can spin it up in a few seconds:\ncurl -sSL <a href=\"https:&#x2F;&#x2F;aacyn.com&#x2F;install.sh\" rel=\"nofollow\">https:&#x2F;&#x2F;aacyn.com&#x2F;install.sh</a> | bash<p>We just had a sprint from version 0.5 to 0.7 overnight, so there might be some small bugs. Feel free to email feedback@aacyn.com<p>Thanks",
+      "title": "Show HN: Aacyn v0.7.0 – A bare-metal observability engine (5M events/SEC)",
+      "updated_at": "2026-03-11T16:45:19Z",
+      "url": "https://www.aacyn.com/"
+    }
+  ],
+  "hitsPerPage": 50,
+  "nbHits": 6,
+  "nbPages": 1,
+  "page": 0,
+  "params": "query=eBPF+observability&tags=story&hitsPerPage=50&page=0&numericFilters=created_at_i%3E1771804800&advancedSyntax=true&analyticsTags=backend",
+  "processingTimeMS": 10,
+  "processingTimingsMS": {
+    "_request": {
+      "roundTrip": 25
+    },
+    "fetch": {
+      "query": 8,
+      "total": 9
+    },
+    "total": 10
+  },
+  "query": "eBPF observability",
+  "serverTimeMS": 11
+}

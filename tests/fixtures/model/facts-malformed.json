@@ -1,0 +1,79 @@
+[
+  {
+    "schema_version": 1,
+    "key": "market.size_usd",
+    "statement": "The observability market is worth $17B.",
+    "value": 17000000000,
+    "confidence": "high"
+  },
+  {
+    "schema_version": 1,
+    "key": "founder.count",
+    "statement": "The company has two founders.",
+    "value": 2,
+    "evidence_ids": [],
+    "confidence": "medium"
+  },
+  {
+    "schema_version": 1,
+    "key": "funding.raised_usd",
+    "statement": "The company raised a $5M seed round.",
+    "value": 5000000,
+    "evidence_ids": [
+      "0000000000000000"
+    ],
+    "confidence": "high"
+  },
+  {
+    "schema_version": 1,
+    "key": "team.founders",
+    "statement": "Two founders, both technical.",
+    "value": {
+      "count": 2,
+      "technical": true
+    },
+    "evidence_ids": [
+      "bce0ab514b07a85c"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "schema_version": 1,
+    "key": "product.open_source",
+    "statement": "The product is open source under Apache-2.0.",
+    "value": true,
+    "evidence_ids": [
+      "4a8752310d71146d"
+    ],
+    "confidence": "very high"
+  },
+  {
+    "schema_version": 2,
+    "key": "product.one_liner",
+    "statement": "Observability without code changes.",
+    "value": "Observability without code changes",
+    "evidence_ids": [
+      "a55c35a284bc355c"
+    ],
+    "confidence": "high"
+  },
+  {
+    "schema_version": 1,
+    "key": "traction.customers_named",
+    "statement": "",
+    "value": null,
+    "evidence_ids": [
+      "a55c35a284bc355c"
+    ],
+    "confidence": "low"
+  },
+  {
+    "schema_version": 1,
+    "statement": "The founders met at a previous company.",
+    "value": true,
+    "evidence_ids": [
+      "bce0ab514b07a85c"
+    ],
+    "confidence": "low"
+  }
+]

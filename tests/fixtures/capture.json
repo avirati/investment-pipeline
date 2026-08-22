@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "generated_by": "pnpm capture-fixtures",
+  "fixtures": [
+    {
+      "path": "github/repo-hobby.json",
+      "kind": "json",
+      "captured_by": "script",
+      "url": "https://api.github.com/repos/nullswan/bpfsnitch",
+      "note": "A repo from the gate's list with a personal owner and no homepage. The missing-data path for the join.",
+      "status": 200,
+      "captured_at": "2026-08-22T12:29:32.899Z",
+      "bytes": 5750,
+      "sha256": "ed986e832279cf78e3c3e4e3da70e2f43d1c59289674547443c189bfece227b9",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "etag": "W/\"1dd27490a115c441aedc1966280130d86fd78134b7bd4b24c6c0975295de2d17\"",
+        "last-modified": "Mon, 13 Apr 2026 20:55:57 GMT"
+      }
+    },
+    {
+      "path": "github/repo-with-homepage.json",
+      "kind": "json",
+      "captured_by": "script",
+      "url": "https://api.github.com/repos/coroot/coroot",
+      "note": "GET /repos/<owner>/<repo> carrying `homepage` — the repo ↔ company-site join stage 1 structurally cannot make (inconsistency 45).",
+      "status": 200,
+      "captured_at": "2026-08-22T12:29:32.443Z",
+      "bytes": 7033,
+      "sha256": "b687f09f20b9fb60232f6c11dc4ecfb43f3e91556882eaaf2f76982df3a77e2d",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "etag": "W/\"9b054f999576fc59e75bc45a6f48990341c2138b812b1ac7bcd477b6881ea6ef\"",
+        "last-modified": "Sat, 22 Aug 2026 00:55:03 GMT"
+      }
+    },
+    {
+      "path": "github/user-foundation.json",
+      "kind": "json",
+      "captured_by": "script",
+      "url": "https://api.github.com/users/ccfos",
+      "note": "An organisation that is a foundation, not a company — the exception that keeps `type` a fact for the rubric rather than a filter.",
+      "status": 200,
+      "captured_at": "2026-08-22T12:29:32.157Z",
+      "bytes": 1333,
+      "sha256": "c06a6013859f192098fb85fe2b0952796f9a9b1e83e8f50324683b7bb35232ba",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "etag": "W/\"e1c8502ed719a0450ea05a81533f74a80e9ebd68245f7b9d0cc821e3ea408d0a\"",
+        "last-modified": "Fri, 13 May 2022 10:26:55 GMT"
+      }
+    },
+    {
+      "path": "github/user-organization.json",
+      "kind": "json",
+      "captured_by": "script",
+      "url": "https://api.github.com/users/coroot",
+      "note": "GET /users/<owner> for an organisation. `type: \"Organization\"` is the discriminator of inconsistency 22, and `blog` is a second route to the company site.",
+      "status": 200,
+      "captured_at": "2026-08-22T12:29:31.368Z",
+      "bytes": 1444,
+      "sha256": "e6cd1411e1cd95f7b0b12c4bcaf41e2bd4f2874c73214f1bfbb4f7b441900936",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "etag": "W/\"474b34090afcdace0f98063ff95e5086a79c22e6b63e8113f33149099d661154\"",
+        "last-modified": "Wed, 13 Jul 2022 15:37:42 GMT"
+      }
+    },
+    {
+      "path": "github/user-person.json",
+      "kind": "json",
+      "captured_by": "script",
+      "url": "https://api.github.com/users/nullswan",
+      "note": "The same call for a personal account: `type: \"User\"`, the side of the gate's ten open-source projects with no company behind them.",
+      "status": 200,
+      "captured_at": "2026-08-22T12:29:31.861Z",
+      "bytes": 1337,
+      "sha256": "70f0969efe4c4d8e40be6154042088cf141ef1a53de065ae25ac6b0a23f50c78",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "etag": "W/\"fc104146e36c0a084db3ffbbc1743f0bb4711b3caf8e31f1b0575a517b902246\"",
+        "last-modified": "Mon, 17 Aug 2026 03:22:41 GMT"
+      }
+    },
+    {
+      "path": "hn/search-ask-hn.json",
+      "kind": "json",
+      "captured_by": "hand",
+      "url": "https://hn.algolia.com/api/v1/search?query=llm%20observability&tags=ask_hn&hitsPerPage=5",
+      "note": "Text posts — every hit has a null url, which the classifier must reject. (captured by hand for TICKET-0009, before this script existed)",
+      "status": null,
+      "captured_at": "2026-08-22T00:00:00.000Z",
+      "bytes": 15164,
+      "sha256": "71431459f44fceaf8cfc2d6934a76000018178fb92668fac4c7b25e61a61a521"
+    },
+    {
+      "path": "hn/search-empty.json",
+      "kind": "json",
+      "captured_by": "hand",
+      "url": "https://hn.algolia.com/api/v1/search?query=qzxvnowaythisisareal%20term%20xyzzy&tags=story",
+      "note": "A seed nobody has posted about: zero hits, still a 200. (captured by hand for TICKET-0009, before this script existed)",
+      "status": null,
+      "captured_at": "2026-08-22T00:00:00.000Z",
+      "bytes": 426,
+      "sha256": "9a106e69e450c39793d425271aa211db0fc3f51b8e05e1242bfa4a7b8f00ca86"
+    },
+    {
+      "path": "hn/search-malformed.json",
+      "kind": "json",
+      "captured_by": "derived",
+      "url": null,
+      "derived_from": "hn/search-page-0.json",
+      "note": "search-page-0 with five deliberate defects, one per hit. Derived by `HN_DEFECTS`, not hand-edited; four of the five are survivable on purpose.",
+      "status": null,
+      "captured_at": "2026-08-22T12:32:04.444Z",
+      "bytes": 16196,
+      "sha256": "744e7a52edc734b580e337ba9740e747fba7d86ce3b273cebb0cd692ab834a1f"
+    },
+    {
+      "path": "hn/search-page-0.json",
+      "kind": "json",
+      "captured_by": "hand",
+      "url": "https://hn.algolia.com/api/v1/search?query=llm%20observability&tags=story&hitsPerPage=5&page=0&numericFilters=created_at_i%3E1740000000",
+      "note": "Page 0 of a normal topic. Pagination, and the shape every hn test starts from. (captured by hand for TICKET-0009, before this script existed)",
+      "status": null,
+      "captured_at": "2026-08-22T00:00:00.000Z",
+      "bytes": 13776,
+      "sha256": "377e833e5a636f8d6e12287a525e7a063f77652816ea2445e06770d387290443"
+    },
+    {
+      "path": "hn/search-page-1.json",
+      "kind": "json",
+      "captured_by": "hand",
+      "url": "https://hn.algolia.com/api/v1/search?query=llm%20observability&tags=story&hitsPerPage=5&page=1&numericFilters=created_at_i%3E1740000000",
+      "note": "Page 1 of the same query. The pagination test needs two real pages. (captured by hand for TICKET-0009, before this script existed)",
+      "status": null,
+      "captured_at": "2026-08-22T00:00:00.000Z",
+      "bytes": 4693,
+      "sha256": "69784840d0980c8d692f647468996254e492aa98791f00710fd2883a1979c101"
+    },
+    {
+      "path": "hn/search-thin.json",
+      "kind": "json",
+      "captured_by": "script",
+      "url": "https://hn.algolia.com/api/v1/search?query=eBPF+observability&tags=story&hitsPerPage=50&page=0&numericFilters=created_at_i%3E1771804800",
+      "note": "The gate's thin topic, probe-shaped: the run that fell under --min-hits 8 and produced four of five junk candidates (worklog 0022).",
+      "status": 200,
+      "captured_at": "2026-08-22T12:29:34.288Z",
+      "bytes": 11953,
+      "sha256": "171424488a4ab6668d2a06f83867d74ca2dc887bde312826fae8ae98f6942fe7",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "path": "model/facts-malformed.json",
+      "kind": "json",
+      "captured_by": "authored",
+      "url": null,
+      "derived_from": "scripts/fixtures.ts",
+      "note": "One deliberate defect per item, in order (`FACT_DEFECTS`). Seven are dropped at parse time; item 2 is well-formed and still wrong, which is the memo validator's job.",
+      "status": null,
+      "captured_at": "2026-08-22T12:32:04.444Z",
+      "bytes": 1709,
+      "sha256": "c4b565111b8ef016a0564ea4114ebba1659c3b2fc317d8842393fbdb45668bd9"
+    },
+    {
+      "path": "model/facts-unknown.json",
+      "kind": "json",
+      "captured_by": "authored",
+      "url": null,
+      "derived_from": "scripts/fixtures.ts",
+      "note": "TESTING §6: valid JSON where the model found nothing. Every value null, every fact still cited — coverage drops, nothing becomes a zero.",
+      "status": null,
+      "captured_at": "2026-08-22T12:32:04.444Z",
+      "bytes": 723,
+      "sha256": "988b36b1ad4c538d9297efc68990db655e3313fe7856063c86dd48f2513a2216"
+    },
+    {
+      "path": "model/facts-valid.json",
+      "kind": "json",
+      "captured_by": "authored",
+      "url": null,
+      "derived_from": "scripts/fixtures.ts",
+      "note": "The extraction output a good day produces. Every evidence id resolves to a fixture in this directory.",
+      "status": null,
+      "captured_at": "2026-08-22T12:32:04.444Z",
+      "bytes": 1313,
+      "sha256": "f5c7346acdaae12b3d3e01f8723c5ccd02c3b76b2a0a2c0bd0365f0a48550950"
+    },
+    {
+      "path": "model/not-json.txt",
+      "kind": "text",
+      "captured_by": "authored",
+      "url": null,
+      "derived_from": "scripts/fixtures.ts",
+      "note": "The model answered the question instead of filling in the schema. Structured output should make this unreachable; the parse path is not allowed to assume so.",
+      "status": null,
+      "captured_at": "2026-08-22T12:32:04.444Z",
+      "bytes": 294,
+      "sha256": "000027821ab54ea3aff52e9f5234559ffd9723a19e3282e510c49c2e21fa49d1"
+    },
+    {
+      "path": "sites/coroot-about.html",
+      "kind": "html",
+      "captured_by": "script",
+      "url": "https://coroot.com/about",
+      "note": "The team page behind it: the surface founder facts are extracted from.",
+      "status": 200,
+      "captured_at": "2026-08-22T12:29:33.832Z",
+      "bytes": 47252,
+      "sha256": "4babb507271e76aa1fc2a1cd69d4a3b58a3fc5117a5c29553fc3cb8621bf984d",
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "etag": "W/\"ac90f7330e0d96c65e609929c10020bd\"",
+        "last-modified": "Sat, 22 Aug 2026 12:18:59 GMT"
+      },
+      "text_chars": 1746
+    },
+    {
+      "path": "sites/coroot-home.html",
+      "kind": "html",
+      "captured_by": "script",
+      "url": "https://coroot.com",
+      "note": "A real company landing page, for the extractor to meet chrome it did not write.",
+      "status": 200,
+      "captured_at": "2026-08-22T12:29:33.640Z",
+      "bytes": 61685,
+      "sha256": "b6eacf09ec23111bdb4c826ebb65f266d3fe884c6ec92e20611c7d46df2d4c64",
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "etag": "W/\"1b4173e5a32f5318788adc056b57d86a\"",
+        "last-modified": "Sat, 22 Aug 2026 09:24:09 GMT"
+      },
+      "text_chars": 5948
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # TICKET-0014 — `pnpm capture-fixtures`
 
-Status: **Ready** — 0013 reported ([worklog 0022](../worklog/0022-gate-hand-check.md)) · Depends on: 0013 · Blocks: 0015, 0016, 0023
+Status: **Done** — [worklog 0026](../worklog/0026-fixture-capture.md). `pnpm capture-fixtures` ships with 17 recorded fixtures and `capture.json`; the credential scan and the digest check run on every `pnpm test`. Two gaps recorded rather than filled: no empty-shell page (TICKET-0023's to find) and no 404 body (`httpGet` drops it) · Depends on: 0013 · Blocks: 0015, 0016, 0023
 Reads: [TESTING — Fixtures](../TESTING.md#fixtures)
 
 ## Why

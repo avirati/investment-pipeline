@@ -122,6 +122,110 @@ describe("siteKey", () => {
   it("keeps every GitHub Pages project distinct", () => {
     expect(siteKey("alice.github.io", "")).not.toBe(siteKey("bob.github.io", ""));
   });
+
+  // F5 — STATE inconsistency 36. Without this every package on a registry keys
+  // on the registry, so a run that finds two PyPI launches keeps one and
+  // deletes the other with no trace anywhere in the output.
+  describe("package registries key on the package (F5)", () => {
+    it("does not collapse two packages on one registry", () => {
+      expect(siteKey("pypi.org", "/project/logmera")).toBe("pypi.org/project/logmera");
+      expect(siteKey("pypi.org", "/project/logmera")).not.toBe(
+        siteKey("pypi.org", "/project/othertool"),
+      );
+    });
+
+    it("ignores a version or a file below the package", () => {
+      expect(siteKey("pypi.org", "/project/logmera/1.2.3/#files")).toBe("pypi.org/project/logmera");
+    });
+
+    it("keeps an npm scope, which is part of the name", () => {
+      expect(siteKey("npmjs.com", "/package/@acme/cli")).toBe("npmjs.com/package/@acme/cli");
+      expect(siteKey("npmjs.com", "/package/@acme/cli")).not.toBe(
+        siteKey("npmjs.com", "/package/@acme/server"),
+      );
+    });
+
+    it("handles the shapes that are not two segments", () => {
+      expect(siteKey("crates.io", "/crates/acme")).toBe("crates.io/crates/acme");
+      expect(siteKey("hub.docker.com", "/r/acme/gateway/tags")).toBe(
+        "hub.docker.com/r/acme/gateway",
+      );
+      expect(siteKey("huggingface.co", "/acme/embed-v2/tree/main")).toBe(
+        "huggingface.co/acme/embed-v2",
+      );
+      expect(siteKey("huggingface.co", "/datasets/acme/corpus")).toBe(
+        "huggingface.co/datasets/acme/corpus",
+      );
+    });
+
+    it("still keys the registry's own front page on the host", () => {
+      expect(siteKey("pypi.org", "")).toBe("pypi.org");
+    });
+  });
+});
+
+// F3 — TICKET-0013. Three of the gate's five junk candidates pointed *inside* a
+// repository. The dedup key was already right (`siteKey` slices to owner/repo);
+// what was wrong is the url the run carries forward — the one a candidate is
+// named after and the one stage 2 fetches as the company's evidence.
+describe("canonicaliseUrl on a code host (F3)", () => {
+  const url = (raw: string) => canonicaliseUrl(raw)?.canonical_url;
+
+  it("collapses a file view to the repository", () => {
+    // The real url from the gate: a docs page inside Alibaba's monorepo that
+    // became a candidate named "AgentSight".
+    expect(
+      url("https://github.com/alibaba/anolisa/blob/main/docs/user-guide/en/agentsight.md"),
+    ).toBe("https://github.com/alibaba/anolisa");
+  });
+
+  it("collapses a source file on a feature branch", () => {
+    expect(url("https://github.com/xqlsystems/xarray-sql/blob/claude/benchmarks/nn.py")).toBe(
+      "https://github.com/xqlsystems/xarray-sql",
+    );
+  });
+
+  it("collapses a branch listing, which is how a repo link gets pasted", () => {
+    // HelixDB is a real company. A rule that *rejected* deep paths would delete
+    // it, which is why F3 truncates and never rejects.
+    expect(url("https://github.com/HelixDB/helix-db/tree/main")).toBe(
+      "https://github.com/HelixDB/helix-db",
+    );
+    expect(url("https://github.com/BetterDB-inc/monitor/tree/master/packages")).toBe(
+      "https://github.com/BetterDB-inc/monitor",
+    );
+  });
+
+  it("drops a query that belonged to the deep page", () => {
+    expect(url("https://github.com/acme/cli/blob/main/src/index.ts?plain=1#L4")).toBe(
+      "https://github.com/acme/cli",
+    );
+  });
+
+  it("leaves a repo url alone", () => {
+    expect(url("https://github.com/coroot/coroot")).toBe("https://github.com/coroot/coroot");
+    expect(url("https://github.com/coroot/coroot/")).toBe("https://github.com/coroot/coroot");
+  });
+
+  it("does not truncate at an unrecognised third segment", () => {
+    // GitLab nests groups. Cutting to two segments on a path this layer does
+    // not recognise would collapse every repo in a group into one candidate —
+    // the wrong-collapse direction the file argues is unrecoverable.
+    expect(url("https://gitlab.com/group/subgroup/repo")).toBe(
+      "https://gitlab.com/group/subgroup/repo",
+    );
+  });
+
+  it("makes two deep urls into one repo the same candidate", () => {
+    const a = canonicaliseUrl("https://github.com/acme/cli/blob/main/README.md");
+    const b = canonicaliseUrl("https://github.com/acme/cli/issues/12");
+    expect(a?.canonical_url).toBe(b?.canonical_url);
+    expect(a?.key).toBe(b?.key);
+  });
+
+  it("collapses a package url to the package, keeping it addressable", () => {
+    expect(url("https://pypi.org/project/logmera/1.2.3/")).toBe("https://pypi.org/project/logmera");
+  });
 });
 
 describe("classifySite", () => {
@@ -255,6 +359,30 @@ describe("dedupeHits", () => {
 
   it("is empty in, empty out", () => {
     expect(dedupeHits([])).toEqual({ sites: [], rejected: [] });
+  });
+
+  // The gate's inconsistency 45, pinned as behaviour rather than left as prose.
+  // Coroot took three of twelve slots on one run and this layer can only see
+  // through one of the three splits. Asserting the two it cannot see is the
+  // point: the day TICKET-0015 joins them, this test is what has to change.
+  it("collapses a subdomain onto its apex but cannot join a repo to a site", () => {
+    const { sites } = dedupeHits([
+      sourced({ object_id: "1", url: "https://github.com/coroot/coroot", points: 300 }),
+      sourced({ object_id: "2", url: "https://coroot.ai", points: 200 }),
+      sourced({ object_id: "3", url: "https://demo.coroot.com/p/tbuzvelk/applications" }),
+      sourced({ object_id: "4", url: "https://coroot.com/pricing" }),
+    ]);
+    // The demo subdomain and the apex are one company, correctly.
+    expect(sites.map((s) => s.key)).toEqual([
+      "github.com/coroot/coroot",
+      "coroot.ai",
+      "coroot.com",
+    ]);
+    // The other two splits are real and are not guessed at here: nothing in a
+    // repo url and a company-site url says they are the same thing, and
+    // `coroot.ai` and `coroot.com` are two registrable domains. The join needs
+    // the repo's `homepage` field — TICKET-0015.
+    expect(sites).toHaveLength(3);
   });
 });
 

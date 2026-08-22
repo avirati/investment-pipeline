@@ -168,6 +168,132 @@ export function registrableDomain(host: string): string {
  */
 const REPO_HOSTS = ["github.com", "gitlab.com", "bitbucket.org", "codeberg.org", "sr.ht"];
 
+/**
+ * Package registries, and how many leading path segments name one package.
+ *
+ * TICKET-0013's fix F5, for STATE inconsistency 36. A registry is a code host
+ * that is not in `REPO_HOSTS`, and without this every package on PyPI keys on
+ * `pypi.org` — so a run that finds two PyPI launches keeps one and deletes the
+ * other with no trace. That is rule 2's dangerous direction.
+ *
+ * The depths are read off each registry's own url shape and are exact, not
+ * guesses: `pypi.org/project/<name>`, `crates.io/crates/<name>`,
+ * `hub.docker.com/r/<owner>/<image>`, `huggingface.co/<owner>/<model>`. The two
+ * variable shapes are handled in `registryDepth` rather than here.
+ *
+ * Keyed on the **host** and not the registrable domain, for two reasons:
+ * `hub.docker.com` would otherwise reduce to `docker.com`, and a registry's
+ * docs or blog subdomain is not a package index and should key on the domain
+ * like any other site.
+ */
+export const REGISTRY_DEPTHS: Record<string, number> = {
+  "pypi.org": 2,
+  "npmjs.com": 2,
+  "crates.io": 2,
+  "rubygems.org": 2,
+  "nuget.org": 2,
+  "packagist.org": 3,
+  "hub.docker.com": 3,
+  "huggingface.co": 2,
+};
+
+/** `huggingface.co/datasets/<owner>/<name>` — one segment deeper than a model. */
+const HUGGINGFACE_PREFIXES = ["datasets", "spaces", "models"];
+
+/**
+ * How many leading path segments identify the package on `domain`, or null when
+ * the host is not a registry. Two hosts vary by url:
+ *
+ * - npm scopes a name (`/package/@acme/cli`), which is one segment more.
+ * - Hugging Face puts datasets and spaces under a prefix, models at the root.
+ */
+export function registryDepth(host: string, segments: readonly string[]): number | null {
+  const base = REGISTRY_DEPTHS[host];
+  if (base === undefined) return null;
+  if (host === "npmjs.com" && segments[1]?.startsWith("@")) return base + 1;
+  if (host === "huggingface.co" && HUGGINGFACE_PREFIXES.includes(segments[0] ?? "")) {
+    return base + 1;
+  }
+  return base;
+}
+
+/**
+ * Path prefixes on a code host that address something *inside* a repository —
+ * a file, a branch listing, an issue — rather than the repository itself.
+ *
+ * TICKET-0013's fix F3. Three of the gate's five junk candidates were urls of
+ * this shape, and the damage is not to the dedup key (`siteKey` already slices
+ * to `owner/repo`) but to `canonical_url`: the run would name a candidate after
+ * a markdown file and then send stage 2 to fetch it as the company's evidence.
+ * `github.com/alibaba/anolisa/blob/main/docs/…/agentsight.md` became a company
+ * called "AgentSight"; `…/xarray-sql/blob/claude/…/benchmarks/nn.py` became one
+ * Python file on a feature branch.
+ *
+ * **Truncated, never rejected.** `github.com/HelixDB/helix-db/tree/main` is a
+ * real company and `/tree/main` is just how a repo link gets pasted, so a rule
+ * that rejected deep paths would delete it. Everything here is a normalisation:
+ * the identity is the repo, and the deep url survives as `posted_url` on the
+ * post so a reviewer can still see what was submitted.
+ */
+export const REPO_SUBPATHS = [
+  "blob",
+  "tree",
+  "raw",
+  "blame",
+  "commit",
+  "commits",
+  "issues",
+  "pull",
+  "pulls",
+  "merge_requests",
+  "releases",
+  "tags",
+  "branches",
+  "compare",
+  "wiki",
+  "discussions",
+  "actions",
+  "pipelines",
+  "projects",
+  "milestones",
+  "labels",
+  "stargazers",
+  "forks",
+  "network",
+  "watchers",
+  "graphs",
+  "pkgs",
+  "packages",
+  "security",
+  "settings",
+];
+
+/**
+ * The identity-bearing prefix of a path, or null when the whole path is
+ * identity (an ordinary site, where `siteKey` ignores the path anyway).
+ *
+ * One function so that `siteKey` and `canonicaliseUrl` cannot drift: the url a
+ * run fetches and the key it dedups on are then the same decision made once.
+ */
+export function identityPath(host: string, path: string): string | null {
+  const segments = path.split("/").filter((segment) => segment.length > 0);
+
+  if (REPO_HOSTS.includes(registrableDomain(host))) {
+    if (segments.length <= 2) return null;
+    // Only truncate at a known repo-internal prefix. An unrecognised third
+    // segment is left alone rather than guessed at — GitLab nests groups
+    // (`gitlab.com/group/subgroup/repo`) and cutting those to two segments
+    // would collapse every repo in a group into one candidate.
+    if (!REPO_SUBPATHS.includes(segments[2]?.toLowerCase() ?? "")) return null;
+    return `/${segments.slice(0, 2).join("/")}`;
+  }
+
+  const depth = registryDepth(host, segments);
+  if (depth !== null && segments.length > depth) return `/${segments.slice(0, depth).join("/")}`;
+
+  return null;
+}
+
 /** One url, reduced to the things that decide whether two urls are the same. */
 export interface CanonicalSite {
   /** The url as identity: https, no `www.`, no tracking params, no fragment. */
@@ -195,18 +321,31 @@ export interface CanonicalSite {
  * judgement TICKET-0013's hand-check can make with real data; this layer does
  * not make it by guessing.
  *
+ * On a package registry it is `host/<package>` — TICKET-0013's fix F5. The
+ * default would be the bare domain, which makes every package on PyPI one
+ * candidate; see `REGISTRY_DEPTHS`.
+ *
  * The linkage this cannot see is a company posted once as `acme.dev` and once
  * as `github.com/acme/acme`. Nothing in either url says they are the same
  * thing. The GitHub adapter (TICKET-0015) reads a repo's homepage field, which
- * is where that join belongs.
+ * is where that join belongs — and the gate at TICKET-0013 measured what it
+ * costs until then: Coroot took three of twelve slots on one run, as its repo,
+ * its `.ai` domain and its demo subdomain (STATE inconsistency 45).
  */
 export function siteKey(host: string, path: string): string {
   const domain = registrableDomain(host);
+  const segments = path.split("/").filter((segment) => segment.length > 0);
+
   if (REPO_HOSTS.includes(domain)) {
-    const segments = path.split("/").filter((segment) => segment.length > 0);
     if (segments.length === 0) return domain;
     return [domain, ...segments.slice(0, 2)].join("/").toLowerCase();
   }
+
+  const depth = registryDepth(host, segments);
+  if (depth !== null && segments.length > 0) {
+    return [host, ...segments.slice(0, depth)].join("/").toLowerCase();
+  }
+
   return domain;
 }
 
@@ -238,8 +377,16 @@ export function canonicaliseUrl(raw: string): CanonicalSite | null {
   let path = url.pathname.replace(/\/{2,}/g, "/").replace(DIRECTORY_INDEX, "/");
   if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
   if (path === "/") path = "";
+  // A url that points *inside* a repo or a package is the repo or the package
+  // (F3, F5). This is the one place canonicalisation changes what the run will
+  // fetch rather than only how it is spelled, and it is deliberate: fetching a
+  // repo's front page is better evidence than fetching a file in it.
+  const identity = identityPath(host, path);
+  if (identity !== null) path = identity;
 
-  const params = [...url.searchParams.entries()]
+  // A query belongs to the page it was on, so truncating the path drops it too
+  // — `?plain=1` on a file view means nothing at a repo root.
+  const params = (identity !== null ? [] : [...url.searchParams.entries()])
     .filter(([name]) => !isTrackingParam(name))
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
   const query = params.map(([name, value]) => `${name}=${value}`).join("&");

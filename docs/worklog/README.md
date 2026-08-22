@@ -1,0 +1,45 @@
+# Worklog
+
+A dated record of how this repo was actually built — what was tried, what was
+rejected, where the AI was wrong, and what I decided against its recommendation.
+
+## Why this exists
+
+The brief for this project weights "can we see how you worked with AI" at 40% and
+warns against trails assembled after the fact. So these are written during the
+session they describe, committed alongside the code they produced, and left
+unedited afterwards except for explicit `Correction:` notes. An entry that later
+turned out to be wrong stays in, wrong, with the correction appended — a worklog
+that is retroactively made to look correct is worth nothing.
+
+## What a reviewer should read
+
+| Want to know | Read |
+|---|---|
+| What was decided and why | [../adr/](../adr/) — 7 records, each with rejected options |
+| How the thing was built, session by session | The numbered entries here |
+| How prompts evolved and why | `prompts/CHANGELOG.md` — arrives with stage 2 |
+| How prompt and rubric changes were evaluated | `docs/evals/` — arrives with the first golden set |
+| What was cut and why | [../SCOPE.md](../SCOPE.md) |
+| How the AI was steered | [../../CLAUDE.md](../../CLAUDE.md) |
+
+## Entry format
+
+```
+## Session N — <date> — <title>
+Goal · Approach · What the AI produced · What I rejected and why ·
+What went wrong · Attribution · Reflection (author-written)
+```
+
+**Attribution** states plainly which parts were AI-written end-to-end, which were
+AI-drafted then reworked, and which were hand-written.
+
+**Reflection** is written by me, not generated. Sections marked `TODO(author)`
+are unfinished, not delegated.
+
+## Entries
+
+| # | Date | Title |
+|---|---|---|
+| [0001](./0001-scoping-and-architecture.md) | 2026-08-22 | Scoping, thesis selection, and architecture |
+| [0002](./0002-query-planning-tests-and-setup.md) | 2026-08-22 | Query planning, tests, CLI, setup |

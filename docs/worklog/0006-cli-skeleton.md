@@ -19,13 +19,13 @@ naming the ticket that will implement it and exits 70.
 
 `src/exit-codes.ts` — five codes:
 
-| | |
-|---|---|
-| `0` | success |
-| `1` | usage or configuration error |
-| `2` | data gap — the run completed but found too little to act on |
-| `3` | invariant violation — a contract or citation check failed (ADR-0003) |
-| `70` | not implemented yet — temporary, `EX_SOFTWARE` from sysexits |
+|      |                                                                      |
+| ---- | -------------------------------------------------------------------- |
+| `0`  | success                                                              |
+| `1`  | usage or configuration error                                         |
+| `2`  | data gap — the run completed but found too little to act on          |
+| `3`  | invariant violation — a contract or citation check failed (ADR-0003) |
+| `70` | not implemented yet — temporary, `EX_SOFTWARE` from sysexits         |
 
 The ticket asked for two or three codes and specifically for a hard invariant
 failure to be distinguishable from a data gap. 2 vs 3 is that split, and it is
@@ -95,14 +95,7 @@ The factual sections of this entry are AI-written.
 
 ## Reflection
 
-TODO(author).
-
-- The help text now documents a temporary exit code (70). It is honest, and it
-  is also a small piece of scaffolding in a user-facing contract. Better than
-  overloading exit 1, or should the unimplemented commands have exited 1 and the
-  code arrived with the first real stage?
-- 17 tests for a CLI that does nothing. Is that the right ratio this early, or
-  is it test mass that will need rewriting the moment the actions become real?
+Good scaffold for the CLI interface. The test coverage asserts the expectations and will guard against unwanted changes. The spec is likely to grow as we add new features.
 
 ## Next
 

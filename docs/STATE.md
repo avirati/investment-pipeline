@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `b213322` · **Phase: scaffold landed, docs aligned, no `src/` yet**
+Last updated: 2026-08-22 · at commit `3cdac0f` · **Phase: CLI skeleton runs; no stage logic yet**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -9,21 +9,23 @@ allowed to go stale, so update it at the end of every session.
 
 ## Where things stand
 
-Specification is written and committed. The toolchain installs and all three
-gates pass, but there is still no `src/` — nothing has been run end to end.
-Tickets 0001 and 0002 are done.
+Specification is written and committed. The toolchain installs, all three gates
+pass, and `./pipeline --help` is real — but every command still exits 70, so
+nothing has been run end to end. Tickets 0001–0003 are done.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written, unimplemented |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written, no tests exist |
-| Worklogs 0001–0005 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets, 2 done |
+| Test strategy | Written; first suite exists — 17 CLI tests, offline, no key (0003) |
+| Worklogs 0001–0006 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets, 3 done |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
-| `src/`, `setup.sh`, `./pipeline` | Not started — next is 0003 |
-| Stages 1–3 | Not started |
+| CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
+| Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
+| `setup.sh`, `./pipeline` | Not started — next is 0004 |
+| Stages 1–3 | Not started — every command exits 70 |
 | Sample run, walkthrough video | Not started |
 
 ---
@@ -75,7 +77,12 @@ Real defects, listed rather than silently patched.
 4. **Worklog index dangling link.** Commit `1035b1d` lists session 0002 before
    its file exists at `f5e1938`. Transient, one-commit window, left as-is rather
    than rewriting history.
-5. **`docs/worklog/README.md` promises `docs/evals/`** — *"how prompt and rubric
+5. **`setup.sh` step 6 cannot pass yet.** ARCHITECTURE §7.1 verifies a fresh
+   install by re-rendering the committed sample run with
+   `./pipeline memo --run <committed_sample>`. `memo` exits 70 until TICKET-0026,
+   and there is no sample run until TICKET-0028. TICKET-0004 has to say what the
+   script does in the meantime rather than shipping a step that always fails.
+6. **`docs/worklog/README.md` promises `docs/evals/`** — *"how prompt and rubric
    changes were evaluated … arrives with the first golden set"*. There is no
    golden set and there will not be one; the eval harness was cut (`SCOPE.md`,
    `CLAUDE.md`). Fix the row in TICKET-0029; do not fix it by building evals.
@@ -86,13 +93,13 @@ Real defects, listed rather than silently patched.
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001 and 0002 are done**; resume at
-[TICKET-0003](./tickets/0003-ticket-cli-skeleton-and-help.md), which writes the
-first `src/`.
+repo runnable. **0001–0003 are done**; resume at
+[TICKET-0004](./tickets/0004-ticket-setup-script-and-wrapper.md), `setup.sh` and
+the `./pipeline` wrapper.
 
 The shape is unchanged from what this section said before the backlog existed:
 
-1. **Scaffold** — tickets 0001–0004. Resolved D-1 and D-3; 0003–0004 remain.
+1. **Scaffold** — tickets 0001–0004. Resolved D-1 and D-3; 0004 remains.
 2. **Zod contracts** — ticket 0005. The stage boundary; get it right before any
    stage logic exists.
 3. **Stage 1 against live HN** — tickets 0006–0012.

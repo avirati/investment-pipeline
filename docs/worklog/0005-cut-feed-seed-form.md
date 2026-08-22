@@ -23,7 +23,7 @@ previous session, and was left as-is rather than redone. The rest:
   and that the seed form was cut rather than the ADR reopened. No new ADR:
   per the ticket, this is an alignment to an accepted decision, not a new one.
 - **`STATE.md`** drops D-3 from the open-decision table, strikes known
-  inconsistency #1, and gains a *Recently closed* section.
+  inconsistency #1, and gains a _Recently closed_ section.
 
 Two judgement calls in it:
 
@@ -36,7 +36,7 @@ Two judgement calls in it:
   ticket. It was taken at its default in TICKET-0001 and recorded in worklog
   0004, but its row survived, so the table was claiming a decision was open
   that the previous session had closed. Leaving it there for one more ticket
-  while adding a *Recently closed* section directly above it would have made
+  while adding a _Recently closed_ section directly above it would have made
   STATE contradict itself in the same commit.
 
 ## What went wrong
@@ -44,8 +44,8 @@ Two judgement calls in it:
 Nothing failed. One defect was found and **not** fixed, because it belongs to a
 different ticket:
 
-- `docs/worklog/README.md` advertises `docs/evals/` — *"how prompt and rubric
-  changes were evaluated … arrives with the first golden set"*. There is no
+- `docs/worklog/README.md` advertises `docs/evals/` — _"how prompt and rubric
+  changes were evaluated … arrives with the first golden set"_. There is no
   golden set and there will not be one: SCOPE §"An eval harness — considered
   and cut" and CLAUDE.md both say so, and CLAUDE.md specifically warns against
   quietly reintroducing one. A reviewer following that row finds a promise the
@@ -68,16 +68,7 @@ was carried over from the previous session unchanged.
 
 ## Reflection
 
-TODO(author).
-
-- The ticket's acceptance criterion was a literal `grep`: *no reference to a
-  feed seed form survives in `docs/`*. Satisfying it literally would have meant
-  deleting the record of the cut, which is the opposite of what this project is
-  graded on. Is that the ticket being wrong, or the criterion being read too
-  literally?
-- Four files changed to remove one line of CLI surface. Was the separate
-  docs-only ticket worth it, or would this have been fine folded into
-  TICKET-0003 where the CLI actually gets written?
+Feed seed has been removed. This was probably overkill or v1, this can be expanded later when the tool grows.
 
 ## Next
 

@@ -332,10 +332,21 @@ export const CONTENT_HOSTS = [
   "zdnet.com",
 ];
 
-/** Preprints, journals and anything served as a PDF. Research, not a company. */
+/**
+ * Preprints, journals and anything served as a PDF. Research, not a company.
+ *
+ * `aptaracorp.com` is TICKET-0013's fix F2 and is not a mistake: ACM serves
+ * conference proceedings from its typesetting vendor's domain, so
+ * `camps.aptaracorp.com/ACM_PMS/PMS/ACM/HCDS25/…` is an ACM paper that reaches a
+ * candidate list through neither `acm.org` nor a `.pdf` extension. One host
+ * added because one host was seen; there is no general rule for "is this a
+ * paper" to be learned from a single example, and a general rule is how a
+ * classifier starts rejecting companies.
+ */
 export const PAPER_HOSTS = [
   "arxiv.org",
   "doi.org",
+  "aptaracorp.com",
   "biorxiv.org",
   "ssrn.com",
   "openreview.net",
@@ -381,6 +392,24 @@ export const ARTICLE_PATH = /^\/(blog|blogs|post|posts|article|articles|news|sto
 
 /** `/2026/08/some-title` — the other common shape of the same thing. */
 export const DATED_PATH = /^\/(19|20)\d{2}\/\d{1,2}\//;
+
+/**
+ * `blog.acme.dev` — TICKET-0013's fix F4. A host that announces itself as
+ * a blog is one, whoever owns it, and unlike `ARTICLE_PATH` this catches a post
+ * whose path says nothing: the gate's `blog.zmalik.dev/p/who-will-observe-the-
+ * observability` is a personal blog that `PERSONAL_HOSTS` cannot enumerate and
+ * `ARTICLE_PATH` cannot see.
+ *
+ * Narrow on purpose, and narrower than the fix as written down. The ticket also
+ * proposed treating a substack-shaped `/p/<slug>` path as an article; that rule
+ * is not here, because `/p/` is one publisher's convention rather than a shape,
+ * and a wrong *reject* leaves no trace anywhere in the output while a wrong
+ * accept costs one analysis and is visible in a memo (worklog 0015). A `blog.`
+ * subdomain does not have that problem — it is a blog by its own declaration.
+ *
+ * `host` has already had `www.` stripped, so `www.blog.acme.dev` matches too.
+ */
+export const BLOG_SUBDOMAIN = /^blog\./;
 
 function hostMatches(host: string, domains: readonly string[]): boolean {
   return domains.some((domain) => host === domain || host.endsWith(`.${domain}`));
@@ -451,6 +480,14 @@ export function classifyUrl(url: string | null): HitClassification {
       usable: false,
       kind: "content",
       reason: `${host} is a publishing platform or trade publication`,
+      host,
+    };
+  }
+  if (BLOG_SUBDOMAIN.test(host)) {
+    return {
+      usable: false,
+      kind: "content",
+      reason: `${host} is a blog, not the company's own surface`,
       host,
     };
   }

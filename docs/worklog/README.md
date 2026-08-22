@@ -65,3 +65,4 @@ are unfinished, not delegated.
 | [0021](./0021-stage-1-wired.md) | 2026-08-22 | Stage 1 wired; `./pipeline source` is real; TICKET-0012 closes |
 | [0022](./0022-gate-hand-check.md) | 2026-08-22 | The gate: four live runs read by hand; TICKET-0013 closes |
 | [0023](./0023-gate-fixes-canonicalisation.md) | 2026-08-22 | The gate's canonicalisation fixes; TICKET-0010 closes again |
+| [0024](./0024-gate-fixes-classifier-and-naming.md) | 2026-08-22 | The gate's classifier and naming fixes; junk 5 → 1; TICKET-0009 closes again |

@@ -103,14 +103,76 @@ export function looksLikeName(head: string): boolean {
 }
 
 /**
+ * Repository slugs that are English words rather than names. TICKET-0013's fix
+ * F1: the gate produced `torrix-ai/install` and `betterdb-inc/monitor` as
+ * candidate names, and both are worse than plain — `install` and `monitor` read
+ * as the product, which is a small invented claim of exactly the kind rule 1
+ * forbids. In both the owner is the name.
+ *
+ * A guess, and labelled as one like the other constants in this file: the list
+ * is what a repo gets called when it is *part* of something rather than the
+ * thing itself. It is deliberately short. A distinctive slug — `bpfsnitch`,
+ * `helix-db`, `autoagents` — is a name and is kept, because dropping it would
+ * lose the only word that distinguishes two repos from one owner.
+ */
+export const GENERIC_REPO_SLUGS = [
+  "install",
+  "monitor",
+  "server",
+  "client",
+  "docs",
+  "doc",
+  "documentation",
+  "cli",
+  "sdk",
+  "api",
+  "app",
+  "web",
+  "site",
+  "www",
+  "core",
+  "lib",
+  "demo",
+  "example",
+  "examples",
+  "starter",
+  "template",
+  "tools",
+  "utils",
+  "config",
+  "main",
+  "home",
+  "dashboard",
+  "gateway",
+  "proxy",
+  "agent",
+];
+
+/**
  * The company's own address, used when the title does not name it: the
  * repository path on a code host (`acme/traces`, from a key of
  * `github.com/acme/traces`) and the registrable domain everywhere else. Both
  * are the identity dedup keyed on, so the name and the grouping cannot drift.
+ *
+ * Two cases drop the repo and keep the owner (F1). Neither invents anything —
+ * the owner is part of the same address, so this is still lifting rather than
+ * composing:
+ *
+ * - the slug is a generic word, so the owner carries what meaning there is;
+ * - the slug repeats the owner (`Rocketgraph/rocketgraph`), where printing both
+ *   says the same thing twice.
  */
 export function nameFromKey(key: string, domain: string): string {
   const segments = key.split("/");
-  return segments.length > 1 ? segments.slice(1).join("/") : domain;
+  if (segments.length <= 1) return domain;
+
+  const [owner, repo, ...rest] = segments.slice(1);
+  if (owner === undefined) return domain;
+  if (repo === undefined || rest.length > 0) return segments.slice(1).join("/");
+
+  const slug = repo.toLowerCase();
+  if (GENERIC_REPO_SLUGS.includes(slug) || slug === owner.toLowerCase()) return owner;
+  return `${owner}/${repo}`;
 }
 
 export function fallbackName(site: ResolvedSite): string {

@@ -1,6 +1,6 @@
 # TICKET-0009 — HN Algolia adapter (`src/source/hn.ts`)
 
-Status: **Reopened** — the original scope is Done; the 0013 gate returned two scoped fixes and a third arrived from TICKET-0010, see *Reopened* below. Query building and hit parsing in [worklog 0014](../worklog/0014-hn-query-and-parse.md), the usable-vs-unusable classifier in [worklog 0015](../worklog/0015-hn-usable-classifier.md), the paginated `searchHn` over `httpGet` in [worklog 0016](../worklog/0016-hn-paginated-search.md) · Depends on: 0008 (Done) · Blocks: 0011, 0012
+Status: **Done** again — the gate's three fixes landed, two of them narrower than written ([worklog 0024](../worklog/0024-gate-fixes-classifier-and-naming.md)). Original scope Done earlier; Query building and hit parsing in [worklog 0014](../worklog/0014-hn-query-and-parse.md), the usable-vs-unusable classifier in [worklog 0015](../worklog/0015-hn-usable-classifier.md), the paginated `searchHn` over `httpGet` in [worklog 0016](../worklog/0016-hn-paginated-search.md) · Depends on: 0008 (Done) · Blocks: 0011, 0012
 Reads: [ADR-0004](../adr/0004-source-selection.md), [TESTING §4](../TESTING.md), [SCOPE](../SCOPE.md) in-scope #1
 
 ## Why
@@ -88,7 +88,28 @@ in HN titles). Four topics is not enough to cut an arm that exists for the case
 none of them contained. Recorded as STATE inconsistency 46; revisit at
 TICKET-0028.
 
-### Acceptance (reopened scope)
+### Outcome — 2026-08-22
+
+All three landed, and two were narrowed while being implemented. Measured on a
+re-run of the gate's four topics, not estimated:
+
+| Fix | Where it actually landed | Measured effect on the gate's 48 |
+|---|---|---|
+| F2 | `PAPER_HOSTS` | The ACM paper is gone. One host added, not a rule |
+| F4 | `classifyUrl`, `BLOG_SUBDOMAIN` | The personal blog is gone. **Ships without its `/p/<slug>` half** — that is Substack's convention, not a shape, and a wrong reject leaves no trace |
+| F1 | **`src/source/candidate.ts`**, not this file — naming is TICKET-0012's module | 3 names improved, **0 removed**. The gate said 7 |
+
+**Junk over the gate's 48 is 5 → 1.** The survivor is `demo.coroot.com`, which
+needs TICKET-0015's `homepage` field.
+
+**Two of the gate's three predictions were wrong.** Fallback names were
+predicted 13 → 6 and measured 13 → 13: F1 changes a fallback name's *shape*
+(`torrix-ai/install` → `torrix-ai`) and never turns it into a lifted one. The
+count was the wrong measure. And `torrix-ai` is the org, not the company —
+the title says **Torrix**, and reaching it needs the comma-separator direction
+inconsistency 40 named and this ticket did not take (now inconsistency 49).
+
+### Acceptance (reopened scope) — met
 
 - A test per fix, written from the real urls above, offline.
 - `deriveName` tests pin both directions: `torrix-ai/install` → `Torrix`, and

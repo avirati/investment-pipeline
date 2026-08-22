@@ -26,7 +26,10 @@ one choke point CLAUDE.md requires: `httpGet` resolves for every outcome rather
 than throwing, a cache hit replays the original `retrieved_at` so a re-run
 produces the same evidence ids, and a dead site becomes a `fetch_failed` record.
 Nothing calls either of them yet. Tickets 0001–0007 are done; **0008 is half
-done** — its HTML→text half is held at D-8 below.
+done** — its HTML→text half is specified but not written. D-8 closed it to
+`cheerio` alone: `@mozilla/readability` needs a DOM and is therefore three
+dependencies, not one, which is the wrong trade for a pipeline that reads few
+articles. Recorded as an amendment to ADR-0005.
 
 | Area | State |
 |---|---|
@@ -42,7 +45,7 @@ done** — its HTML→text half is held at D-8 below.
 | Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005) |
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
-| Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records (0008, transport half). HTML→text pending D-8 |
+| Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records (0008, transport half). HTML→text specified (cheerio, D-8) and unwritten |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
 | Stages 1–3 | Not started — every command exits 70 |
 | Sample run, walkthrough video | Not started |
@@ -61,7 +64,6 @@ default, state that you took it, and record it in that session's worklog.
 | **D-5** | Which topic becomes the committed sample run | First real stage-1 output | Pick whichever topic yields the cleanest 10–15 candidates and say why in the worklog |
 | **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
-| **D-8** | `@mozilla/readability` needs a DOM — `jsdom` or equivalent — which no document here names. Ship it, or extract with `cheerio` alone? | Author. It amends ADR-0005 either way | **cheerio only.** ADR-0005 itself says "our extraction is mostly structured, not prose"; three dependencies for article prose this pipeline barely reads is the wrong trade. Record it as an ADR-0005 amendment |
 
 ### Recently closed
 
@@ -73,6 +75,15 @@ default, state that you took it, and record it in that session's worklog.
 - **D-3 · the `feed` seed form** — cut in TICKET-0002, at its default. The seed
   surface is `topic` and `urls`. Recorded as a consequence in ADR-0004 rather
   than as a new ADR, because it aligns the docs to a decision already accepted.
+- **D-8 · `@mozilla/readability` and its DOM** — raised in TICKET-0008, answered
+  by the author the same day, at its default: **`cheerio` alone**. Readability
+  takes a DOM `Document`, so shipping it means `jsdom` too — the largest runtime
+  dependency in the project, added for prose this pipeline barely reads.
+  Recorded as an amendment to
+  [ADR-0005](./adr/0005-typescript-stack.md), which is where the original
+  `cheerio` + readability pairing was decided, and in
+  [worklog 0012](./worklog/0012-cheerio-only-extraction.md). The extraction code
+  itself is still unwritten — the decision landed without it, deliberately.
 
 ### Deliberately closed — do not reopen without a new ADR
 
@@ -192,11 +203,11 @@ repo runnable. **0001–0007 are Done.**
 half and is still Ready; [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md),
 the LLM seam and response cache, is the other Ready one.
 
-**Resume by answering D-8**, then finish 0008's HTML→text half — it is the last
-thing between here and 0009, and 0009, 0010, 0015 and 0016 all wait on it. If
-D-8 is unanswered, take its default (cheerio only), say so in the worklog, and
-amend ADR-0005's consequences in the same commit. 0018 still only unblocks
-0011's clarifier, which 0011 is designed to ship without.
+**Resume by writing 0008's HTML→text half** — `cheerio` only, per the closed
+D-8 and the ADR-0005 amendment, plus the `fetchEvidence(url, type)` convenience
+and a committed fixture page for the boilerplate test. It is the last thing
+between here and 0009, and 0009, 0010, 0015 and 0016 all wait on it. 0018 still
+only unblocks 0011's clarifier, which 0011 is designed to ship without.
 
 The shape is unchanged from what this section said before the backlog existed:
 
@@ -204,7 +215,7 @@ The shape is unchanged from what this section said before the backlog existed:
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
 3. **Stage 1 against live HN** — tickets 0006–0012. **0006 and 0007 Done**;
-   0008 half done — transport shipped, extraction held at D-8.
+   0008 half done — transport shipped, cheerio extraction specified and unwritten.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

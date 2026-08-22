@@ -15,7 +15,9 @@ than to guess.
 - Home page + targeted extraction of team/about/founders pages, and pricing or
   docs pages where they exist (D-4 disqualifier turns on whether a self-serve or
   open-source path exists at all).
-- `cheerio` for targeted structure, `@mozilla/readability` for prose.
+- `cheerio` for targeted structure. No readability pass and no DOM — D-8 cut
+  it; prose arrives with more boilerplate and that is the accepted cost
+  ([ADR-0005 amendment](../adr/0005-typescript-stack.md)).
 - Handle the failure shapes TESTING §6 names: 404, timeout, empty JS shell.
   Each becomes a `fetch_failed`-typed record, not an absence.
 - English-language sources only (SCOPE cut corner #4) — detect and record when a

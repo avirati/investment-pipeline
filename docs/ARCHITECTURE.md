@@ -190,7 +190,7 @@ src/
     index.ts
   evidence/
     store.ts             content-addressed read/write
-    fetch.ts             cached HTTP + readability extraction
+    fetch.ts             cached HTTP + cheerio extraction
     github.ts            GitHub adapter
     site.ts              company site adapter
   analyse/
@@ -321,7 +321,7 @@ needs to know pnpm exists to run this. It stays a wrapper — not a task runner.
 | CLI | `commander` | Boring, mature |
 | Contracts | `zod` | Doubles as LLM structured-output schema |
 | HTTP | native `fetch` + `p-retry` | No client dependency needed |
-| HTML → text | `cheerio` + `@mozilla/readability` | Targeted extraction plus boilerplate removal |
+| HTML → text | `cheerio` | Targeted extraction. `@mozilla/readability` was cut — it needs a DOM, so it is really three dependencies ([ADR-0005 amendment](./adr/0005-typescript-stack.md)) |
 | LLM | `@langchain/core` + provider adapters | [ADR-0006](./adr/0006-llm-provider-abstraction.md) |
 | Templating | `eta` | A memo template a partner can edit without reading TypeScript |
 | Tests | `vitest` + committed fixtures | Runs offline, no API keys. [TESTING.md](./TESTING.md) |

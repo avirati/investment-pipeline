@@ -61,14 +61,14 @@ index of the same thing. Three values, and only three:
 | [0008](./0008-ticket-cached-fetch-layer.md) | Cached fetch layer | One choke point for all network | Done |
 | [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | Done — reopened by the gate, F2 and F4 landed; F1 landed in 0012's module |
 | [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | Done — reopened by the gate, F3 and F5 landed, F4 moved to 0009 |
-| [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | Done — the clarifier is a seam 0018 fills |
+| [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | Done — reopens to wire the clarifier once the rubric fills `{{thesis}}` (0021) |
 | [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | Done |
 | **[0013](./0013-ticket-gate-hand-check-candidates.md)** | **GATE — hand-check the candidates** | **Junk rate · D-5 · D-6** | Done — [worklog 0022](../worklog/0022-gate-hand-check.md) |
 | [0014](./0014-ticket-fixture-capture-script.md) | `pnpm capture-fixtures` | The suite stays offline | **Ready** |
 | [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | Blocked · 0014 |
 | [0016](./0016-ticket-company-site-adapter.md) | Company site adapter | Founders, positioning, self-serve path | Blocked · 0014 |
 | [0017](./0017-ticket-evidence-gather.md) | Evidence gather (2a) | Bundles with ids, no LLM | Blocked · 0015, 0016 |
-| [0018](./0018-ticket-llm-provider-and-cache.md) | LLM seam and response cache | Replay costs nothing | **Ready** |
+| [0018](./0018-ticket-llm-provider-and-cache.md) | LLM seam and response cache | Replay costs nothing | Done |
 | [0019](./0019-ticket-extraction-prompt.md) | Extraction prompt + CHANGELOG | Versioned, thesis-free | Blocked · 0017 |
 | [0020](./0020-ticket-fact-extraction.md) | Fact extraction (2b) | Facts only, ids enforced | Blocked · 0018, 0019 |
 | [0021](./0021-ticket-rubric-scoring.md) | The rubric | The only place a score exists | Blocked · 0020 |

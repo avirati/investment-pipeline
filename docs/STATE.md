@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `4889328` · **Phase: the gate at TICKET-0013 has reported and all five of its fixes have landed. Junk over the gate's own 48 candidates is 5 → 1, measured on a re-run. Stage 1 is closed; stage 2 is released, and TICKET-0014 and TICKET-0018 are the two Ready tickets**
+Last updated: 2026-08-22 · at commit `909af18` · **Phase: stage 1 is closed and audited; TICKET-0018 has landed, so the pipeline can make an LLM call and — the part that matters — can decline to. Nothing calls it yet. TICKET-0014 is the one Ready ticket; 0011's clarifier wiring turned out to need the rubric, and stage 2 proper starts at 0015**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -193,14 +193,41 @@ Estimated effect on the gate's own 48: junk 5 → 1, fallback names 13 → 6. Th
 survivor is the repo ↔ company-site join, which needs TICKET-0015's `homepage`
 field and must not be guessed at with name similarity.
 
+**The LLM seam exists** ([worklog 0025](./worklog/0025-llm-provider-and-cache.md),
+TICKET-0018). `src/llm/cache.ts` is the committed half of the replay guarantee:
+content-addressed on the *whole* call — provider, model, prompt id, prompt
+version, output schema version and the rendered input — so CLAUDE.md invariant 6
+lives in one function. A hit is verified against the fields it was keyed on
+rather than trusted because the filename matched; the first answer wins, because
+a model is not deterministic and re-writing an entry would quietly change what a
+committed run replays to; and a miss reports *why*, because `--replay` has to
+fail with a reason rather than quietly call an API the operator asked it not to.
+`src/llm/provider.ts` is `createModel(role)` — LangChain's model wrapper and
+`withStructuredOutput` and nothing else, three packages pinned exact, loaded
+behind `await import` so no offline path ever imports a provider SDK — plus
+`callModel`, which puts the cache in front of it. `--replay` on a cold cache
+throws; a cached answer that no longer fits its schema throws telling the
+operator to bump the version rather than silently re-spending. Token counts are
+recorded per call; **`PRICES` ships empty**, so `cost_usd` is `null` until
+somebody fills a price table in from a price page on a date — a committed
+manifest is not the place for a guessed number. **Nothing calls any of this
+yet, and it has never talked to a live provider.** TICKET-0018 is Done.
+
+**Wiring the clarifier costs a prompt v2.** `withStructuredOutput` requires an
+object schema, and `prompts/clarify-query.v1.md` ends by asking for a bare JSON
+array (inconsistency 52). That plus the `{{thesis}}` placeholder — which needs
+the rubric, TICKET-0021 — is why the gate's one unanswered question (*were the
+clarification options actually good?*) is **still** unanswered, and why the
+0011 re-open is not the next thing to pick up.
+
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 384 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0024 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 15 Done (0009 and 0010 reopened by the gate and closed again), 2 Ready (0014, 0018), 13 Blocked. Status is in each ticket header |
+| Test strategy | Written; 409 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0025 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 16 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 1 Ready (0014), 13 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -215,7 +242,9 @@ field and must not be guessed at with name similarity.
 | Candidate derivation | `src/source/candidate.ts` — `deriveName` (lift or fall back to the domain; never compose), `nameFromKey` drops a generic repo slug to its owner (the gate's F1), `slugFor`, `toCandidates`, and `candidatesFromUrls` for the `urls` seed form (0012, Done) |
 | Stage 1 wiring | `src/source/index.ts` — `runSource`: plan → search → dedup → rank → cut → resolve → candidates, the run-level failure decision, the thin-yield fallback (0012, Done) |
 | Run manifest | `src/manifest.ts` — git sha, flags, per-arm yields, per-candidate status; `writeStage` merges so later stages append (0012, Done) |
-| Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011) |
+| LLM response cache | `src/llm/cache.ts` — committed and content-addressed on the whole call (provider, model, prompt id, prompt version, output schema version, rendered input); a hit is verified against the fields it was keyed on; the first answer wins; a miss says why (0018, Done). **No entry is committed yet** |
+| LLM provider seam | `src/llm/provider.ts` — `createModel(role)` behind `await import`, `callModel` through the cache, `--replay` fails loudly on a cold cache, tokens recorded per call, `PRICES` ships empty so `cost_usd` is `null` (0018, Done). **Never run against a live provider** |
+| Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
 | Stages 1–3 | **Stage 1 runs and has been audited** (TICKET-0013, four live topics): `./pipeline source` produces `candidates.jsonl`, `query_plan.json` and `manifest.json`, verified against the live API. Stages 2 and 3 still exit 70 (0022, 0026), and so does `run` (0027) |
 | Sample run, walkthrough video | Not started. Topic chosen (D-5): `AI agent infrastructure` |
@@ -804,14 +833,40 @@ Real defects, listed rather than silently patched.
     than re-doing all 48. Flagged rather than glossed: CLAUDE.md's attribution
     rule is about modules, and this is the first time it applies to a *judgement*.
 
+52. **`clarify-query` v1 asks for a shape structured output cannot express.**
+    The prompt ends *"Return **only** a JSON array of strings"*, and
+    LangChain's `withStructuredOutput` takes an **object** schema
+    (`RunOutput extends Record<string, any>`). Wiring the clarifier therefore
+    costs a `prompts/clarify-query.v2.md` wrapping the answer —
+    `{ "queries": [...] }` — because a prompt that contradicts the tool schema
+    it is sent with will be disobeyed in one direction or the other. Found
+    while building TICKET-0018 and handed to 0011's re-open rather than fixed
+    speculatively; the same re-open still waits on the rubric for `{{thesis}}`.
+
+53. **`.cache/llm/` is committed by policy and empty in fact.** `.gitignore`
+    excludes `.cache/http/` and deliberately keeps the LLM cache, which is what
+    makes ARCHITECTURE §4's replay claim true — but no entry exists, because no
+    call has been made. The replay behaviour is tested against temp
+    directories. A reviewer cannot yet open a cached response and read it. It
+    fills at the first real call (0011's clarifier or 0020's extraction) and is
+    committed for real at TICKET-0028.
+
+54. **Cost is recorded as unknown.** `PRICES` in `src/llm/provider.ts` ships
+    empty, so every `cost_usd` is `null` while token counts are real. SPEC and
+    ARCHITECTURE both mention cost in the manifest; what they will get is a
+    token count and a null. The fix is one dated table entry per model and a
+    line saying where the numbers came from — deliberately not guessed, because
+    a committed manifest is a number a reader will believe.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0013 are Done.** The gate has reported, so stage 2 is
-released — but two tickets reopened on the way out of it, and they are cheap.
+repo runnable. **0001–0013 and 0018 are Done.** The gate has reported, so stage
+2 is released — the two tickets that reopened on the way out of it are closed
+again, and the provider seam behind stage 2 is in.
 
 **All five gate fixes have landed** — worklogs
 [0023](./worklog/0023-gate-fixes-canonicalisation.md) and
@@ -835,20 +890,29 @@ that did not go as written:
    `hn.ts`. Scoping a fix before opening the file was still cheap and still
    worth doing — but the fix list was written faster than it was checked.
 
-**Nothing is blocking.** Two Ready tickets, in either order:
+**TICKET-0018 is Done** ([worklog
+0025](./worklog/0025-llm-provider-and-cache.md)) — the provider seam and the
+committed response cache, 25 offline tests, never run against a live provider.
+It did **not** answer the gate's open question, and the reason is worth carrying
+forward: wiring the clarifier needs a prompt v2 (structured output cannot
+express v1's bare JSON array — inconsistency 52) *and* the rubric behind
+`{{thesis}}`, which is TICKET-0021. So the 0011 re-open moved behind stage 2
+rather than in front of it.
+
+**Nothing is blocking. One Ready ticket:**
 
 - [TICKET-0014](./tickets/0014-ticket-fixture-capture-script.md) — **Ready.**
   `pnpm capture-fixtures`. Capture `eBPF observability` alongside a rich topic:
   it is the thin, awkward result set the suite has never had — 3 usable of 6, a
   fallback that fires and a triple-counted company all in one payload — and it
   is now an **11-candidate** run against `--limit 12` (inconsistency 51). The
-  fixes are all in, so a capture taken now records post-fix behaviour.
-- [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — **Ready**,
-  still outside the gate. It turns the `Clarifier` seam in `plan.ts` into a real
-  call, and it is the only way to answer the one question TICKET-0013 could not:
-  *were the clarification options actually good?* The gate found exactly one
-  topic in four where the clarifier would have fired, and `eBPF observability`
-  is now a reproducible test case for it.
+  fixes are all in, so a capture taken now records post-fix behaviour. Its scope
+  also names the deliberately malformed **model** outputs that TICKET-0020's
+  failure path needs — those are cheap to write now that the shape a call
+  returns is fixed.
+- [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
+  Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
+  does not, and `{{thesis}}` waits on 0021.
 
 Then stage 2 proper: 0015 and 0016 (adapters), 0017 (evidence gather), 0019/0020
 (extraction), 0021 (the rubric), 0022 (wiring). Two things the gate hands
@@ -875,7 +939,10 @@ The shape of the whole thing, unchanged:
    [worklog 0022](./worklog/0022-gate-hand-check.md) before touching stage 2;
    it is the only place the input's real quality is written down.
 5. Capture fixtures from those runs — ticket 0014 — so the suite stays offline.
-6. Stage 2, then stage 3, then the sample run on `AI agent infrastructure`.
+6. **The provider seam and the committed response cache** — ticket 0018.
+   **Done**, and outside the gate throughout: it encodes no thesis, no score
+   and no prompt.
+7. Stage 2, then stage 3, then the sample run on `AI agent infrastructure`.
 
 ## Invariants a new session must not break
 

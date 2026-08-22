@@ -83,7 +83,7 @@ QueryPlan   { original_seed, probe{hits,usable}, clarified,
               options_offered[], chosen, chosen_by }
 Candidate   { slug, name, url, one_liner, provenance }
 Evidence    { id, url, type, retrieved_at, status, title, text, meta }
-Fact        { statement, value, evidence_ids: string[], confidence }
+Fact        { key, statement, value, evidence_ids: string[], confidence }
 Analysis    { candidate, facts, dimensions[], score, coverage,
               disqualifiers[], call, unknowns[] }
 Memo        { markdown, citations[] }
@@ -91,6 +91,21 @@ Memo        { markdown, citations[] }
 
 `Evidence.id` is `sha256(url + retrieved_at)` truncated — content-addressed, so
 the same fetch is never stored twice and a citation is a stable pointer.
+
+`Fact.key` is a stable identifier — `founder.prior_exit`, `github.stars` — and is
+what the rubric switches on. It was added at TICKET-0005: this section previously
+listed `statement` and `value` only, which left `src/analyse/score.ts` with prose
+as its only handle on which fact it was looking at. Scoring is meant to be a pure
+function over typed facts (ADR-0002), and pattern-matching English is not that.
+The key *vocabulary* is deliberately not enumerated in the contract — it belongs
+to the extraction schema and the rubric, and it is unvalidated until real
+candidates exist.
+
+Two conventions hold across all six contracts. `schema_version` is a required
+literal written into the artifact, so an artifact from a different version fails
+to parse rather than being silently reinterpreted. And fields we have no value
+for are `null`, never omitted — unknown is written as unknown, and a gap should
+be visible in a diff.
 
 ---
 

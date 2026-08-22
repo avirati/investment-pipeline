@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `cd32710` · **Phase: clone-and-run works; no stage logic yet**
+Last updated: 2026-08-22 · at commit `e616477` · **Phase: contracts pinned; no stage logic yet**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -12,20 +12,22 @@ allowed to go stale, so update it at the end of every session.
 Specification is written and committed. The toolchain installs, all three gates
 pass, and `./pipeline --help` is real — but every command still exits 70, so
 nothing has been run end to end. `./setup.sh` now takes a fresh clone from git
-to a type-checked tree without the operator knowing pnpm exists. Tickets
-0001–0004 are done.
+to a type-checked tree without the operator knowing pnpm exists. The stage
+boundary now exists as six Zod schemas, so stage work can start against a fixed
+contract rather than inventing one as it goes. Tickets 0001–0005 are done.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
-| Architecture and stage contracts | Written, unimplemented |
+| Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; first suite exists — 17 CLI tests, offline, no key (0003) |
-| Worklogs 0001–0007 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets, 4 done |
+| Test strategy | Written; 45 tests — 17 CLI (0003), 28 contracts (0005). Offline, no key |
+| Worklogs 0001–0008 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets, 5 done |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
+| Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
 | Stages 1–3 | Not started — every command exits 70 |
 | Sample run, walkthrough video | Not started |
@@ -97,6 +99,22 @@ Real defects, listed rather than silently patched.
    (SPEC/CLAUDE.md: never without a TTY, never on replay). `.env.example` was
    corrected to match the code. Flagged rather than assumed — if the author
    wants the prompt, it is a small addition to step 4.
+8. **`Fact` has a field ARCHITECTURE §2 did not list.** TICKET-0005 added
+   `Fact.key` — a stable identifier like `founder.prior_exit` — because the
+   sketched shape left `src/analyse/score.ts` with prose as its only handle on
+   which fact it was scoring, and a rubric that pattern-matches English is not
+   deterministic scoring (ADR-0002). ARCHITECTURE §2 was updated in the same
+   commit, so the docs agree; this is listed because it is an addition to a
+   spec'd shape, not a transcription of it. The key *vocabulary* is still
+   unspecified on purpose and lands with TICKET-0020/0021.
+9. **`Analysis` does not yet carry everything a memo needs.** SPEC §4 wants a
+   Team/Product/Market/Risks split, a "what would change my mind" list, and a
+   checkable upgrade trigger on every Watch — and stage 3 has no LLM to invent
+   them (CLAUDE.md invariant 3), so they must come from stage 2. TICKET-0005
+   shipped only the fields ARCHITECTURE §2 lists, rather than guessing at the
+   rest before any real analysis exists. Resolve at TICKET-0022, before
+   TICKET-0024 needs it. Adding fields to `Analysis` then is a `schema_version`
+   bump, which is cheap now and not later.
 
 ---
 
@@ -104,15 +122,15 @@ Real defects, listed rather than silently patched.
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0004 are done**; resume at
-[TICKET-0005](./tickets/0005-ticket-zod-contracts.md), the Zod contracts in
-`src/contracts/`.
+repo runnable. **0001–0005 are done**; resume at
+[TICKET-0006](./tickets/0006-ticket-config-and-model-routing.md), config and
+model routing.
 
 The shape is unchanged from what this section said before the backlog existed:
 
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
-2. **Zod contracts** — ticket 0005. The stage boundary; get it right before any
-   stage logic exists.
+2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
+   places where it is deliberately incomplete are inconsistencies 8 and 9 above.
 3. **Stage 1 against live HN** — tickets 0006–0012.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —
    [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md). This gate

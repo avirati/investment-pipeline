@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `11d871d` · **Phase: specification complete, backlog derived, no code yet**
+Last updated: 2026-08-22 · at commit `b213322` · **Phase: scaffold landed, docs aligned, no `src/` yet**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -9,8 +9,9 @@ allowed to go stale, so update it at the end of every session.
 
 ## Where things stand
 
-Specification is written and committed across 12 atomic commits. There is no
-`src/`, no `package.json`, and no dependency installed. Nothing has been run.
+Specification is written and committed. The toolchain installs and all three
+gates pass, but there is still no `src/` — nothing has been run end to end.
+Tickets 0001 and 0002 are done.
 
 | Area | State |
 |---|---|
@@ -18,9 +19,10 @@ Specification is written and committed across 12 atomic commits. There is no
 | Architecture and stage contracts | Written, unimplemented |
 | ADRs 0001–0008 | Written |
 | Test strategy | Written, no tests exist |
-| Worklogs 0001–0002 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets derived from these docs |
-| Scaffold, `setup.sh`, `./pipeline` | Not started |
+| Worklogs 0001–0005 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets, 2 done |
+| Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
+| `src/`, `setup.sh`, `./pipeline` | Not started — next is 0003 |
 | Stages 1–3 | Not started |
 | Sample run, walkthrough video | Not started |
 
@@ -73,6 +75,10 @@ Real defects, listed rather than silently patched.
 4. **Worklog index dangling link.** Commit `1035b1d` lists session 0002 before
    its file exists at `f5e1938`. Transient, one-commit window, left as-is rather
    than rewriting history.
+5. **`docs/worklog/README.md` promises `docs/evals/`** — *"how prompt and rubric
+   changes were evaluated … arrives with the first golden set"*. There is no
+   golden set and there will not be one; the eval harness was cut (`SCOPE.md`,
+   `CLAUDE.md`). Fix the row in TICKET-0029; do not fix it by building evals.
 
 ---
 
@@ -80,12 +86,13 @@ Real defects, listed rather than silently patched.
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. Start at [TICKET-0001](./tickets/0001-ticket-repo-scaffold.md) and
-work down the index.
+repo runnable. **0001 and 0002 are done**; resume at
+[TICKET-0003](./tickets/0003-ticket-cli-skeleton-and-help.md), which writes the
+first `src/`.
 
 The shape is unchanged from what this section said before the backlog existed:
 
-1. **Scaffold** — tickets 0001–0004. Resolves D-1 and D-3.
+1. **Scaffold** — tickets 0001–0004. Resolved D-1 and D-3; 0003–0004 remain.
 2. **Zod contracts** — ticket 0005. The stage boundary; get it right before any
    stage logic exists.
 3. **Stage 1 against live HN** — tickets 0006–0012.

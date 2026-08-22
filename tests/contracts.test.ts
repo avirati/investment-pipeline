@@ -28,13 +28,24 @@ const fact = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
+const provenance = (over: Record<string, unknown> = {}) => ({
+  source: "hn",
+  query: "LLM observability",
+  at: AT,
+  ref: "41234567",
+  title: "Show HN: Acme Traces – OpenTelemetry-native tracing for LLM calls",
+  posted_url: "https://acmetraces.dev",
+  posted_at: "2026-08-10T11:22:33.000Z",
+  ...over,
+});
+
 const candidate = (over: Record<string, unknown> = {}) => ({
   schema_version: CANDIDATE_SCHEMA_VERSION,
   slug: "acme-traces",
   name: "Acme Traces",
   url: "https://acmetraces.dev",
   one_liner: "OpenTelemetry-native tracing for LLM calls.",
-  provenance: { source: "hn", query: "LLM observability", at: AT, ref: "41234567" },
+  provenance: [provenance()],
   ...over,
 });
 
@@ -75,6 +86,35 @@ describe("Fact — the citation contract (ADR-0003)", () => {
 
   it("rejects a fact with an empty evidence_ids array", () => {
     expect(Fact.safeParse(fact({ evidence_ids: [] })).success).toBe(false);
+  });
+});
+
+describe("Candidate — provenance is a group (TICKET-0010, TICKET-0012)", () => {
+  it("parses a candidate found by one post", () => {
+    expect(Candidate.safeParse(candidate()).success).toBe(true);
+  });
+
+  // The v1 defect: dedup collapses two posts about one company into one
+  // candidate, and a singular provenance could record only one of them.
+  it("carries every post that pointed at the company, primary first", () => {
+    const both = candidate({
+      provenance: [provenance(), provenance({ ref: "40999999" })],
+    });
+    expect(Candidate.safeParse(both).success).toBe(true);
+  });
+
+  it("rejects an empty provenance — a candidate nothing pointed at is a bug", () => {
+    expect(Candidate.safeParse(candidate({ provenance: [] })).success).toBe(false);
+  });
+
+  // A v1 artifact must not be readable as v2: the version bump is what stops a
+  // stale candidates.jsonl from being reinterpreted (CLAUDE.md invariant 6).
+  it("rejects the v1 singular object", () => {
+    const v1 = candidate({
+      schema_version: 1,
+      provenance: provenance(),
+    });
+    expect(Candidate.safeParse(v1).success).toBe(false);
   });
 });
 

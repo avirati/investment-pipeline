@@ -53,8 +53,15 @@ describe("--help on each sub-command", () => {
 });
 
 describe("exit codes", () => {
+  // `source` left this list at TICKET-0012, and had to: the case below spawns
+  // the command for real, so leaving it here would have made the suite fetch
+  // from HN Algolia and write a run directory into the repo. Which is what it
+  // did for exactly one commit. The three that remain still exit before doing
+  // anything (CLAUDE.md: never a test that needs the network or a key).
+  const UNIMPLEMENTED = ["run", "analyse", "memo"] as const;
+
   it.each(
-    COMMANDS.map(
+    UNIMPLEMENTED.map(
       (c) => [c, c === "analyse" || c === "memo" ? ["--run", "x"] : ["--seed", "x"]] as const,
     ),
   )("%s exits UNIMPLEMENTED until its stage lands", (command, args) => {
@@ -75,5 +82,26 @@ describe("exit codes", () => {
     const { status, stderr } = run(["source", "--seed", "x", "--limit", "twelve"]);
     expect(status).toBe(EXIT.USAGE);
     expect(stderr).toContain("positive integer");
+  });
+});
+
+// Stage 1 is wired (TICKET-0012), and these are the paths that reach an exit
+// code without touching the network: the run id is validated before anything is
+// created, and a named `--query-plan` that is not there is a usage error.
+describe("pipeline source — offline failure paths", () => {
+  it("rejects an unusable --run before it creates or fetches anything", () => {
+    const r = run(["source", "--seed", "LLM observability", "--run", "../escape"]);
+    expect(r.status).toBe(EXIT.USAGE);
+    expect(r.stderr).toContain("not a usable run id");
+  });
+
+  it("still requires a seed", () => {
+    expect(run(["source"]).status).toBe(EXIT.USAGE);
+  });
+
+  it("no longer reports itself unimplemented", () => {
+    const r = run(["source", "--seed", "LLM observability", "--run", "../escape"]);
+    expect(r.status).not.toBe(EXIT.UNIMPLEMENTED);
+    expect(r.stderr).not.toContain("not implemented");
   });
 });

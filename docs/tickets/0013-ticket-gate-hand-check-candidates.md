@@ -1,6 +1,6 @@
 # TICKET-0013 — GATE: hand-check the candidate list before stage 2
 
-Status: Blocked · 0012 · Depends on: 0012 · Blocks: 0014–0017, 0019–0022, 0028
+Status: **Ready** — 0012 is Done ([worklog 0021](../worklog/0021-stage-1-wired.md)) · Depends on: 0012 · Blocks: 0014–0017, 0019–0022, 0028
 Reads: [STATE](../STATE.md) next-step 4, D-5, D-6; [ADR-0008](../adr/0008-query-planning.md); [SCOPE](../SCOPE.md) risks
 
 ## Why

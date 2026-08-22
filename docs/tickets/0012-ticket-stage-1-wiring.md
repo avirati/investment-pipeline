@@ -1,6 +1,6 @@
 # TICKET-0012 — Stage 1 wiring: `./pipeline source`
 
-Status: **Ready** — 0009, 0010 and 0011 are all Done · Depends on: 0003, 0009, 0010, 0011 (all Done) · Blocks: 0013, 0027
+Status: **Done** — [worklog 0020](../worklog/0020-run-identity-and-candidates.md) built the contract fix, run identity and candidate derivation; [worklog 0021](../worklog/0021-stage-1-wired.md) wired the command, the manifest, the run-level failure decision and the `urls` seed form. Verified live: 12 candidates from `--seed "LLM observability"` in 15 requests · Depends on: 0003, 0009, 0010, 0011 (all Done) · Blocks: 0013, 0027
 Reads: [ARCHITECTURE §1, §4, §5](../ARCHITECTURE.md), [ADR-0001](../adr/0001-file-based-staged-pipeline.md)
 
 ## Why

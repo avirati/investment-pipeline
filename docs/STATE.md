@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `1654dd9` · **Phase: stage 1 — sourcing, url resolution and query planning are all complete; nothing has yet touched the live API**
+Last updated: 2026-08-22 · at commit `bbefec3` · **Phase: stage 1 is done and has run against the live API. `./pipeline source` produces candidates, a query plan and a manifest. The gate at TICKET-0013 is next, and nothing downstream should start before it reports**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -104,6 +104,56 @@ LLM chooses words, code chooses filters" stops being a convention — model outp
 reaches `query=` and nothing else, one line, deduped, length-capped, at most
 four. **TICKET-0011 is Done.**
 
+TICKET-0012 is **Done**, and stage 1 exists as a command. Three pieces landed
+first ([worklog 0020](./worklog/0020-run-identity-and-candidates.md)).
+`Candidate.provenance` is a **non-empty list, primary first**
+(`schema_version` 2) — the fix for inconsistency 25, expressed as a tuple with a
+rest element so `provenance[0]` needs no undefined check — carrying `title` (the
+post title a name was derived from), `posted_url` (the link as submitted) and
+`posted_at`, which is null when the hit carried no date while `at` stays the run
+clock. `src/run.ts` owns run identity for all three stages: `deriveRunId` is
+`<utc-day>-<seed-slug>` from the seed *as typed*, `validateRunId` rejects an
+operator's `--run` rather than sanitising it, `runPaths` is the single
+definition of ARCHITECTURE §4's layout, and `createRunDir` is a bare `mkdir` —
+ADR-0001's guard without the race an `existsSync` check leaves — which only
+`--replay` may reuse. `src/source/candidate.ts` names a candidate by **lifting
+the post title or falling back to the company's own address**, never composing
+one, and reads a title as a name only when a separator splits a short head from
+a tail.
+
+Then the command ([worklog 0021](./worklog/0021-stage-1-wired.md)).
+`src/source/index.ts` is stage 1 end to end and its order is load-bearing:
+**dedup, rank, cut, resolve** — resolution is one request per company, so
+cutting before it keeps a 200-post result set to `--limit` requests, and ranking
+before cutting is the fix the first live run forced. It makes the run-level
+failure decision ARCHITECTURE §5 was owed (inconsistency 24): `SourceError` is
+`source_dead` when every request failed, `no_hits` when the source had nothing,
+`no_candidates` when nothing survived — and a failed run writes its manifest
+before throwing, because that is the run a reviewer most needs to read.
+`--no-expand` cuts the four arms as well as the planning (inconsistency 31,
+decided). A yield under 10 sites fires the documented fallback — window widened
+to 730 days, recorded in the manifest. The `urls` seed form makes **no**
+requests: nothing to disambiguate without a post, and stage 2 fetches the site
+as citable evidence anyway. `src/manifest.ts` is the run record all three stages
+append to, with the git sha, the flags as parsed, per-arm yields, per-candidate
+status and every decision the run took — `writeStage` merges, so stage 2 cannot
+erase how stage 1 found its candidates.
+
+**The first live run happened** mid-ticket — before the command existed, by
+driving the modules in the order it would call them, against live HN Algolia (`"LLM observability"`, `--limit 10 --since 180`, 15
+requests, 13.5s, scratch directory, nothing committed). It is not the sample run
+(D-5) and it is not the gate (TICKET-0013). What it measured is recorded in
+inconsistencies 36–40 below, and one number belongs here: **the probe returned
+50 hits, 35 of them usable**, against a `--min-hits` default of 8. On a query at
+the centre of the thesis the threshold is nowhere near binding.
+
+The command itself has since run live: `./pipeline source --seed "LLM
+observability" --limit 12` produced 12 candidates in 15 requests, a manifest
+carrying the git sha and a `query_plan.json` recording `chosen_by: probe`; a
+re-run of the same id refused; a two-line url list for one company produced one
+candidate with two provenance entries. **Nothing from those runs is committed** —
+the sample run is TICKET-0028's and its topic is D-5.
+
 `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` exist and nothing reads
 them: the prompt waits on 0018 for a provider and on 0020/0021 for the rubric
 that fills its `{{thesis}}` placeholder.
@@ -117,22 +167,26 @@ and it is the last ticket before the gate.
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 258 tests — 17 CLI (0003), 31 contracts (0005, 0011), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010), 34 probe and query planning (0011). Offline, no key |
-| Worklogs 0001–0019 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 11 Done, 2 Ready (0012, 0018), 17 Blocked. Status is in each ticket header |
+| Test strategy | Written; 362 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010), 34 probe and query planning (0011), 24 run identity, 34 candidate derivation, 12 manifest and 28 stage-1 wiring (0012). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0021 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 12 Done, 2 Ready (0013 — the gate — and 0018), 16 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
-| Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005). `QueryPlan` is at `schema_version` 2 — `probe` is nullable (0011) |
+| Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005). `QueryPlan` is at `schema_version` 2 — `probe` is nullable (0011). `Candidate` is at `schema_version` 2 — `provenance` is a non-empty list, primary first, carrying `title`, `posted_url` and `posted_at` (0012) |
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
 | HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier, paginated `searchHn` with failures as data (0009, Done) |
 | URL resolution and dedup | `src/source/resolve.ts` — canonicalisation, site keys, `dedupeHits`, redirect-following `resolveSites` (0010, Done) |
 | Query planning | `src/source/plan.ts` — `probeSeed`, `planQuery`, the `query_plan.json` artifact, the clarifier seam and the model-output sanitiser (0011, Done) |
+| Run identity | `src/run.ts` — `deriveRunId`/`validateRunId`, `runPaths` (ARCHITECTURE §4 in one place), `createRunDir` and ADR-0001's overwrite guard (0012, Done) |
+| Candidate derivation | `src/source/candidate.ts` — `deriveName` (lift or fall back to the domain; never compose), `slugFor`, `toCandidates`, and `candidatesFromUrls` for the `urls` seed form (0012, Done) |
+| Stage 1 wiring | `src/source/index.ts` — `runSource`: plan → search → dedup → rank → cut → resolve → candidates, the run-level failure decision, the thin-yield fallback (0012, Done) |
+| Run manifest | `src/manifest.ts` — git sha, flags, per-arm yields, per-candidate status; `writeStage` merges so later stages append (0012, Done) |
 | Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | Not wired — every command still exits 70. Stage 1's source adapter (0009), dedup layer (0010) and query planner (0011) are all complete; TICKET-0012 is the wiring |
+| Stages 1–3 | **Stage 1 runs**: `./pipeline source` produces `candidates.jsonl`, `query_plan.json` and `manifest.json`, verified against the live API. Stages 2 and 3 still exit 70 (0022, 0026), and so does `run` (0027) |
 | Sample run, walkthrough video | Not started |
 
 ---
@@ -147,7 +201,7 @@ default, state that you took it, and record it in that session's worklog.
 | **D-2** | Memo rendering: `eta` templates vs typed TS render functions | Author preference | `eta` — a partner can edit a memo template without reading TypeScript |
 | **D-4** | Reflection sections in worklogs 0001 and 0002 | Author. Must not be AI-written — see CLAUDE.md | Leave as `TODO(author)`. Do not fill in |
 | **D-5** | Which topic becomes the committed sample run | First real stage-1 output | Pick whichever topic yields the cleanest 10–15 candidates and say why in the worklog |
-| **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one. Now *measured*: `probeSeed` computes `probe.usable` and `planQuery` compares it, so every run writes the number into `query_plan.json`. Both halves of the comparison lean generous — the classifier errs towards accepting (inconsistency 21) — so a thin probe is thinner than it looks |
+| **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one. Now *measured*: `probeSeed` computes `probe.usable` and `planQuery` compares it, so every run writes the number into `query_plan.json`. Both halves of the comparison lean generous — the classifier errs towards accepting (inconsistency 21) — so a thin probe is thinner than it looks. **First live measurement (2026-08-22, `"LLM observability"`): 35 usable of 50 hits.** Four times the threshold on a centre-of-thesis query, which says nothing yet about an awkward one |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
 
 ### Recently closed
@@ -362,15 +416,13 @@ Real defects, listed rather than silently patched.
     Whether stage 2's scoring actually separates them is an open question the
     gate at 0013 should answer, not an assumption to carry quietly.
 
-25. **`Candidate.provenance` is singular and dedup produces a group.**
-    TICKET-0010's acceptance says two posts "collapse to one `Candidate` whose
-    provenance records both posts", but `Provenance` in
-    `src/contracts/candidate.ts` is one object, not a list — so the contract as
-    written cannot record both. TICKET-0010 shipped the group as its own type
-    (`ResolvedSite.posts`, primary first, never empty) and left the contract
-    alone, because TICKET-0012 is what writes `candidates.jsonl` and the fix —
-    `provenance: Provenance[]`, or a singular primary plus an `also_seen` list —
-    is its call plus a `schema_version` bump. Cheap now, not later.
+25. ~~**`Candidate.provenance` is singular and dedup produces a group.**~~
+    Fixed in TICKET-0012 ([worklog
+    0020](./worklog/0020-run-identity-and-candidates.md)). `provenance` is a
+    non-empty list, primary first, at `schema_version` 2 — one shape with a
+    documented order rather than a singular primary plus an `also_seen` list,
+    which would be two shapes a reader has to merge. It also gained `title`,
+    `posted_url` and `posted_at`.
 
 26. **`SHARED_SUFFIXES` is a hand-written stand-in for the public suffix list.**
     `registrableDomain` needs to know that `co.uk` is nobody's domain and that
@@ -426,41 +478,151 @@ Real defects, listed rather than silently patched.
     ADR only speaks about planning. Named here so 0012 decides it deliberately
     rather than inheriting whichever behaviour falls out of the wiring.
 
+32. **Two things called `root`, one letter apart in meaning.**
+    `evidenceStore(id, root)` takes the **runs** root (`runs/`) and
+    `runPaths(id, root)` takes the **repo** root, so `runPaths(id, ".")` and
+    `evidenceStore(id, "runs")` name the same directory. `RUNS_ROOT` is now
+    defined once, in `src/run.ts`, and re-exported from the store, so the
+    string cannot drift — but the two parameters can still be swapped by a
+    caller who reads only one signature. Both are documented at their
+    definitions. The wiring at TICKET-0012 is the first caller of both and is
+    where a mistake would show up; if it stings there, renaming the store's
+    parameter to `runsRoot` is a one-line change to a Done module.
+
+33. **The name-shape budgets are guesses, and one of them has a known false
+    negative.** `src/source/candidate.ts` reads a post title as a name only when
+    a separator splits off a head of at most 4 words and 40 characters that does
+    not start with a sentence opener (`we`, `how`, `a`, `the`, …). The rule's
+    cost is precise and deliberate: a real name that opens with an article —
+    "The Browser Company" — falls back to its domain, and a memo headed
+    `acmetraces.dev` is plain where one headed "We Rewrote Our Tracer" is wrong.
+    Same class of labelled guess as 14, 16, 17, 23 and 26. The hand-check at
+    TICKET-0013 is where the junk-name rate gets a number, and the cheaper rule
+    it might argue for is: no separator, no name — drop the word budget entirely.
+
+34. **`MAX_SEED_SLUG_LENGTH` is a number, and non-ASCII seeds get
+    `2026-08-22-run`.** `slugify` is ASCII-only, so a seed in another script
+    produces the fallback slug rather than a transliteration nobody asked for;
+    `--run` is the escape hatch and the error message does not currently say so.
+    Cheap to fix if it ever matters, flagged rather than fixed on a guess.
+
+35. **`--replay` reuses a run directory, and stage 1 would rewrite
+    `candidates.jsonl` inside it.** `createRunDir(id, { allowExisting })` is the
+    only exception to ADR-0001's overwrite guard, and `--replay` is what sets
+    it. `planQuery` already reads an existing `query_plan.json` rather than
+    re-prompting, so the plan is safe — but the search that follows would run
+    again (largely from the 24-hour HTTP cache) and rewrite the candidate list.
+    Whether a replay should instead read the committed candidates back is
+    TICKET-0027's replay semantics; the flag's own help text says "reuse cached
+    LLM responses", which is narrower than what it now also permits.
+
+36. **Package-registry hosts collapse every package into one candidate.**
+    Found by the first live run: `pypi.org/project/logmera` became a candidate
+    keyed on `pypi.org`, so a second PyPI launch in the same run would be merged
+    into it and lost. `siteKey` keys code hosts on `host/owner/repo` and
+    everything else on the registrable domain, and a registry is a code host
+    that is not in `CODE_HOSTS` — `pypi.org`, `npmjs.com`, `crates.io`,
+    `hub.docker.com`, `huggingface.co`. This is the wrong-collapse direction
+    `resolve.ts` argues is the dangerous one: a wrong split costs a visible
+    duplicate, a wrong collapse deletes a company with no trace. The fix is one
+    list in `resolve.ts` plus tests; it was deliberately **not** taken while
+    wiring stage 1, so that the change lands on its own and is reviewed against
+    TICKET-0013's hand-checked list rather than against one example.
+
+37. **The classifier's known false positives are now confirmed, not argued.**
+    Inconsistency 21 predicted two classes the url alone cannot see. Both
+    appeared in the first ten candidates of the first live run:
+    `machinelearningmastery.com/llm-observability-tools-…` (trade press on its
+    own domain, no `/blog/` in the path, so `ARTICLE_PATH` misses it) and
+    `glukhov.org` (a personal blog that is not in `PERSONAL_HOSTS`). Two junk in
+    ten. Left alone on purpose: TICKET-0013 is the gate that is supposed to make
+    this call against a hand-checked list, and tightening a classifier on two
+    examples is how it starts rejecting real companies.
+
+38. **On one topic the three expansion arms contributed nothing.** `show_hn`
+    returned 42 hits and 0 new, `launch` 4 and 0, `funding` 0 and 0 — the `raw`
+    arm's two pages already contained all 70 posts. Three of five pages bought
+    nothing on this query. One topic is not a measurement, and the arms exist
+    for the topics where the raw seed is thin, which is exactly not this one.
+    Recorded because it is the first evidence bearing on inconsistencies 23
+    (`HN_MAX_PAGES_PER_ARM`) and 31 (`--no-expand`), and because the fixture
+    capture at TICKET-0014 should include a topic where the arms do earn their
+    requests — otherwise the suite only ever tests the case where they do not.
+
+39. **A 404 stays a candidate.** `github.com/anilatambharii/argus-ai` returned
+    404 during redirect resolution and became candidate 9 of 10. `resolveSites`
+    keeps a site whose request failed on purpose (a company that 403s a bot is
+    still a company), and ARCHITECTURE §5 says a candidate's unreachable site is
+    a `fetch_failed` record and a coverage drop, not a rejection. The cost is
+    real anyway: a deleted repo will spend a stage-2 analysis to produce a memo
+    that says nothing. Whether a hard 404 on the *only* url a candidate has
+    should drop it is a TICKET-0013 question with real numbers behind it.
+
+40. **A generic repository name makes a poor candidate name.**
+    `github.com/torrix-ai/install` is named `torrix-ai/install` while its own
+    post title says "Torrix" — the title uses a comma where the naming rule
+    wants a separator. `betterdb-inc/monitor` and `lunargate-ai/gateway` have
+    the same shape. Two directions exist (accept `, ` as a separator when the
+    head is short; or prefer the owner over a generic repo name) and both are
+    guesses until the hand-check at TICKET-0013 says how often this happens.
+
+41. **Three failures share one exit code.** `SourceError` is `source_dead`,
+    `no_hits` or `no_candidates`, and the CLI maps all three to exit 2, "the run
+    completed but found too little to act on". The API being down is not really
+    that — but exit 1 is the operator's invocation and exit 3 is a bug in this
+    code, and a 503 from Algolia is neither. The message says which happened and
+    the manifest records it. A reviewer who wants `source_dead` to be its own
+    code needs a fifth exit code, a line in the `--help` epilogue and a row in
+    ARCHITECTURE §7 — cheap, and not taken on a guess.
+
+42. **The test suite fetched from the network, for one commit.**
+    `tests/cli.test.ts` asserted that all four commands exit 70 and it spawns
+    each one for real, so the moment `./pipeline source` became a real action
+    `pnpm test` ran stage 1 against live HN Algolia and wrote `runs/2026-08-22-x/`
+    into the repo. Caught by the assertion failing, fixed by taking `source` out
+    of that list, and recorded here rather than quietly: CLAUDE.md's rule was
+    not broken by adding a test, it was broken by a command becoming real
+    underneath a test that had been correct the day before. The structural fix —
+    a stubbed `fetch` in a vitest setup file, so no test *can* reach the network
+    — is not taken yet, and is a reasonable thing for a reviewer to ask for.
+
+43. **`--limit` is applied before redirect resolution, so a run can end with
+    fewer candidates than it asked for.** Two vanity domains that resolve to one
+    company merge after the cut, and nothing goes back for a replacement.
+    Deliberate — refilling means more requests and a second ranking pass — but a
+    manifest that says `limit: 12` above eleven candidates is not a bug.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0011 are Done.**
-[TICKET-0012](./tickets/0012-ticket-stage-1-wiring.md) and
-[TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) are the two Ready
-ones.
+repo runnable. **0001–0012 are Done.** Two tickets are Ready and only one of
+them is the next thing to do.
 
-Every piece of stage 1 now exists as a module. Nothing calls any of them:
+**Stage 1 runs.** `./pipeline source --seed "<topic>"` produces a run directory
+with `candidates.jsonl`, `query_plan.json` and `manifest.json`, and it has been
+run against the live API. So the next step is not code:
 
-- [TICKET-0012](./tickets/0012-ticket-stage-1-wiring.md) — **the next ticket**,
-  and the last one before the gate. `./pipeline source` is `planQuery` →
-  `searchHn` → `dedupeHits` → `--limit` → `resolveSites` →
-  `candidates.jsonl` + `manifest.json`, and it is the first thing in this repo
-  to touch a live API. It owes four things beyond the wiring:
-  1. the run-level failure decision `searchHn` deliberately does not make
-     (inconsistency 24) — ARCHITECTURE §5 says something fails the run and
-     nothing currently does;
-  2. the `Candidate.provenance` plurality question (inconsistency 25), which is
-     a `schema_version` bump and is cheap now;
-  3. the `dedupeHits` → `--limit` → `resolveSites` ordering, which is what keeps
-     redirect resolution to one request per candidate rather than one per post;
-  4. whether `--no-expand` also cuts the four search arms (inconsistency 31).
+- [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md) — **the
+  gate, and the next ticket.** Read a real candidate list by hand and write down
+  what is actually true: the junk rate (the first live run gave two junk in ten,
+  inconsistency 37), whether `--min-hits 8` is a sensible threshold (35 usable
+  of 50 on a centre-of-thesis query, D-6), whether the expansion arms earn their
+  requests (on that topic they contributed nothing, inconsistency 38), and
+  whether a weekend repo and a seed-stage company are distinguishable at all
+  (inconsistency 22). It is also where the deferred fixes get decided with
+  numbers behind them: registry hosts (36), the classifier's false positives
+  (37), 404 candidates (39) and code-host naming (40).
 
-  Note that `planQuery` wants a `planPath` of `runs/<run_id>/query_plan.json`
-  and 0012 owns run-id derivation, so the run id has to be settled before the
-  plan is written — which also means the "refuse to overwrite an existing run
-  directory" guard and `writeQueryPlan`'s `wx` are two guards on the same thing.
+  **Do not start stage 2 before this reports.** The gate exists because stage 1
+  gates everything downstream, and it is now the only thing standing between a
+  working sourcing stage and a scoring stage built on unvalidated input.
 - [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — still Ready,
-  still off the critical path to the gate. It is what turns the `Clarifier` seam
-  in `plan.ts` into a real call, and what gives
-  `prompts/clarify-query.v1.md` somewhere to run.
+  still off the critical path. It turns the `Clarifier` seam in `plan.ts` into a
+  real call and gives `prompts/clarify-query.v1.md` somewhere to run. Worth
+  doing when the gate is waiting on a human rather than on code.
 
 0015 and 0016 still wait on 0014, which waits on the gate.
 
@@ -469,8 +631,8 @@ The shape is unchanged from what this section said before the backlog existed:
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **0006–0011 Done.** 0012 is
-   the wiring, and the first ticket that spends a real request.
+3. **Stage 1 against live HN** — tickets 0006–0012. **Done.** `./pipeline
+   source` produces candidates from a live topic.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

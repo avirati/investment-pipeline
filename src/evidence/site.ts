@@ -1,0 +1,1077 @@
+import { load } from "cheerio";
+import type { Evidence } from "../contracts/index.js";
+import {
+  type ExtractedHtml,
+  extractHtml,
+  fetchFailedEvidence,
+  type HttpOptions,
+  httpGet,
+  isFetchableUrl,
+} from "./fetch.js";
+import { collector, type Signal, type UnknownSignal } from "./signal.js";
+import { makeEvidence } from "./store.js";
+
+/**
+ * The company-site adapter (TICKET-0016). SCOPE in-scope #2 puts team/about
+ * extraction here, and SPEC's D-4 disqualifier — "no self-serve or open-source
+ * path by which a developer can adopt it without a contract" — turns on
+ * whether such a path exists on the site *at all*, which is a question about
+ * links before it is a question about prose.
+ *
+ * Four rules hold in this file, three of them inherited from
+ * `src/evidence/github.ts` because stage 2's two adapters should fail the same
+ * way:
+ *
+ * 1. **A wrong founder is worse than a missing one** (SCOPE cut corner 1).
+ *    This is the one rule that is specific to this module, and it is the
+ *    reason `extractPeople` requires a *corroborating role* next to every name
+ *    it emits rather than emitting everything that looks like a name. A page
+ *    of testimonials, a list of investors and a blog author byline all look
+ *    exactly like a founder list to a name-shaped regex. Under-extracting
+ *    costs coverage, which the memo is required to say out loud; over-
+ *    extracting puts a stranger's name in an investment memo.
+ *
+ * 2. **This module concludes nothing.** It records that a `/pricing` link
+ *    exists, not that the company is self-serve. D-4 is scored in
+ *    `src/analyse/score.ts` and nowhere else (CLAUDE.md invariant 7).
+ *
+ * 3. **Failure is data.** A 404, a timeout and a client-rendered empty shell
+ *    are three recorded outcomes, never a thrown one (ARCHITECTURE §5,
+ *    TESTING §6). A company whose site is a Framer page with no server-
+ *    rendered text is a real company; the run says so and loses coverage.
+ *
+ * 4. **English only, and say so** (SCOPE cut corner 4). A page that declares a
+ *    non-English language, or that is written in a non-Latin script, is kept
+ *    as evidence and excluded from people extraction, because a name-shape
+ *    heuristic tuned on English produces confident nonsense elsewhere.
+ *
+ * The pure half of the module is everything down to `extractPeople`: markup in,
+ * data out, no transport. That is deliberate — every judgement call here is a
+ * hand-written word list or a threshold, and each one is worth a test against a
+ * committed fixture rather than a live page.
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Where a link points                                                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * What a link on a company's home page is *for*. Not a taxonomy of the web —
+ * just the roles the rubric has a use for:
+ *
+ * - `team` — where founders are named (D1).
+ * - `pricing`, `docs`, `signup`, `repo` — the four public shapes of a
+ *   self-serve or open-source adoption path (D-4).
+ * - `contact` — the counterweight: "book a demo" as the *only* call to action
+ *   is what D-4 describes. Recorded so the absence of the others means
+ *   something.
+ * - `other` — everything else, which is most of a page and is dropped.
+ */
+export type LinkRole = "team" | "pricing" | "docs" | "signup" | "contact" | "repo" | "other";
+
+/**
+ * Rules read in order; the first match wins. `path` matches the url's path,
+ * `text` the anchor's own words. Both are needed: `/editions` is coroot's
+ * pricing page and says so only in the path, while a "Get started" button
+ * routinely points at a hashed app url that says nothing at all.
+ *
+ * This is a hand-written word list, the same class of guess as
+ * `RESERVED_OWNERS` in the GitHub adapter, and it fails in the cheap
+ * direction: an unmatched link costs one page this run did not read, and the
+ * home page's own text usually still carries the signal.
+ */
+interface LinkRule {
+  role: LinkRole;
+  name: string;
+  path?: RegExp;
+  text?: RegExp;
+  /** `docs.acme.com` and the like: matched on the host, not the path. */
+  host?: RegExp;
+  /**
+   * Kept even when it leaves the company's own site. True for exactly two
+   * rules, and for the same reason in both: the thing D-4 asks about is not
+   * hosted by the company. The open-source path lives on GitHub and the
+   * book-a-call path lives on Cal or Calendly, so a same-site filter applied
+   * to those two deletes the evidence rather than the noise.
+   */
+  offsite?: boolean;
+}
+
+export const LINK_RULES: readonly LinkRule[] = [
+  // Ordered by how specific the evidence is, not alphabetically. `signup`
+  // precedes `pricing` because "/pricing#start" is a sign-up path and the
+  // stronger of the two claims.
+  {
+    role: "repo",
+    name: "code host",
+    host: /^(www\.)?(github\.com|gitlab\.com|codeberg\.org|git\.sr\.ht)$/i,
+    offsite: true,
+  },
+  {
+    // The first live run's finding. A one-page site whose only call to action
+    // is "Book a 15-min demo" pointing at `<company>.cal.com` recorded *no*
+    // contact link, which reads downstream as a company offering neither
+    // self-serve nor sales — a state that does not exist. D-4 turns on exactly
+    // this distinction, so a scheduling host is kept the way a code host is.
+    role: "contact",
+    name: "scheduling host",
+    host: /(^|\.)(cal|calendly|savvycal|zcal|tidycal|chilipiper)\.(com|co|io)$/i,
+    offsite: true,
+  },
+  {
+    role: "signup",
+    name: "sign-up path",
+    path: /(^|\/)(sign[-_]?up|signin|sign[-_]?in|register|get[-_]?started|start[-_]?free|try([-_]?it)?([-_]?free)?|free[-_]?trial|download|install|app|account\/signup)(\/|$)/i,
+    text: /\b(sign\s?up|get\s?started|start\s?(free|now|building)|try\s?(it\s?)?(free|now)?|free\s?trial|download|install)\b/i,
+  },
+  {
+    role: "pricing",
+    name: "pricing page",
+    path: /(^|\/)(pricing|plans?|editions?|subscribe)(\/|$)/i,
+    text: /\b(pricing|plans|editions)\b/i,
+  },
+  {
+    role: "docs",
+    name: "documentation",
+    host: /^docs?\./i,
+    path: /(^|\/)(docs?|documentation|guides?|quickstart|getting[-_]?started|reference|api[-_]?reference)(\/|$)/i,
+    text: /\b(docs|documentation|quickstart|api reference)\b/i,
+  },
+  {
+    role: "team",
+    name: "team or about page",
+    path: /(^|\/)(team|about([-_]us)?|company|founders?|our[-_]?story|who[-_]?we[-_]?are|people|leadership|meet[-_]?the[-_]?team)(\/|$)/i,
+    text: /\b(our team|meet the team|about us|about|company|founders?|leadership|who we are)\b/i,
+  },
+  {
+    role: "contact",
+    name: "sales or demo path",
+    path: /(^|\/)(contact([-_]us)?|(get[-_]?|book[-_]?|request[-_]?|schedule[-_]?)?demo|sales|talk[-_]?to[-_]?us|enterprise)(\/|$)/i,
+    text: /\b(contact( us)?|(book|get|request|schedule) a? ?demo|talk to (us|sales)|contact sales)\b/i,
+  },
+];
+
+/** Absolute, http(s), no fragment, no trailing `index.html`. Null when unusable. */
+export function absoluteLink(href: string, base: string): string | null {
+  const raw = href.trim();
+  if (raw === "" || raw.startsWith("#")) return null;
+  // `mailto:`, `tel:` and `javascript:` are links a person follows, not pages.
+  if (/^[a-z][a-z0-9+.-]*:/i.test(raw) && !/^https?:/i.test(raw)) return null;
+  let url: URL;
+  try {
+    url = new URL(raw, base);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  url.hash = "";
+  return url.toString();
+}
+
+/** Hostname without `www.`, lowercased. The unit `sameSite` compares. */
+export function siteHost(url: string): string | null {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Whether a link stays on the company's own site. Equal hosts, or one a
+ * subdomain of the other — `docs.coroot.com` belongs to `coroot.com` and is
+ * exactly the page D-4 wants read.
+ *
+ * Deliberately *not* `siteKey` from `src/source/resolve.ts`: that is stage 1's
+ * internals and CLAUDE.md invariant 5 keeps stages out of each other. The
+ * suffix test is also the safer of the two here, because it needs no public
+ * suffix list to be right about the case it meets — a company and its own
+ * subdomain. Where it is wrong is `a.github.io` vs `b.github.io`, and it is
+ * wrong in the direction of *rejecting* the link, which costs a page.
+ */
+export function sameSite(url: string, base: string): boolean {
+  const host = siteHost(url);
+  const baseHost = siteHost(base);
+  if (host === null || baseHost === null) return false;
+  return host === baseHost || host.endsWith(`.${baseHost}`) || baseHost.endsWith(`.${host}`);
+}
+
+/** How much anchor text is kept. Long enough to read, short enough for a log. */
+const LINK_TEXT_LIMIT = 120;
+
+export interface DiscoveredLink {
+  /** Absolute and fragment-free, so two links to the same page dedup. */
+  url: string;
+  role: LinkRole;
+  /** The anchor's own words, normalised and capped. */
+  text: string;
+  /** Which rule fired, and on what. Recorded so a wrong guess is readable. */
+  matched: string;
+  /** False for a code host, which is the one off-site role worth keeping. */
+  same_site: boolean;
+}
+
+interface Classified {
+  role: LinkRole;
+  matched: string;
+  /** Whether the matching rule survives the same-site filter. */
+  offsite: boolean;
+}
+
+function classify(url: string, text: string): Classified {
+  let host: string;
+  let path: string;
+  try {
+    const parsed = new URL(url);
+    host = parsed.hostname.toLowerCase();
+    path = parsed.pathname;
+  } catch {
+    return { role: "other", matched: "unparseable url", offsite: false };
+  }
+  for (const rule of LINK_RULES) {
+    const offsite = rule.offsite === true;
+    if (rule.host?.test(host)) return { role: rule.role, matched: `${rule.name} (host)`, offsite };
+    if (rule.path?.test(path)) return { role: rule.role, matched: `${rule.name} (path)`, offsite };
+    if (rule.text?.test(text))
+      return { role: rule.role, matched: `${rule.name} (link text)`, offsite };
+  }
+  return { role: "other", matched: "no rule matched", offsite: false };
+}
+
+/**
+ * Every link on a page that has a role, in document order, deduplicated by url.
+ *
+ * Document order is load-bearing rather than incidental: a site's primary
+ * navigation comes before its footer, so the first `/pricing` on the page is
+ * the one a visitor would click. Keeping the first occurrence therefore keeps
+ * the better link, and it makes the output stable across runs, which a
+ * committed manifest needs.
+ */
+export function discoverLinks(html: string, base: string): DiscoveredLink[] {
+  const $ = load(html);
+  const seen = new Set<string>();
+  const links: DiscoveredLink[] = [];
+
+  $("a[href]").each((_, element) => {
+    const anchor = $(element);
+    const url = absoluteLink(anchor.attr("href") ?? "", base);
+    if (url === null || seen.has(url)) return;
+
+    const text = anchor
+      .text()
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, LINK_TEXT_LIMIT)
+      // An icon-only link has no words; its `aria-label` is what it says.
+      .trim();
+    const label = text || (anchor.attr("aria-label") ?? "").replace(/\s+/g, " ").trim();
+
+    const { role, matched, offsite } = classify(url, label);
+    if (role === "other") {
+      seen.add(url);
+      return;
+    }
+    const onSite = sameSite(url, base);
+    // Only the two rules that carry `offsite` survive leaving the company's
+    // own domain, because only they name something D-4 asks about that is not
+    // hosted there. Everything else off-site is somebody else's page.
+    if (!onSite && !offsite) {
+      seen.add(url);
+      return;
+    }
+    seen.add(url);
+    links.push({ url, role, text: label, matched, same_site: onSite });
+  });
+
+  return links;
+}
+
+/**
+ * The pages worth spending a request on, in the order they are read. Team
+ * first: it is the only one of the three that carries facts nothing else in
+ * the pipeline can supply, and a run that runs out of budget should run out
+ * of it on `docs` rather than on founders.
+ *
+ * `signup`, `contact` and `repo` are deliberately absent. A sign-up page is a
+ * form, a demo-request page is a form, and the repository is the GitHub
+ * adapter's job — all three are worth *recording as links* and none is worth
+ * fetching for prose.
+ */
+export const FETCHED_ROLES: readonly LinkRole[] = ["team", "pricing", "docs"];
+
+/**
+ * Requests this adapter will spend on one company beyond its home page. Three
+ * is one per fetched role, so the ceiling is four pages a company: enough for
+ * the two dimensions this module feeds, and small enough that a `--limit 20`
+ * run is 80 requests rather than a crawl. A crawler is out of scope (SCOPE:
+ * agentic browsing) and this constant is where that stays true.
+ */
+export const SITE_PAGE_BUDGET = 3;
+
+/**
+ * One link per fetched role, best first. "Best" is document order within a
+ * role, which `discoverLinks` has already applied.
+ */
+export function pickPages(
+  links: readonly DiscoveredLink[],
+  budget = SITE_PAGE_BUDGET,
+): DiscoveredLink[] {
+  const picked: DiscoveredLink[] = [];
+  for (const role of FETCHED_ROLES) {
+    if (picked.length >= budget) break;
+    const link = links.find((candidate) => candidate.role === role && candidate.same_site);
+    if (link) picked.push(link);
+  }
+  return picked;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Is there a page here at all                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Below this a 200 is treated as a shell rather than a page. TESTING §6 names
+ * the empty JS shell as a failure shape to handle, and it is the one that
+ * looks like success: the request worked, the status is 200, and the record
+ * would carry forty characters of a cookie banner.
+ *
+ * 300 characters is roughly a paragraph. `extractHtml` already falls back from
+ * an empty `<main>` to `<body>` (its `MAIN_MIN_CHARS`), so a page reaching
+ * this check with less than a paragraph really has nothing server-rendered.
+ */
+export const SHELL_MAX_CHARS = 300;
+
+export interface ShellVerdict {
+  /** True when the response was a 200 with nothing in it worth reading. */
+  empty: boolean;
+  chars: number;
+  /** Non-null when `empty`: one line, written into the record's own text. */
+  reason: string | null;
+}
+
+/**
+ * Distinguish "the page has little to say" from "the page is rendered by
+ * JavaScript we do not run". Both are recorded as `empty`, because the
+ * consequence is identical — no prose reaches extraction — but the reason
+ * separates them, and the reason is what a reviewer reads when coverage on a
+ * company is low.
+ *
+ * SCOPE rules out a headless browser (agentic browsing, and the cost is
+ * dependency weight for a minority of sites). This function is that cut made
+ * visible rather than silent.
+ */
+export function detectEmptyShell(page: ExtractedHtml, html: string): ShellVerdict {
+  const chars = page.text.trim().length;
+  if (chars > SHELL_MAX_CHARS) return { empty: false, chars, reason: null };
+
+  const scripts = (html.match(/<script\b/gi) ?? []).length;
+  // Two tells, because the first live run met a page the first tell missed.
+  // A named mount element is the classic one and stays the clearest; but
+  // `crosscanon.com` ships a Remix bundle behind `<script type="module">` with
+  // no such element and 71 characters of text — unmistakably client-rendered,
+  // and reported as merely "thin" until the module test was added.
+  const mount = /<div[^>]+id=["'](root|app|__next|___gatsby|svelte|q-app)["']/i.test(html);
+  const bundled =
+    /<script[^>]+type=["']module["']/i.test(html) ||
+    /<script[^>]+src=["'][^"']*\/(assets|_next|_nuxt|static|build)\/[^"']*\.js/i.test(html);
+  const clientRendered = scripts > 0 && (mount || bundled);
+  const tell = mount ? "an empty mount element" : "a JavaScript bundle and no server-rendered text";
+  const reason = clientRendered
+    ? `the page returned 200 with ${chars} characters of text and renders client-side ` +
+      `(${scripts} script tags, ${tell}); this pipeline does not run a browser`
+    : `the page returned 200 with ${chars} characters of extractable text`;
+  return { empty: true, chars, reason };
+}
+
+/* -------------------------------------------------------------------------- */
+/* English only                                                                */
+/* -------------------------------------------------------------------------- */
+
+export type LanguageVerdict = "english" | "not_english" | "unknown";
+
+export interface LanguageCheck {
+  verdict: LanguageVerdict;
+  /** `<html lang>` or `og:locale`, as written. Null when the page declares none. */
+  declared: string | null;
+  /** A non-Latin script, when one dominates: `cyrillic`, `cjk`, `arabic`, … */
+  script: string | null;
+  /** Share of tokens that are common English words. Null on too little text. */
+  english_ratio: number | null;
+  /** One line naming which of the three tests decided it. */
+  reason: string;
+}
+
+/**
+ * Ranges that settle the question without a language model. A page that is
+ * mostly Han, Cyrillic or Arabic characters is not English whatever its `lang`
+ * attribute says, and unlike a stopword ratio this test cannot be fooled by a
+ * short page.
+ */
+const SCRIPTS: readonly [string, RegExp][] = [
+  ["cjk", /[぀-ヿ㐀-䶿一-鿿가-힯]/g],
+  ["cyrillic", /[Ѐ-ӿ]/g],
+  ["arabic", /[؀-ۿݐ-ݿ]/g],
+  ["devanagari", /[ऀ-ॿ]/g],
+  ["hebrew", /[֐-׿]/g],
+  ["greek", /[Ͱ-Ͽ]/g],
+  ["thai", /[฀-๿]/g],
+];
+
+/** A fifth of the letters in one script is well past incidental. */
+const SCRIPT_SHARE = 0.2;
+
+/**
+ * The hundred-odd words that carry no meaning and appear in every English
+ * sentence. A ratio over a Latin-script page separates English from Spanish,
+ * German and French, which the script test cannot.
+ */
+const ENGLISH_STOPWORDS = new Set(
+  (
+    "the of and to a in is it you that he was for on are as with his they i at be this have from " +
+    "or one had by word but not what all were we when your can said there use an each which she do " +
+    "how their if will up other about out many then them these so some her would make like him into " +
+    "time has look two more write go see number no way could people my than first been call who its " +
+    "now find long down day did get come made may our"
+  ).split(" "),
+);
+
+/** Below this the ratio is noise: a hero line is four words and no verdict. */
+const LANGUAGE_MIN_TOKENS = 40;
+/** Under this share of stopwords, Latin-script prose is not English prose. */
+const ENGLISH_MIN_RATIO = 0.1;
+
+/** Share of tokens that are English stopwords, or null on too little text. */
+export function englishRatio(text: string): number | null {
+  const tokens = text.toLowerCase().match(/[a-z][a-z'’-]*/g) ?? [];
+  if (tokens.length < LANGUAGE_MIN_TOKENS) return null;
+  const hits = tokens.filter((token) => ENGLISH_STOPWORDS.has(token)).length;
+  return hits / tokens.length;
+}
+
+/**
+ * SCOPE cut corner 4 made operational: decide whether a page is English, and
+ * when it is not, say which test decided and stop rather than extract.
+ *
+ * The three tests are read in order of how hard they are to fool. A declared
+ * language is the page's own claim about itself and is usually right; a
+ * dominant non-Latin script overrules it, because `lang="en"` on a Japanese
+ * page is a template default and the characters are not; a stopword ratio is
+ * the last resort and only speaks when there is enough text to speak about.
+ *
+ * `unknown` is a real verdict and is *not* treated as "not English" by the
+ * caller: most company sites declare nothing, and refusing to read them would
+ * cut the pipeline's coverage to nearly nothing for a hazard that in practice
+ * hardly occurs on this source. That is a stated assumption, not a measurement.
+ */
+export function detectLanguage(html: string, text: string): LanguageCheck {
+  const $ = load(html);
+  const declared =
+    $("html").attr("lang")?.trim() ||
+    $('meta[property="og:locale"]').first().attr("content")?.trim() ||
+    null;
+
+  const letters = (text.match(/\p{L}/gu) ?? []).length;
+  let script: string | null = null;
+  if (letters > 0) {
+    for (const [name, pattern] of SCRIPTS) {
+      const count = (text.match(pattern) ?? []).length;
+      if (count / letters >= SCRIPT_SHARE) {
+        script = name;
+        break;
+      }
+    }
+  }
+  const ratio = englishRatio(text);
+
+  if (script !== null) {
+    return {
+      verdict: "not_english",
+      declared,
+      script,
+      english_ratio: ratio,
+      reason: `the page is predominantly ${script} script`,
+    };
+  }
+  if (declared !== null && !/^en\b/i.test(declared)) {
+    return {
+      verdict: "not_english",
+      declared,
+      script,
+      english_ratio: ratio,
+      reason: `the page declares lang="${declared}"`,
+    };
+  }
+  if (ratio !== null && ratio < ENGLISH_MIN_RATIO) {
+    return {
+      verdict: "not_english",
+      declared,
+      script,
+      english_ratio: ratio,
+      reason:
+        `only ${(ratio * 100).toFixed(0)}% of words are common English words, ` +
+        `below the ${(ENGLISH_MIN_RATIO * 100).toFixed(0)}% floor`,
+    };
+  }
+  if (declared !== null) {
+    return {
+      verdict: "english",
+      declared,
+      script,
+      english_ratio: ratio,
+      reason: `the page declares lang="${declared}"`,
+    };
+  }
+  if (ratio !== null) {
+    return {
+      verdict: "english",
+      declared,
+      script,
+      english_ratio: ratio,
+      reason: `${(ratio * 100).toFixed(0)}% of words are common English words`,
+    };
+  }
+  return {
+    verdict: "unknown",
+    declared,
+    script,
+    english_ratio: ratio,
+    reason: "the page declares no language and has too little text to judge",
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Named people                                                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * One person named on a company's own page, with the words that say who they
+ * are. Never "a founder" — the role is quoted verbatim and this module does not
+ * decide what it means (rule 2). `Alexander Lamberton — Marketing Manager` is
+ * as much an output of this function as the CEO is; SPEC D1 is what separates
+ * them, and it lives in the rubric.
+ */
+export interface Person {
+  /** As written on the page, whitespace-normalised. Never composed or corrected. */
+  name: string;
+  /** The corroborating text: a job title, a prior role, verbatim and capped. */
+  role: string;
+  /** Which pattern found this, so a wrong extraction is traceable to a rule. */
+  matched: "role element after name" | "name and role on one line";
+  /** The surrounding block, capped — the reviewer's check on the extraction. */
+  context: string;
+}
+
+/**
+ * A name that looked like a person and was not emitted, and why. Rule 1's
+ * "fail loudly" half: a run that under-extracts should be able to say what it
+ * threw away, because the alternative is a silent zero that looks like a site
+ * with no team page.
+ */
+export interface RejectedPerson {
+  name: string;
+  reason: string;
+}
+
+export interface PeopleResult {
+  people: Person[];
+  rejected: RejectedPerson[];
+  /** Non-null when nothing was scanned at all, naming why. */
+  skipped: string | null;
+}
+
+/**
+ * Words that make a nearby line a *statement about a person's job*. The
+ * corroboration rule 1 requires: without one of these next to it, a
+ * name-shaped string is not emitted, whatever else the page says.
+ *
+ * The list is deliberately broad — it includes `Marketing Manager` and
+ * `Advisor`, not just the founder titles — because narrowing it here would be
+ * this module deciding who counts, which is the rubric's job (rule 2). What it
+ * must not include is anything that fires on ordinary marketing prose.
+ */
+export const ROLE_CUES =
+  /\b(co[-\s]?founder|founder|founded|founding|ceo|cto|coo|cfo|cpo|cro|chief\s+\w+\s+officer|president|partner|principal|chair(man|woman|person)?|board\s+member|advis[oe]r|investor|head\s+of\b|vp\b|vice\s+president|director|manager|lead\b|engineer(ing)?|developer|architect|scientist|researcher|designer|sre\b|ex-|previously|formerly|prior\s+to)\b/i;
+
+/**
+ * Title-cased words that turn up in headings and calls to action and never in
+ * a person's name. The shape test alone accepts "Why We Built Coroot"; the
+ * role-cue requirement usually rejects it afterwards, and this list is the
+ * second lock on the same door — cheap, and the failure it prevents is the
+ * expensive one.
+ */
+const NAME_STOPWORDS = new Set(
+  (
+    "about all and are ask book built by can case company contact cookie demo docs " +
+    "download engineering enterprise every for free get github how join learn log " +
+    "login made make meet more news now our out platform policy pricing privacy " +
+    "product ready read request see settings sign start started stories story team " +
+    "teams terms the their they this to try up us use want was way we what when " +
+    "where who why with work you your zero"
+  ).split(" "),
+);
+
+/** Lowercase particles that are part of a surname rather than a new word. */
+const NAME_PARTICLES = new Set(
+  "van von de del della den der di da du la le los bin ibn al ter dos".split(" "),
+);
+
+/** Longest a person's name may be. Past this it is a sentence, not a name. */
+const NAME_MAX_CHARS = 60;
+/** People emitted from one page. A team page lists a team, not a directory. */
+export const MAX_PEOPLE = 12;
+/** How much surrounding text is kept as the reviewer's check. */
+const CONTEXT_LIMIT = 240;
+
+const squash = (text: string): string => text.replace(/\s+/g, " ").trim();
+
+/**
+ * Whether a string has the shape of a person's name in English. Shape only —
+ * on its own this is *not* enough to emit anything, and the two callers below
+ * both require a role beside it.
+ *
+ * Two to four tokens, each either a capitalised word, an initial, or a
+ * lowercase particle; at least two real capitalised words, so "J. R." is not a
+ * person; no digits, no stopwords, and no role cue inside the name itself,
+ * which is what stops "Head Of Engineering" from being read as somebody called
+ * Head.
+ */
+export function looksLikeName(value: string): boolean {
+  const name = squash(value);
+  if (name.length === 0 || name.length > NAME_MAX_CHARS) return false;
+  if (/[0-9@#|/\\()[\]{}<>]/.test(name)) return false;
+  if (ROLE_CUES.test(name)) return false;
+
+  const tokens = name.split(" ");
+  if (tokens.length < 2 || tokens.length > 4) return false;
+
+  let words = 0;
+  for (const token of tokens) {
+    const bare = token.replace(/[.,]$/, "");
+    if (NAME_STOPWORDS.has(bare.toLowerCase())) return false;
+    if (NAME_PARTICLES.has(bare.toLowerCase())) continue;
+    // An initial: "M." arrives here as "M", the trailing stop already gone.
+    if (/^\p{Lu}$/u.test(bare)) continue;
+    if (!/^\p{Lu}[\p{L}'’-]+$/u.test(bare)) return false;
+    words += 1;
+  }
+  return words >= 2;
+}
+
+/** Headings that mean "the people are below this". */
+const TEAM_HEADING =
+  /\b(team|founders?|who\s+we\s+are|leadership|about\s+us|meet\s+the|our\s+people|the\s+people)\b/i;
+
+/**
+ * A quoted sentence next to a name is a testimonial, and a testimonial is a
+ * *customer*. This is the false-positive class that would otherwise put a
+ * stranger's name in a memo as though they worked here, so a name whose
+ * surrounding block quotes forty or more characters is rejected with a reason
+ * rather than emitted.
+ */
+const TESTIMONIAL = /["“”][^"“”]{40,}["“”]/;
+
+/** How far a name element's siblings are searched for the role beside it. */
+const ROLE_LOOKAHEAD = 2;
+
+/**
+ * Named people on one page, best-effort and biased towards missing them.
+ *
+ * `pageRole` decides what is scanned, and it is the cheapest guard in the
+ * module. On a page fetched *because* it is the team page, the whole page is
+ * the team. On a home page the scan is confined to the subtree under a heading
+ * that says "team" — which is what keeps a wall of customer logos and a
+ * quote-carousel out of the founder list, since neither sits under that
+ * heading. A home page with no such heading yields nothing and says so.
+ *
+ * Two patterns produce a person, and both need a role beside the name:
+ *
+ * - **role element after name** — `<h3>Nikolay Sivko</h3><p>Co-founder, CEO</p>`,
+ *   which is what a team-card component compiles to.
+ * - **name and role on one line** — `Priya Raghavan — previously staff SRE at
+ *   Fathom Logistics`, which is what a hand-written team list looks like.
+ */
+export function extractPeople(html: string, pageRole: "home" | "team"): PeopleResult {
+  const $ = load(html);
+  $("script,style,noscript,template,svg,nav,footer").remove();
+
+  let scope = $("body");
+  if (pageRole === "home") {
+    const heading = $("h1,h2,h3,h4,h5,h6,legend").filter((_, element) =>
+      TEAM_HEADING.test(squash($(element).text())),
+    );
+    if (heading.length === 0) {
+      return { people: [], rejected: [], skipped: "the page names no team section" };
+    }
+    // The heading's own container, not the whole page: a "Team" heading and
+    // the cards under it share a parent, and stopping there is what confines
+    // the scan. `.parent()` is right for the common case and one level too
+    // narrow for a flat layout, which costs people and never invents them.
+    scope = heading.first().parent();
+  }
+
+  const people: Person[] = [];
+  const rejected: RejectedPerson[] = [];
+  const seen = new Set<string>();
+
+  const accept = (name: string, role: string, matched: Person["matched"], block: string): void => {
+    const key = name.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    if (TESTIMONIAL.test(block)) {
+      rejected.push({ name, reason: "the surrounding block is a quotation — probably a customer" });
+      return;
+    }
+    if (people.length >= MAX_PEOPLE) {
+      rejected.push({ name, reason: `more than ${MAX_PEOPLE} names on one page` });
+      return;
+    }
+    people.push({
+      name,
+      role: squash(role).slice(0, CONTEXT_LIMIT),
+      matched,
+      context: squash(block).slice(0, CONTEXT_LIMIT),
+    });
+  };
+
+  scope.find("*").each((_, element) => {
+    const node = $(element);
+    // Leaves only. A name lives in its own element; a wrapper's text is the
+    // name plus everything beside it, which no shape test should be asked to
+    // read.
+    if (node.children().length > 0) return;
+    const text = squash(node.text());
+    if (text === "") return;
+
+    // Pattern A: this element is the name, the next one is the role.
+    if (looksLikeName(text)) {
+      let sibling = node.next();
+      for (let step = 0; step < ROLE_LOOKAHEAD && sibling.length > 0; step += 1) {
+        const beside = squash(sibling.text());
+        if (beside !== "" && ROLE_CUES.test(beside)) {
+          accept(text, beside, "role element after name", squash(node.parent().text()));
+          return;
+        }
+        if (beside !== "") break;
+        sibling = sibling.next();
+      }
+      rejected.push({ name: text, reason: "no role or prior position stated beside the name" });
+      return;
+    }
+
+    // Pattern B: name and role share a line, split by a dash, a comma or a pipe.
+    const split = text.match(/^(.{2,60}?)\s*[—–\-–|,:]\s+(.{3,})$/);
+    if (split) {
+      const [, head, tail] = split;
+      if (head !== undefined && tail !== undefined && looksLikeName(head) && ROLE_CUES.test(tail)) {
+        accept(head.trim(), tail, "name and role on one line", text);
+      }
+    }
+  });
+
+  return { people, rejected, skipped: null };
+}
+
+/* -------------------------------------------------------------------------- */
+/* The pages                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/** A page this adapter actually retrieves. `home` is always the first. */
+export type SitePageRole = "home" | "team" | "pricing" | "docs";
+
+/** One page read, whether or not it had anything in it. */
+export interface SitePage {
+  role: SitePageRole;
+  /** As requested. The evidence record is addressed by this, not by the redirect. */
+  url: string;
+  /** Always set: a failed fetch is a record too (ARCHITECTURE §5). */
+  evidence_id: string;
+  status: number;
+  /** True for a 200 with nothing server-rendered in it. */
+  empty: boolean;
+  language: LanguageVerdict;
+}
+
+/** A page that produced no prose, and why. Data, never a throw (rule 3). */
+export interface SiteFailure {
+  role: SitePageRole;
+  url: string;
+  /** HTTP status, or 0 when the request never got one. */
+  status: number;
+  reason: string;
+}
+
+export interface SiteResult {
+  /** The url this adapter was pointed at. */
+  url: string;
+  /** Where the home page actually landed, when a redirect moved it. */
+  final_url: string | null;
+  pages: SitePage[];
+  evidence: Evidence[];
+  signals: Signal[];
+  unknowns: UnknownSignal[];
+  /**
+   * Named people, in page order. A separate field rather than signals because
+   * a person is a name *and* the words beside it *and* the block it came from,
+   * and flattening that into a `SignalValue` would throw away the two parts a
+   * reviewer needs to check it. TICKET-0020's extractor reads the same pages.
+   */
+  people: Person[];
+  /** Names seen and not emitted, with reasons. Rule 1's "fail loudly" half. */
+  rejected_people: RejectedPerson[];
+  /** Every role-carrying link on the home page, including the ones not fetched. */
+  links: DiscoveredLink[];
+  /** Requests actually issued. A cache hit is a page read with no request. */
+  requests: number;
+  failures: SiteFailure[];
+}
+
+export interface GatherSiteOptions {
+  /** Passed through to `httpGet` — transport, cache dir, clock, retry policy. */
+  http?: HttpOptions;
+  /** Overrides `SITE_PAGE_BUDGET`. TICKET-0017 may trim this per run. */
+  budget?: number;
+}
+
+/**
+ * Whether a page's text is worth reading as prose, or is a 200 that says
+ * nothing. Split out so `gatherSite` reads as a list of outcomes.
+ */
+interface PageRead {
+  page: SitePage;
+  evidence: Evidence;
+  html: string;
+  extracted: ExtractedHtml;
+  language: LanguageCheck;
+  shell: ShellVerdict;
+}
+
+/**
+ * Read one company site: the home page, then up to `SITE_PAGE_BUDGET` of the
+ * pages it links to that the rubric has a use for.
+ *
+ * Best-effort throughout and the same shape whatever happened, which is the
+ * contract `gatherGithub` already keeps: a dead site, an empty shell and a
+ * fully-read four-page site all return a `SiteResult`, and the difference
+ * shows up as unknowns and failures rather than as a thrown error. Most
+ * candidates' sites are somewhere in between.
+ *
+ * `httpGet` rather than `fetchEvidence`, because this module needs the markup
+ * as well as the extracted text — links are read off the source, not off the
+ * prose — and CLAUDE.md's choke point is `fetch.ts`, which `httpGet` is.
+ */
+export async function gatherSite(
+  url: string,
+  options: GatherSiteOptions = {},
+): Promise<SiteResult> {
+  const budget = options.budget ?? SITE_PAGE_BUDGET;
+  const result: SiteResult = {
+    url,
+    final_url: null,
+    pages: [],
+    evidence: [],
+    signals: [],
+    unknowns: [],
+    people: [],
+    rejected_people: [],
+    links: [],
+    requests: 0,
+    failures: [],
+  };
+
+  if (!isFetchableUrl(url)) {
+    // A candidate url is *data* — it came off an HN post or a `homepage`
+    // field — so a url this adapter cannot fetch is an unknown about the
+    // company, not a bug to throw on.
+    result.unknowns.push({ key: "site", reason: `'${url}' is not an http(s) url` });
+    return result;
+  }
+
+  /** One page, with every outcome recorded and none of them thrown. */
+  const read = async (role: SitePageRole, pageUrl: string): Promise<PageRead | null> => {
+    const response = await httpGet(pageUrl, options.http);
+    result.requests += response.attempts;
+
+    if (!response.ok) {
+      const evidence = fetchFailedEvidence(response);
+      result.evidence.push(evidence);
+      result.failures.push({
+        role,
+        url: pageUrl,
+        status: response.status,
+        reason: response.reason,
+      });
+      result.pages.push({
+        role,
+        url: pageUrl,
+        evidence_id: evidence.id,
+        status: response.status,
+        empty: true,
+        language: "unknown",
+      });
+      return null;
+    }
+
+    const html = response.body;
+    const extracted = extractHtml(html);
+    const shell = detectEmptyShell(extracted, html);
+    const language = detectLanguage(html, extracted.text);
+    const base = {
+      ...extracted.meta,
+      from_cache: response.from_cache,
+      attempts: response.attempts,
+    };
+
+    // An empty shell's record carries the *reason* as its text. There is no
+    // prose to carry instead, and a record whose text is a cookie banner would
+    // read downstream as a company that says nothing about itself rather than
+    // as a page this pipeline cannot render.
+    const evidence = makeEvidence({
+      url: pageUrl,
+      type: "company_site",
+      retrieved_at: response.retrieved_at,
+      status: response.status,
+      title: extracted.title,
+      text: shell.empty ? (shell.reason ?? "") : extracted.text,
+      meta: {
+        ...base,
+        page_role: role,
+        ...(response.final_url ? { final_url: response.final_url } : {}),
+        empty_shell: shell.empty,
+        text_chars: shell.chars,
+        language: language.verdict,
+        language_reason: language.reason,
+        ...(language.declared ? { language_declared: language.declared } : {}),
+      },
+    });
+    result.evidence.push(evidence);
+    result.pages.push({
+      role,
+      url: pageUrl,
+      evidence_id: evidence.id,
+      status: response.status,
+      empty: shell.empty,
+      language: language.verdict,
+    });
+    if (shell.empty) {
+      result.failures.push({
+        role,
+        url: pageUrl,
+        status: response.status,
+        reason: shell.reason ?? "the page had nothing to extract",
+      });
+    }
+    // Only the home page's redirect is the *site's* address; a `/about` that
+    // redirects says nothing about where the company lives.
+    if (role === "home" && response.final_url && response.final_url !== pageUrl) {
+      result.final_url = response.final_url;
+    }
+
+    return {
+      page: result.pages[result.pages.length - 1] as SitePage,
+      evidence,
+      html,
+      extracted,
+      language,
+      shell,
+    };
+  };
+
+  /* -- the home page ------------------------------------------------------ */
+
+  const home = await read("home", url);
+  if (home === null) {
+    for (const key of ["site.title", "site.description", "site.language"]) {
+      result.unknowns.push({ key, reason: `${url} could not be retrieved` });
+    }
+    return result;
+  }
+
+  const at = home.evidence.retrieved_at;
+  const { signals, unknowns, add } = collector(home.evidence.id, at);
+  const base = home.evidence.meta.final_url as string | undefined;
+  const pageBase = base ?? url;
+
+  // The url *after* redirects, which is the one the GitHub `homepage` join and
+  // any later run should agree on. The evidence record stays addressed by the
+  // url as requested, so an id cannot move when a redirect changes.
+  add("site.url", pageBase, "the request produced no address");
+  add("site.title", home.shell.empty ? null : home.extracted.title, "the page carries no title");
+  add(
+    "site.description",
+    home.shell.empty
+      ? null
+      : (home.extracted.meta.og_description ?? home.extracted.meta.description) || null,
+    "the page carries no description or og:description",
+  );
+  add("site.language", home.language.verdict, "the page's language could not be judged");
+
+  /* -- the links the rubric reads ----------------------------------------- */
+
+  result.links = discoverLinks(home.html, pageBase);
+  // Every one of these is a fact about a link, never a conclusion about a
+  // go-to-market motion. SPEC D-4 — "no self-serve or open-source path" — is
+  // decided in `src/analyse/score.ts` over these five, and an absent link
+  // becomes an unknown here rather than a false (rule 2, invariant 4).
+  for (const role of ["team", "pricing", "docs", "signup", "contact", "repo"] as const) {
+    const link = result.links.find((candidate) => candidate.role === role);
+    add(`site.${role}_url`, link?.url ?? null, `the home page links to no ${role} page`);
+  }
+
+  /* -- the pages behind them ---------------------------------------------- */
+
+  const picked = pickPages(result.links, budget);
+  const fetched: PageRead[] = [];
+  for (const link of picked) {
+    // `pickPages` only ever returns a fetched role, which is a `SitePageRole`.
+    const page = await read(link.role as SitePageRole, link.url);
+    if (page !== null) fetched.push(page);
+  }
+  for (const role of FETCHED_ROLES) {
+    if (!picked.some((link) => link.role === role)) {
+      unknowns.push({ key: `site.${role}_page`, reason: `no ${role} page was linked or fetched` });
+    }
+  }
+
+  /* -- who is named ------------------------------------------------------- */
+
+  // The team page first, then the home page, so a company that names its
+  // founders in both is read off the page that exists to name them. Rule 4: a
+  // page that is not English is kept as evidence and not read for names.
+  const scanned: { role: "home" | "team"; read: PageRead }[] = [];
+  const team = fetched.find((page) => page.page.role === "team" && !page.shell.empty);
+  if (team) scanned.push({ role: "team", read: team });
+  if (!home.shell.empty) scanned.push({ role: "home", read: home });
+
+  for (const entry of scanned) {
+    if (entry.read.language.verdict === "not_english") {
+      unknowns.push({
+        key: "site.people",
+        reason: `${entry.read.page.url} was not read for names: ${entry.read.language.reason}`,
+      });
+      continue;
+    }
+    const found = extractPeople(entry.read.html, entry.role);
+    result.rejected_people.push(...found.rejected);
+    for (const person of found.people) {
+      if (!result.people.some((known) => known.name.toLowerCase() === person.name.toLowerCase())) {
+        result.people.push(person);
+      }
+    }
+  }
+
+  // The count cites the page the names were read off, not the home page, so
+  // the citation resolves to the record a reviewer would want to open.
+  const namedOn = scanned[0]?.read.evidence.id ?? home.evidence.id;
+  const counted = collector(namedOn, at);
+  counted.add(
+    "site.people_named",
+    result.people.length > 0 ? result.people.length : null,
+    "no person was named with a role beside them on any page read",
+  );
+  signals.push(...counted.signals);
+  unknowns.push(...counted.unknowns);
+
+  result.signals.push(...signals);
+  result.unknowns.push(...unknowns);
+  return result;
+}

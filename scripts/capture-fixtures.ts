@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { githubAuth } from "../src/config.js";
+import { githubAuth, loadDotEnv } from "../src/config.js";
 import { extractHtml, type HttpOptions, httpGet } from "../src/evidence/fetch.js";
 import { hnSearchUrl } from "../src/source/hn.js";
 import {
@@ -60,9 +60,32 @@ export interface FixtureSpec {
   /** One line, copied into the manifest and the fixtures README. */
   note: string;
   headers?: Record<string, string>;
+  /**
+   * Set on a fixture that predates this script. It was captured by hand, the
+   * committed bytes are the ones the suite asserts against, and a bare run
+   * *adopts* it — records its provenance without fetching — rather than
+   * quietly replacing it. `--refresh` still re-captures it, which is a
+   * deliberate act: refreshing these five broke five assertions in
+   * `tests/hn.test.ts` the first time it was tried, which is rule 1 working.
+   */
+  legacy?: { captured_on: string; how: string };
 }
 
 const GITHUB_API = "https://api.github.com";
+
+/**
+ * The four fixtures TICKET-0009 captured by hand, before this script existed.
+ * Their urls are transcriptions of the `curl` commands in that ticket's own
+ * fixture README rather than rebuilt through `hnSearchUrl` — the commands are
+ * what produced the committed bytes, and a manifest that claimed otherwise
+ * would be provenance with a lie in it.
+ */
+const LEGACY_0009 = {
+  captured_on: "2026-08-22T00:00:00.000Z",
+  how: "captured by hand for TICKET-0009, before this script existed",
+} as const;
+
+const HN_SEARCH = "https://hn.algolia.com/api/v1/search";
 
 /**
  * GitHub's documented pinning headers. The token, when there is one, is added
@@ -91,32 +114,30 @@ export function fixtureSpecs(now: Date): FixtureSpec[] {
     {
       path: "hn/search-page-0.json",
       kind: "json",
-      url: hnSearchUrl(
-        { query: "llm observability", tags: "story", hitsPerPage: 5, page: 0, sinceDays: 180 },
-        now,
-      ),
+      url: `${HN_SEARCH}?query=llm%20observability&tags=story&hitsPerPage=5&page=0&numericFilters=created_at_i%3E1740000000`,
       note: "Page 0 of a normal topic. Pagination, and the shape every hn test starts from.",
+      legacy: LEGACY_0009,
     },
     {
       path: "hn/search-page-1.json",
       kind: "json",
-      url: hnSearchUrl(
-        { query: "llm observability", tags: "story", hitsPerPage: 5, page: 1, sinceDays: 180 },
-        now,
-      ),
+      url: `${HN_SEARCH}?query=llm%20observability&tags=story&hitsPerPage=5&page=1&numericFilters=created_at_i%3E1740000000`,
       note: "Page 1 of the same query. The pagination test needs two real pages.",
+      legacy: LEGACY_0009,
     },
     {
       path: "hn/search-empty.json",
       kind: "json",
-      url: hnSearchUrl({ query: "qzxvnowaythisisareal term xyzzy", tags: "story" }, now),
+      url: `${HN_SEARCH}?query=qzxvnowaythisisareal%20term%20xyzzy&tags=story`,
       note: "A seed nobody has posted about: zero hits, still a 200.",
+      legacy: LEGACY_0009,
     },
     {
       path: "hn/search-ask-hn.json",
       kind: "json",
-      url: hnSearchUrl({ query: "llm observability", tags: "ask_hn", hitsPerPage: 5 }, now),
+      url: `${HN_SEARCH}?query=llm%20observability&tags=ask_hn&hitsPerPage=5`,
       note: "Text posts — every hit has a null url, which the classifier must reject.",
+      legacy: LEGACY_0009,
     },
     {
       path: "hn/search-thin.json",
@@ -181,6 +202,8 @@ export function fixtureSpecs(now: Date): FixtureSpec[] {
 export interface FixtureRecord {
   path: string;
   kind: FixtureSpec["kind"];
+  /** How these bytes came to exist. `hand` predates the script; see `legacy`. */
+  captured_by: "script" | "hand" | "derived";
   /** Null for a derived fixture; see `derived_from`. */
   url: string | null;
   /** Set when the fixture was built from another fixture rather than fetched. */
@@ -252,6 +275,7 @@ export async function captureOne(
   const record: FixtureRecord = {
     path: spec.path,
     kind: spec.kind,
+    captured_by: "script",
     url: spec.url,
     note: spec.note,
     status: result.status,
@@ -283,6 +307,7 @@ export function deriveMalformed(sourceJson: string, now: Date): Captured {
     record: {
       path: MALFORMED_SPEC.path,
       kind: "json",
+      captured_by: "derived",
       url: null,
       derived_from: MALFORMED_SPEC.from,
       note: MALFORMED_SPEC.note,
@@ -291,6 +316,33 @@ export function deriveMalformed(sourceJson: string, now: Date): Captured {
       bytes: Buffer.byteLength(content),
       sha256: sha256(content),
     },
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Adoption                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Record a hand-captured fixture's provenance without fetching it. The digest
+ * is read off the committed file — which is the point: the manifest then
+ * describes the bytes the suite actually asserts against, and says they were
+ * not this script's doing.
+ */
+export function adopt(spec: FixtureSpec, content: string): FixtureRecord {
+  if (!spec.legacy) throw new Error(`${spec.path} is not a legacy fixture; capture it instead`);
+  return {
+    path: spec.path,
+    kind: spec.kind,
+    captured_by: "hand",
+    url: spec.url,
+    note: `${spec.note} (${spec.legacy.how})`,
+    // Null, not 200: this script never saw a response for these bytes.
+    status: null,
+    captured_at: spec.legacy.captured_on,
+    bytes: Buffer.byteLength(content),
+    sha256: sha256(content),
+    ...(spec.kind === "html" ? { text_chars: extractHtml(content).text.length } : {}),
   };
 }
 
@@ -401,6 +453,7 @@ async function main(argv: readonly string[]): Promise<number> {
   process.stdout.write(`github: ${auth.mode}\n`);
 
   const captured: Captured[] = [];
+  const adopted: FixtureRecord[] = [];
   const failures: CaptureFailure[] = [];
   for (const spec of planned) {
     const isGithub = spec.url.startsWith(GITHUB_API);
@@ -416,6 +469,20 @@ async function main(argv: readonly string[]): Promise<number> {
     } else {
       failures.push(outcome);
       process.stdout.write(`  FAIL  ${spec.path} — ${outcome.reason}\n`);
+    }
+  }
+
+  // A hand-captured fixture this run skipped still belongs in the manifest, so
+  // its provenance is recorded from the committed bytes rather than invented.
+  for (const spec of specs) {
+    if (!spec.legacy || planned.includes(spec)) continue;
+    try {
+      adopted.push(adopt(spec, readFileSync(join(FIXTURE_ROOT, ...spec.path.split("/")), "utf8")));
+    } catch (error) {
+      failures.push({
+        path: spec.path,
+        reason: `adopt failed: ${error instanceof Error ? error.message : String(error)}`,
+      });
     }
   }
 
@@ -438,14 +505,29 @@ async function main(argv: readonly string[]): Promise<number> {
     }
   }
 
-  const manifest = mergeManifest(
-    readManifest(FIXTURE_ROOT),
-    captured.map((entry) => entry.record),
-  );
+  // A fixture on disk with no manifest entry is provenance this repo has lost —
+  // most likely `capture.json` was deleted, since a bare run skips what exists
+  // and so cannot rebuild a record it never wrote. Loud, because the alternative
+  // is a committed fixture nobody can say the origin of.
+  const manifest = mergeManifest(readManifest(FIXTURE_ROOT), [
+    ...captured.map((entry) => entry.record),
+    ...adopted,
+  ]);
   writeFileSync(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`);
 
+  const recorded = new Set(manifest.fixtures.map((record) => record.path));
+  for (const spec of specs) {
+    if (recorded.has(spec.path) || !exists(FIXTURE_ROOT, spec.path)) continue;
+    failures.push({
+      path: spec.path,
+      reason: "on disk with no provenance record — re-capture it with --refresh",
+    });
+    process.stdout.write(`  FAIL  ${spec.path} — no provenance record\n`);
+  }
+
   process.stdout.write(
-    `\n${captured.length} written, ${failures.length} failed, ${skipped} already present.\n` +
+    `\n${captured.length} written, ${adopted.length} adopted, ${failures.length} failed, ` +
+      `${skipped} already present.\n` +
       `provenance: ${MANIFEST_PATH}\n`,
   );
   if (skipped > 0 && !flags.refresh) {
@@ -460,6 +542,10 @@ function isEntrypoint(): boolean {
 }
 
 if (isEntrypoint()) {
+  // Only for `GITHUB_TOKEN`: unauthenticated GitHub is 60 requests/hour, which
+  // this list fits inside and a wider one would not. Absent is fine — the run
+  // says which mode it used, the same way a pipeline run does (TICKET-0006).
+  loadDotEnv();
   main(process.argv.slice(2))
     .then((code) => process.exit(code))
     .catch((error: unknown) => {

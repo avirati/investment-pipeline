@@ -1,16 +1,19 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  adopt,
   captureOne,
   deriveMalformed,
   type FixtureRecord,
   fixtureSpecs,
   MALFORMED_SPEC,
   MAX_FIXTURE_BYTES,
+  type Manifest,
   mergeManifest,
   parseFlags,
 } from "../scripts/capture-fixtures.js";
+import { findSecrets, sha256 } from "../scripts/fixtures.js";
 import type { Transport } from "../src/evidence/fetch.js";
 
 /**
@@ -152,10 +155,32 @@ describe("deriveMalformed", () => {
   });
 });
 
+describe("adopt", () => {
+  const legacySpec = spec({
+    path: "hn/search-empty.json",
+    legacy: { captured_on: "2026-08-22T00:00:00.000Z", how: "captured by hand for TICKET-0009" },
+  });
+
+  it("records a hand-captured fixture from the bytes on disk, and says so", () => {
+    const record = adopt(legacySpec, '{"nbHits":0}');
+    expect(record.captured_by).toBe("hand");
+    // Null, not 200: this script never saw a response for these bytes.
+    expect(record.status).toBeNull();
+    expect(record.captured_at).toBe("2026-08-22T00:00:00.000Z");
+    expect(record.note).toContain("captured by hand for TICKET-0009");
+    expect(record.bytes).toBe(12);
+  });
+
+  it("refuses to adopt a fixture the script is supposed to capture", () => {
+    expect(() => adopt(spec(), "{}")).toThrow(/not a legacy fixture/);
+  });
+});
+
 describe("mergeManifest", () => {
   const record = (path: string, bytes: number): FixtureRecord => ({
     path,
     kind: "json",
+    captured_by: "script",
     url: `https://example.com/${path}`,
     note: "n",
     status: 200,
@@ -201,5 +226,55 @@ describe("parseFlags", () => {
 
   it("prints usage for --help", () => {
     expect(() => parseFlags(["--help"])).toThrow(/usage: pnpm capture-fixtures/);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* The committed fixtures themselves                                           */
+/* -------------------------------------------------------------------------- */
+
+const FIXTURES = join(import.meta.dirname, "fixtures");
+
+function walk(dir: string): string[] {
+  return readdirSync(dir).flatMap((entry) => {
+    const full = join(dir, entry);
+    return statSync(full).isDirectory() ? walk(full) : [full];
+  });
+}
+
+const files = walk(FIXTURES);
+const manifest: Manifest = JSON.parse(readFileSync(join(FIXTURES, "capture.json"), "utf8"));
+
+describe("tests/fixtures", () => {
+  it.each(files.map((f) => relative(FIXTURES, f)))(
+    "%s carries nothing credential-shaped",
+    (name) => {
+      // The ticket's acceptance criterion — "no token, cookie, or key appears
+      // anywhere under tests/fixtures" — as a test that runs every time rather
+      // than a check somebody did once.
+      expect(findSecrets(readFileSync(join(FIXTURES, name), "utf8"))).toEqual([]);
+    },
+  );
+
+  it.each(manifest.fixtures.map((record) => [record.path, record] as const))(
+    "%s matches its capture.json record byte for byte",
+    (_path, record) => {
+      // Which also means: a hand-edited fixture fails the suite. The script is
+      // the only way to change what is in this directory.
+      const content = readFileSync(join(FIXTURES, ...record.path.split("/")), "utf8");
+      expect(Buffer.byteLength(content)).toBe(record.bytes);
+      expect(sha256(content)).toBe(record.sha256);
+    },
+  );
+
+  it("records every captured file, and no file it does not have", () => {
+    const recorded = new Set(manifest.fixtures.map((record) => record.path));
+    const onDisk = files
+      .map((file) => relative(FIXTURES, file).split(sep).join("/"))
+      // The two files that are not captures and say so in their own first lines.
+      .filter(
+        (name) => name !== "capture.json" && name !== "README.md" && name !== "company-site.html",
+      );
+    expect([...onDisk].sort()).toEqual([...recorded].sort());
   });
 });

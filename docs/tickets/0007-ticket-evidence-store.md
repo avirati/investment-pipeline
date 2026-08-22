@@ -1,6 +1,6 @@
 # TICKET-0007 — Evidence store (`src/evidence/store.ts`)
 
-Status: **Ready** — all dependencies Done · Depends on: 0005 · Blocks: 0008, 0017, 0025
+Status: **Done** — [worklog 0010](../worklog/0010-evidence-store.md) · Depends on: 0005 · Blocks: 0008, 0017, 0025
 Reads: [ADR-0003](../adr/0003-evidence-store-and-citations.md), [ARCHITECTURE §3](../ARCHITECTURE.md#3-evidence-store-and-citations)
 
 ## Why

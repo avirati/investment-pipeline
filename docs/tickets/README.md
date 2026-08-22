@@ -57,8 +57,8 @@ index of the same thing. Three values, and only three:
 | [0004](./0004-ticket-setup-script-and-wrapper.md) | `setup.sh` and `./pipeline` | Clone-and-run, minus step 6 | Done |
 | [0005](./0005-ticket-zod-contracts.md) | Zod contracts | The stage boundary | Done |
 | [0006](./0006-ticket-config-and-model-routing.md) | Config and model routing | Provider swap is an env change | Done |
-| [0007](./0007-ticket-evidence-store.md) | Evidence store | Content-addressed ids | **Ready** |
-| [0008](./0008-ticket-cached-fetch-layer.md) | Cached fetch layer | One choke point for all network | Blocked · 0007 |
+| [0007](./0007-ticket-evidence-store.md) | Evidence store | Content-addressed ids | Done |
+| [0008](./0008-ticket-cached-fetch-layer.md) | Cached fetch layer | One choke point for all network | **Ready** |
 | [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | Blocked · 0008 |
 | [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | Blocked · 0008 |
 | [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | Blocked · 0009, 0018 |
@@ -75,7 +75,7 @@ index of the same thing. Three values, and only three:
 | [0022](./0022-ticket-stage-2-wiring.md) | Stage 2 wiring | `./pipeline analyse` | Blocked · 0017, 0020, 0021 |
 | [0023](./0023-ticket-missing-data-path-tests.md) | Missing-data path tests | Robustness as behaviour | Blocked · 0022, 0026 |
 | [0024](./0024-ticket-memo-template-and-render.md) | Memo template and renderer | One page, no LLM · **D-2** | Blocked · 0022 |
-| [0025](./0025-ticket-memo-validator.md) | Citation validator | The one hard fail | Blocked · 0007, 0024 |
+| [0025](./0025-ticket-memo-validator.md) | Citation validator | The one hard fail | Blocked · 0024 |
 | [0026](./0026-ticket-stage-3-wiring.md) | Stage 3 wiring | `./pipeline memo`, offline | Blocked · 0024, 0025 |
 | [0027](./0027-ticket-run-command-and-replay.md) | `run` and replay | One command · full manifest | Blocked · 0012, 0022, 0026 |
 | [0028](./0028-ticket-committed-sample-run.md) | Committed sample run | `setup.sh` step 6 · no key needed | Blocked · 0013, 0023, 0027 |

@@ -67,12 +67,12 @@ index of the same thing. Three values, and only three:
 | [0014](./0014-ticket-fixture-capture-script.md) | `pnpm capture-fixtures` | The suite stays offline | **Done** |
 | [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | **Ready** |
 | [0016](./0016-ticket-company-site-adapter.md) | Company site adapter | Founders, positioning, self-serve path | **Ready** |
-| [0017](./0017-ticket-evidence-gather.md) | Evidence gather (2a) | Bundles with ids, no LLM | Blocked · 0015, 0016 |
+| [0017](./0017-ticket-evidence-gather.md) | Evidence gather (2a) | Bundles with ids, no LLM | Done — [worklog 0029](../worklog/0029-evidence-gather.md) |
 | [0018](./0018-ticket-llm-provider-and-cache.md) | LLM seam and response cache | Replay costs nothing | Done |
-| [0019](./0019-ticket-extraction-prompt.md) | Extraction prompt + CHANGELOG | Versioned, thesis-free | Blocked · 0017 |
-| [0020](./0020-ticket-fact-extraction.md) | Fact extraction (2b) | Facts only, ids enforced | Blocked · 0018, 0019 |
+| [0019](./0019-ticket-extraction-prompt.md) | Extraction prompt + CHANGELOG | Versioned, thesis-free | **Ready** |
+| [0020](./0020-ticket-fact-extraction.md) | Fact extraction (2b) | Facts only, ids enforced | Blocked · 0019 |
 | [0021](./0021-ticket-rubric-scoring.md) | The rubric | The only place a score exists | Blocked · 0020 |
-| [0022](./0022-ticket-stage-2-wiring.md) | Stage 2 wiring | `./pipeline analyse` | Blocked · 0017, 0020, 0021 |
+| [0022](./0022-ticket-stage-2-wiring.md) | Stage 2 wiring | `./pipeline analyse` | Blocked · 0020, 0021 |
 | [0023](./0023-ticket-missing-data-path-tests.md) | Missing-data path tests | Robustness as behaviour | Blocked · 0022, 0026 |
 | [0024](./0024-ticket-memo-template-and-render.md) | Memo template and renderer | One page, no LLM · **D-2** | Blocked · 0022 |
 | [0025](./0025-ticket-memo-validator.md) | Citation validator | The one hard fail | Blocked · 0024 |

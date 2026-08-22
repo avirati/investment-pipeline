@@ -1,6 +1,6 @@
 # TICKET-0019 — Extraction prompt and `prompts/CHANGELOG.md`
 
-Status: Blocked · 0017 · Depends on: 0005, 0017 · Blocks: 0020
+Status: **Ready** — 0017 is Done; `bundleItems(bundle)` is the exact shape this prompt renders and `bundleIds(bundle)` is the closed world it must cite from · Depends on: 0005 (Done), 0017 (Done) · Blocks: 0020
 Reads: [CLAUDE.md](../../CLAUDE.md) conventions and invariant 7, [ADR-0003](../adr/0003-evidence-store-and-citations.md), [SCOPE](../SCOPE.md) eval-harness cut
 
 ## Why

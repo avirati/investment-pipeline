@@ -33,13 +33,20 @@ default, state that you took it, and record it in that session's worklog.
 
 | # | Decision | Blocked on | Default if unanswered |
 |---|---|---|---|
-| **D-1** | Default model in `.env.example` | What the author's OpenAI account has access to | Leave the value empty with a comment naming the two roles (`MODEL_EXTRACT`, `MODEL_ANALYSE`); `setup.sh` prompts for it |
 | **D-2** | Memo rendering: `eta` templates vs typed TS render functions | Author preference | `eta` — a partner can edit a memo template without reading TypeScript |
-| **D-3** | The `feed` seed form (`--seed yc:w25`) | See *Known inconsistencies* below | **Cut it.** Support `topic` and `urls` only, and remove `feed` from the CLI and SPEC |
 | **D-4** | Reflection sections in worklogs 0001 and 0002 | Author. Must not be AI-written — see CLAUDE.md | Leave as `TODO(author)`. Do not fill in |
 | **D-5** | Which topic becomes the committed sample run | First real stage-1 output | Pick whichever topic yields the cleanest 10–15 candidates and say why in the worklog |
 | **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
+
+### Recently closed
+
+- **D-1 · default model in `.env.example`** — taken at its default in
+  TICKET-0001. `MODEL_EXTRACT` and `MODEL_ANALYSE` ship empty with their roles
+  named in comments; `setup.sh` prompts. Worklog 0004.
+- **D-3 · the `feed` seed form** — cut in TICKET-0002, at its default. The seed
+  surface is `topic` and `urls`. Recorded as a consequence in ADR-0004 rather
+  than as a new ADR, because it aligns the docs to a decision already accepted.
 
 ### Deliberately closed — do not reopen without a new ADR
 
@@ -55,13 +62,11 @@ default, state that you took it, and record it in that session's worklog.
 
 Real defects, listed rather than silently patched.
 
-1. **`feed` seed form is unspecified and its example contradicts ADR-0004.**
-   `ARCHITECTURE.md` §7 advertises `--seed yc:w25`, and `SPEC.md` §3.1 names
-   three seed forms — but no feed adapter is specified anywhere, and ADR-0004
-   explicitly *rejected* the YC directory as a source. Resolve via **D-3**;
-   cutting it is the likely answer.
-2. **`.env.example` is referenced but does not exist.** `ARCHITECTURE.md` §7.1
-   step 4 depends on it. Create it with the scaffold.
+1. ~~**`feed` seed form is unspecified and its example contradicts ADR-0004.**~~
+   Fixed in TICKET-0002. `SPEC.md` §3.1 and `ARCHITECTURE.md` §1 and §7 now name
+   two seed forms, and ADR-0004 records the cut.
+2. ~~**`.env.example` is referenced but does not exist.**~~ Fixed in
+   TICKET-0001; `ARCHITECTURE.md` §7.1 step 4 now resolves.
 3. **The sample run id is a placeholder** (`<committed_sample>`) in
    `README.md`, `ARCHITECTURE.md`, and `SCOPE.md`. Replace all three once D-5 is
    settled.

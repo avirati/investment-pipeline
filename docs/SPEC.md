@@ -126,8 +126,9 @@ Every Watch must state the specific, checkable trigger that would upgrade it.
 
 ## 3.1 Seed handling
 
-Three seed forms: a topic query, a file of URLs, or a named feed. Only topic
-seeds are planned; the other two are already concrete.
+Two seed forms: a topic query or a file of URLs. Only topic seeds are planned;
+a URL list is already concrete. The sourcing surface these are planned against is
+fixed by [ADR-0004](./adr/0004-source-selection.md).
 
 A topic seed is probed against the source before the run begins. If it yields
 fewer than `--min-hits` usable results, the operator is offered 3–4 refinements

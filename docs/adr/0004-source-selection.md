@@ -46,6 +46,11 @@ mostly a feature — but it is a real blind spot, not a neutral one, and any cla
 that this pipeline "finds the best startups" would be false. It finds the best
 startups *that surface on HN*.
 
+**Consequence realised later.** The CLI as first specified offered a
+`--seed yc:w25` feed form, which promised exactly the source this ADR rejected.
+The seed form was cut rather than the ADR reopened (TICKET-0002, D-3); the seed
+surface is now `topic` and `urls` only.
+
 **Bad.** HN returns projects and blog posts alongside companies. Filtering is
 heuristic (site resolves, has a product surface, not a personal domain) and will
 have both false positives and false negatives. Rejections are recorded with a

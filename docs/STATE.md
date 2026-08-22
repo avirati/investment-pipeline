@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `b6a5941` · **Phase: stage 2a is complete. The two adapters are wired into one candidate loop with one run-level request budget, the repo ↔ site join runs in both directions, and a bundle of evidence ids-with-text now exists for extraction to read. Nothing calls the model yet. Next: TICKET-0019, the extraction prompt**
+Last updated: 2026-08-22 · at commit `d98efa0` · **Phase: stage 2a is complete and the stage 2b prompt exists. `prompts/extract.v1.md` asks for facts with citations and restates no part of the rubric; `src/llm/prompt.ts` loads prompts by version and refuses to render one with a hole in it. Still nothing calls the model — two prompts are now written and neither has been sent (inconsistency 72). Next: TICKET-0020, fact extraction**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -35,7 +35,14 @@ extraction may cite from, joins the repo to the site in *both* directions
 continues on a candidate that has nothing behind it rather than failing it.
 `src/analyse/budget.ts` settles what neither adapter could: the run-level
 request budget is planned uniformly before the loop starts, so coverage no
-longer depends on where in the candidate list a company sat. **Tickets 0001–0008 are Done.**
+longer depends on where in the candidate list a company sat. **The prompt that
+reads that bundle now exists**: `prompts/extract.v1.md` asks for facts — one
+observation, one sentence, cited from the ids it was shown — and restates no
+part of the rubric, which is the invariant most easily lost in a prompt and the
+one a test can only guard, not check. `src/llm/prompt.ts` is how any prompt
+reaches a provider: by version, with its front matter checked against its
+filename, and refusing to render at all if a placeholder is unsupplied or a
+supplied value is unused. **Tickets 0001–0008 are Done.**
 
 Stage 1 has now started. `src/source/hn.ts` holds the pure half of the HN
 adapter: `hnSearchUrl` turns flags into one deterministic url — tags, page, and
@@ -1196,15 +1203,39 @@ Real defects, listed rather than silently patched.
     the run plan. The number therefore lives in two places, and a change to one
     would not move the other. Cheap to collapse later; not worth a seam today.
 
+72. **Two prompts are written and neither has ever been sent to a provider.**
+    `clarify-query` v1 and `extract` v1 are both tested by rendering them and
+    asserting what is in them; nothing asserts what a model does with either.
+    The CHANGELOG says "not measured" in both entries, and with no eval harness
+    in v1 (SCOPE) that is the honest state — but it means the prompts are, so
+    far, prose reviewed only by their author. TICKET-0020's captured fixtures
+    are the first real signal.
+
+73. **`extract.v1`'s `{{keys}}` names a vocabulary that does not exist.** The
+    fact-key list is filled from the extraction schema at call time, and that
+    schema is TICKET-0020's. If 0020 decides keys are free-form rather than
+    enumerated, the prompt needs a v2 — the placeholder would have nothing to
+    interpolate and the instruction "file it under a key from this list" would
+    be false.
+
+74. **The prompt file is read on every call.** Deliberate — a few kilobytes,
+    tens of calls — but it means a prompt edited while a run is in flight
+    changes what later candidates are asked, and only the cache key would show
+    it after the fact. Nothing warns. Reading once per process would fix it and
+    would also make a mid-run edit invisible instead, which is why it was not
+    done blind.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0013 and 0018 are Done.** The gate has reported, so stage
-2 is released — the two tickets that reopened on the way out of it are closed
-again, and the provider seam behind stage 2 is in.
+repo runnable. **0001–0010 and 0012–0019 are Done; 0011 is reopened.** The gate
+has reported, so stage 2 is released — the two tickets that reopened on the way
+out of it are closed again, the provider seam behind stage 2 is in, and stage
+2a plus its prompt are done. The next ticket is the first one that spends
+tokens.
 
 **All five gate fixes have landed** — worklogs
 [0023](./worklog/0023-gate-fixes-canonicalisation.md) and
@@ -1311,20 +1342,43 @@ of it:
    `candidates.jsonl` exists. Every previous deferral of this kind was later
    paid for.
 
+**TICKET-0019 is Done** ([worklog
+0030](./worklog/0030-extraction-prompt.md)) — `prompts/extract.v1.md`,
+`src/llm/prompt.ts` and the CHANGELOG entry, 22 tests. Four things a new
+session should carry out of it:
+
+1. **The prompt has three interpolations and no free text.** `{{company}}`,
+   `{{evidence}}` and `{{keys}}`. The bundle format is not described in prose
+   and produced separately — `bundleItems(bundle)` is the shape — and the key
+   vocabulary is filled from the extraction schema the same way `{{thesis}}` is
+   filled from the rubric. **`{{keys}}` therefore names a vocabulary that does
+   not exist yet** (inconsistency 73); defining it is the first thing 0020 does.
+2. **The no-rubric check was reading the file, not the test.** The tripwire in
+   `tests/prompt.test.ts` fails on a list of scoring terms, which is what stops
+   the *next* revision undoing the reading. A v2 gets read by hand again, and
+   the CHANGELOG entry says whether that happened.
+3. **There is no `latest` prompt.** `loadPrompt({ id, version })` reads exactly
+   one file, the front matter is checked against the filename, and a declared
+   `inputs:` list must match the body's placeholders. Bumping a prompt is three
+   edits — file, `PROMPTS`, CHANGELOG — on purpose.
+4. **Inconsistency 52 was not repeated.** The clarify prompt's bare-JSON-array
+   shape is absent here: `extract.v1` describes fields, and the structure comes
+   from `withStructuredOutput` at the call site.
+
 **Nothing is blocking. One Ready ticket:**
 
-- [TICKET-0019](./tickets/0019-ticket-extraction-prompt.md) — **Ready.** The
-  extraction prompt and its `prompts/CHANGELOG.md` entry. `bundleItems(bundle)`
-  is the exact shape it renders and `bundleIds(bundle)` is the closed world it
-  must cite from, so the prompt no longer has to invent a bundle format to
-  describe. Note inconsistency 52 on the way in: v1 of the clarify prompt asks
-  for a bare JSON array, which `withStructuredOutput` cannot express — do not
-  repeat that shape here.
+- [TICKET-0020](./tickets/0020-ticket-fact-extraction.md) — **Ready.** Fact
+  extraction: the key vocabulary, the rendering of `bundleItems` into
+  `{{evidence}}`, `withStructuredOutput` against the `Fact` contract, ids
+  outside `bundleIds(bundle)` rejected at the boundary, and one retry on invalid
+  structure before the candidate is marked `partial`. It is also where the first
+  captured model output lands, which is the first evidence any of the prompt's
+  prose works (inconsistency 72).
 - [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
-  does not, and `{{thesis}}` waits on 0021.
+  does not, and `{{thesis}}` waits on 0021. `loadPrompt` is now what it will use.
 
-Then the rest of stage 2: 0019/0020 (extraction), 0021 (the rubric), 0022
+Then the rest of stage 2: 0020 (extraction), 0021 (the rubric), 0022
 (wiring, and the live pass 0017 deferred). Two things the gate hands forward
 into them:
 
@@ -1356,9 +1410,11 @@ The shape of the whole thing, unchanged:
    and no prompt.
 7. **Stage 2's evidence layer** — tickets 0015, 0016 and 0017 **Done**. Both
    adapters have run against live sources and both live runs changed the code;
-   the loop that drives them has not, which is inconsistency 69. Extraction is
-   next and nothing is between here and it.
-8. Then extraction and the rubric, stage 3, and the sample run on
+   the loop that drives them has not, which is inconsistency 69.
+8. **The extraction prompt** — ticket 0019 **Done**. Facts with citations, no
+   rubric, loaded from a versioned file by `src/llm/prompt.ts`. Nothing renders
+   it yet.
+9. Then extraction and the rubric, stage 3, and the sample run on
    `AI agent infrastructure`.
 
 ## Invariants a new session must not break

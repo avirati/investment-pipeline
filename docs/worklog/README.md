@@ -69,3 +69,6 @@ are unfinished, not delegated.
 | [0025](./0025-llm-provider-and-cache.md) | 2026-08-22 | LLM provider seam and the committed response cache; TICKET-0018 closes |
 | [0026](./0026-fixture-capture.md) | 2026-08-22 | `pnpm capture-fixtures`, the GitHub and company-site fixtures, and the malformed model outputs; TICKET-0014 closes |
 | [0027](./0027-github-adapter.md) | 2026-08-22 | The GitHub adapter: five calls, dated signals, degraded mode as a budget; TICKET-0015 closes |
+| [0028](./0028-company-site-adapter.md) | 2026-08-22 | The company-site adapter: budgeted crawl, dated signals, people found by hand; TICKET-0016 closes |
+| [0029](./0029-evidence-gather.md) | 2026-08-22 | Evidence gathering per candidate, the two-way join and the run-level budget; TICKET-0017 closes |
+| [0030](./0030-extraction-prompt.md) | 2026-08-22 | The extraction prompt and the prompt loader; TICKET-0019 closes |

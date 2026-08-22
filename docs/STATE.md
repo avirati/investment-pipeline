@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `76006ca` · **Phase: stage 1 — the HN adapter is complete; nothing has yet touched the live API**
+Last updated: 2026-08-22 · at commit `eaeb3a3` · **Phase: stage 1 — the HN adapter and url resolution are complete; nothing has yet touched the live API**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -62,18 +62,38 @@ The injection point is `HttpOptions`, not a swappable fetch function, so the
 network choke point stays literally true and the tests exercise the real url
 builder and the real cache path. **TICKET-0009 is Done.**
 
+`src/source/resolve.ts` closes the other half of the sourcing problem —
+TESTING §3's "classic quiet-bug territory", where two posts about one company
+silently become two candidates. It has a pure half and a network half.
+`canonicaliseUrl` reduces a posted url to an identity (https, no `www.`, no
+tracking params, no fragment, no directory index, sorted query), `siteKey`
+decides what two urls are compared on — a registrable domain for an ordinary
+site, `host/owner/repo` on a code host, the full host on a shared deploy suffix
+— and `dedupeHits` groups a search result into one entry per company, calling
+`classifyHit` first so "unusable" keeps one definition and this layer only
+*adds* rejections (personal pages, tilde directories, academic hosts). The key
+gets **more** specific wherever a host is shared between unrelated owners,
+because a wrong collapse deletes a company silently while a wrong split costs
+one visible duplicate. Then `resolveSites` follows each deduped site's url
+through `httpGet` — one request per company, not per post — re-keys it on where
+it landed, and merges groups that now collide, which is the only way two vanity
+domains pointing at one company can be seen to be one company. A failed request
+keeps its site (a company that 403s a bot is still a company); a landing on
+`medium.com` is rejected by the same rules that would have rejected it if posted
+directly. **TICKET-0010 is Done.**
+
 **Nothing in `src/source/` has touched the live API yet** — every test drives a
-stub transport over one topic's committed fixtures. 0011's probe half is now
-unblocked, and 0010 is Ready and independent of it.
+stub transport over one topic's committed fixtures. 0011's probe half is now the
+only thing between here and stage 1 wiring.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 163 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009). Offline, no key |
-| Worklogs 0001–0016 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 9 Done, 3 Ready (0010, 0011, 0018), 18 Blocked. Status is in each ticket header |
+| Test strategy | Written; 221 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010). Offline, no key |
+| Worklogs 0001–0018 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 10 Done, 2 Ready (0011, 0018), 18 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -82,8 +102,9 @@ unblocked, and 0010 is Ready and independent of it.
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
 | HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier, paginated `searchHn` with failures as data (0009, Done) |
+| URL resolution and dedup | `src/source/resolve.ts` — canonicalisation, site keys, `dedupeHits`, redirect-following `resolveSites` (0010, Done) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | Not wired — every command still exits 70. Stage 1's source adapter is complete (0009) |
+| Stages 1–3 | Not wired — every command still exits 70. Stage 1's source adapter (0009) and its dedup layer (0010) are complete; query planning (0011) is the last piece before wiring |
 | Sample run, walkthrough video | Not started |
 
 ---
@@ -313,31 +334,70 @@ Real defects, listed rather than silently patched.
     Whether stage 2's scoring actually separates them is an open question the
     gate at 0013 should answer, not an assumption to carry quietly.
 
+25. **`Candidate.provenance` is singular and dedup produces a group.**
+    TICKET-0010's acceptance says two posts "collapse to one `Candidate` whose
+    provenance records both posts", but `Provenance` in
+    `src/contracts/candidate.ts` is one object, not a list — so the contract as
+    written cannot record both. TICKET-0010 shipped the group as its own type
+    (`ResolvedSite.posts`, primary first, never empty) and left the contract
+    alone, because TICKET-0012 is what writes `candidates.jsonl` and the fix —
+    `provenance: Provenance[]`, or a singular primary plus an `also_seen` list —
+    is its call plus a `schema_version` bump. Cheap now, not later.
+
+26. **`SHARED_SUFFIXES` is a hand-written stand-in for the public suffix list.**
+    `registrableDomain` needs to know that `co.uk` is nobody's domain and that
+    every `*.github.io` is a different owner. The real Mozilla list is a runtime
+    dependency and a megabyte of data (no new dependency without an ADR line),
+    so `resolve.ts` carries a hand-written list instead. The cost is precise: an
+    unlisted multi-part ccTLD — `acme.com.sg` if `com.sg` were missing — resolves
+    to the suffix as its registrable domain and would collapse two unrelated
+    companies into one candidate. That is the direction the file argues is
+    dangerous, so the list leans long, and TICKET-0013's hand-check is where a
+    gap would surface. Same class of labelled guess as 14, 16, 17 and 23.
+
+27. **Dropping `ref` from a query string is a guess with teeth.** Canonicalisation
+    strips `utm_*`, `ref` and a dozen named campaign parameters, so a site that
+    gives `ref` a load-bearing meaning has two distinct pages collapse to one.
+    Nothing in the fixtures does, and keeping it means the same launch posted
+    twice with different referrer tags becomes two candidates — the exact failure
+    TICKET-0010 exists to prevent. Named in the code beside the list.
+
+28. **Two repos from one GitHub org stay two candidates.** `siteKey` keys code
+    hosts on `host/owner/repo` rather than on the owner, so one company shipping
+    two repos is two candidates. Deliberate, and the same asymmetry as 21 pointed
+    the other way: a wrong split costs one duplicate analysis a human sees in the
+    memo list, a wrong collapse deletes a company with no trace. The related
+    join this layer structurally cannot make is `acme.dev` ↔
+    `github.com/acme/acme` — nothing in either url says they are the same thing.
+    TICKET-0015 reads a repo's homepage field, which is where that belongs.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0007 are Done.**
-[TICKET-0008](./tickets/0008-ticket-cached-fetch-layer.md) shipped its transport
-half and is still Ready; [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md),
-the LLM seam and response cache, is the other Ready one.
+repo runnable. **0001–0010 are Done.**
+[TICKET-0011](./tickets/0011-ticket-query-planning.md) and
+[TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) are the two Ready
+ones.
 
-**0009 is Done.** Three tickets are Ready and two of them are on the path to
-the gate:
+**0009 and 0010 are Done.** Two tickets are Ready and one of them is on the
+path to the gate:
 
-- [TICKET-0011](./tickets/0011-ticket-query-planning.md) — the probe half.
-  `searchHn` plus `classifyHits` is exactly the number `--min-hits` counts
-  against (D-6). Ship it without the LLM clarifier; 0018 gates only that call
-  and the ticket is designed to work without it.
-- [TICKET-0010](./tickets/0010-ticket-url-resolution-and-dedup.md) — url
-  resolution and dedup, independent of 0011 and doable in either order.
+- [TICKET-0011](./tickets/0011-ticket-query-planning.md) — the probe half, and
+  the last piece before stage 1 can be wired. `searchHn` plus `classifyHits` is
+  exactly the number `--min-hits` counts against (D-6). Ship it without the LLM
+  clarifier; 0018 gates only that call and the ticket is designed to work
+  without it.
 - [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — still Ready,
   still off the critical path to the gate.
 
-0012 then needs both 0010 and 0011, and it owes the run-level failure decision
-that `searchHn` deliberately does not make (inconsistency 24). 0015 and 0016
+0012 is then unblocked. It owes three things beyond wiring: the run-level
+failure decision that `searchHn` deliberately does not make (inconsistency 24),
+the `Candidate.provenance` plurality question (inconsistency 25), and the
+`dedupeHits` → `--limit` → `resolveSites` ordering that keeps redirect
+resolution to one request per candidate rather than one per post. 0015 and 0016
 still wait on 0014, which waits on the gate.
 
 The shape is unchanged from what this section said before the backlog existed:
@@ -345,9 +405,8 @@ The shape is unchanged from what this section said before the backlog existed:
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **0006, 0007 and 0008
-   Done**; 0009 needs only its fetch half and 0010 is untouched — neither depends
-   on the other.
+3. **Stage 1 against live HN** — tickets 0006–0012. **0006–0010 Done.** 0011 is
+   the last piece before 0012 can wire the stage.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

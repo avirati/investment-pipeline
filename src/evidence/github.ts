@@ -3,6 +3,7 @@ import type { GithubAuth, GithubMode } from "../config.js";
 import { githubAuth } from "../config.js";
 import type { Evidence } from "../contracts/index.js";
 import { fetchFailedEvidence, type HttpOptions, httpGet } from "./fetch.js";
+import { collector, type Signal, type SignalSet, type UnknownSignal } from "./signal.js";
 import { makeEvidence } from "./store.js";
 
 /**
@@ -487,84 +488,11 @@ export function projectCadence(summary: CadenceSummary): Projection {
   return { title: null, text, meta: { projection: "github_commit_activity.v1", ...summary } };
 }
 
-/* -------------------------------------------------------------------------- */
-/* Signals                                                                     */
-/* -------------------------------------------------------------------------- */
-
-/** Atoms, like `Fact.value`: a metric is a number, a name or a flag. */
-export type SignalValue = string | number | boolean;
-
 /**
- * One dated, citable metric. Not a `Fact` — a fact is the model's output
- * surface and carries a statement and a confidence (`src/contracts/fact.ts`).
- * This is the mechanical layer underneath: read off an API payload or computed
- * from one by arithmetic, with no model involved and nothing to be confident
- * about. TICKET-0021's rubric is what turns these into a score.
+ * Re-exported so a caller reading GitHub signals keeps one import. The
+ * definitions live in `./signal.ts` because `./site.ts` emits the same shape.
  */
-export interface Signal {
-  /** What the rubric switches on, e.g. `github.stars`. */
-  key: string;
-  value: SignalValue;
-  /**
-   * When this was true. Rule 1: SPEC D3 scores an undated claim at 0, so every
-   * metric leaves here pinned to a moment. For an observation — a star count —
-   * that is the moment it was retrieved, which is also what makes a re-run over
-   * a warm cache reproduce the same numbers rather than drifting.
-   */
-  as_of: string;
-  /** The record this was read off. Every signal resolves to a citation. */
-  evidence_id: string;
-  /** Set when the number was computed rather than read. */
-  derived_from?: string;
-}
-
-/** A metric that could not be produced, and why. Never a zero (invariant 4). */
-export interface UnknownSignal {
-  key: string;
-  reason: string;
-}
-
-export interface SignalSet {
-  signals: Signal[];
-  unknowns: UnknownSignal[];
-}
-
-/**
- * Collect signals for one evidence record. `add` is the only way a metric gets
- * out of this module, which is how rule 1 stays structural rather than
- * remembered: a value that is null, blank or not a finite number becomes an
- * `unknown` with a reason instead of a signal.
- */
-function collector(evidenceId: string, at: string) {
-  const signals: Signal[] = [];
-  const unknowns: UnknownSignal[] = [];
-
-  const add = (
-    key: string,
-    value: SignalValue | null | undefined,
-    missing: string,
-    derivedFrom?: string,
-  ): void => {
-    const empty =
-      value === null ||
-      value === undefined ||
-      value === "" ||
-      (typeof value === "number" && !Number.isFinite(value));
-    if (empty) {
-      unknowns.push({ key, reason: missing });
-      return;
-    }
-    signals.push({
-      key,
-      value,
-      as_of: at,
-      evidence_id: evidenceId,
-      ...(derivedFrom ? { derived_from: derivedFrom } : {}),
-    });
-  };
-
-  return { signals, unknowns, add };
-}
+export type { Signal, SignalSet, SignalValue, UnknownSignal } from "./signal.js";
 
 /** Whole days between two timestamps, or null when either is unreadable. */
 export function daysBetween(from: string | null, to: string): number | null {

@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `99f2a25` · **Phase: contracts, config and evidence store pinned; no stage logic yet**
+Last updated: 2026-08-22 · at commit `51661e3` · **Phase: the network layer exists; no stage logic yet**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -20,23 +20,29 @@ variable names itself, and nothing validates at import — the offline paths sti
 run with no `.env` at all. `src/evidence/store.ts` now owns the citation
 guarantee's mechanics — one definition of an evidence id, one text limit, a
 double-write that is a no-op and a read that misses instead of throwing — so the
-fetch layer and the memo validator have something to build against. Nothing
-calls it yet. Tickets 0001–0007 are done.
+fetch layer and the memo validator have something to build against.
+`src/evidence/fetch.ts` is the first module that can touch the network and the
+one choke point CLAUDE.md requires: `httpGet` resolves for every outcome rather
+than throwing, a cache hit replays the original `retrieved_at` so a re-run
+produces the same evidence ids, and a dead site becomes a `fetch_failed` record.
+Nothing calls either of them yet. Tickets 0001–0007 are done; **0008 is half
+done** — its HTML→text half is held at D-8 below.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 78 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007). Offline, no key |
-| Worklogs 0001–0010 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 7 Done, 2 Ready (0008, 0018), 21 Blocked. Status is in each ticket header |
+| Test strategy | Written; 103 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 25 fetch (0008). Offline, no key |
+| Worklogs 0001–0011 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 7 Done, 2 Ready (0008 half shipped, 0018), 21 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
 | Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005) |
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
+| Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records (0008, transport half). HTML→text pending D-8 |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
 | Stages 1–3 | Not started — every command exits 70 |
 | Sample run, walkthrough video | Not started |
@@ -55,6 +61,7 @@ default, state that you took it, and record it in that session's worklog.
 | **D-5** | Which topic becomes the committed sample run | First real stage-1 output | Pick whichever topic yields the cleanest 10–15 candidates and say why in the worklog |
 | **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
+| **D-8** | `@mozilla/readability` needs a DOM — `jsdom` or equivalent — which no document here names. Ship it, or extract with `cheerio` alone? | Author. It amends ADR-0005 either way | **cheerio only.** ADR-0005 itself says "our extraction is mostly structured, not prose"; three dependencies for article prose this pipeline barely reads is the wrong trade. Record it as an ADR-0005 amendment |
 
 ### Recently closed
 
@@ -166,18 +173,30 @@ Real defects, listed rather than silently patched.
     at this size, and the reason `write` recomputes the id rather than trusting
     it. If more constructors-by-convention accumulate, a branded type is the fix.
 
+16. **`HTTP_CACHE_MAX_AGE_MS` is an unmeasured guess, and it is load-bearing.**
+    A cache hit replays the stored `retrieved_at`, which is what makes a re-run
+    produce the same evidence ids — and also what makes a stale entry able to
+    misdate a run. TICKET-0008 pinned 24 hours: long enough for a working
+    session and a re-run after a crash, short enough that a citation cannot be
+    wrong by more than a day. Revise at the first multi-day run. Same kind of
+    labelled guess as 14; no fork behind it, only a number.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0007 are Done.** Two tickets are Ready:
-[TICKET-0008](./tickets/0008-ticket-cached-fetch-layer.md), the cached fetch
-layer, and [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md), the
-LLM seam and response cache. **Resume at 0008** — it is the next link in the
-stage-1 chain and the first module that touches the network, while 0018 only
-unblocks 0011's clarifier, which 0011 is explicitly designed to ship without.
+repo runnable. **0001–0007 are Done.**
+[TICKET-0008](./tickets/0008-ticket-cached-fetch-layer.md) shipped its transport
+half and is still Ready; [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md),
+the LLM seam and response cache, is the other Ready one.
+
+**Resume by answering D-8**, then finish 0008's HTML→text half — it is the last
+thing between here and 0009, and 0009, 0010, 0015 and 0016 all wait on it. If
+D-8 is unanswered, take its default (cheerio only), say so in the worklog, and
+amend ADR-0005's consequences in the same commit. 0018 still only unblocks
+0011's clarifier, which 0011 is designed to ship without.
 
 The shape is unchanged from what this section said before the backlog existed:
 
@@ -185,7 +204,7 @@ The shape is unchanged from what this section said before the backlog existed:
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
 3. **Stage 1 against live HN** — tickets 0006–0012. **0006 and 0007 Done**;
-   0008 next.
+   0008 half done — transport shipped, extraction held at D-8.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

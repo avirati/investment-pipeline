@@ -52,3 +52,4 @@ are unfinished, not delegated.
 | [0008](./0008-zod-contracts.md) | 2026-08-22 | Zod contracts — the stage boundary |
 | [0009](./0009-config-and-model-routing.md) | 2026-08-22 | Config and model routing |
 | [0010](./0010-evidence-store.md) | 2026-08-22 | Evidence store |
+| [0011](./0011-cached-fetch-layer.md) | 2026-08-22 | Cached fetch layer |

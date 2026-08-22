@@ -189,6 +189,7 @@ The distinction that matters: *missing data* degrades coverage and is reported;
 src/
   cli.ts                 commander entry — source | analyse | memo | run
   config.ts              env parsing, model routing
+  run.ts                 run ids, run directory, artifact paths
   contracts/             Zod schemas — the stage boundary
   source/
     plan.ts              probe + clarification → query_plan.json

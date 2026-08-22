@@ -8,6 +8,7 @@ import {
   Evidence,
   type EvidenceType,
 } from "../contracts/index.js";
+import { RUNS_ROOT } from "../run.js";
 
 /**
  * The evidence store (TICKET-0007, ADR-0003). Retrieval writes one JSON record
@@ -29,8 +30,14 @@ import {
  *    and both the cut and the original length are written into `meta`.
  */
 
-/** Run artifacts live under `runs/<run_id>/` (ARCHITECTURE §4). */
-export const RUNS_ROOT = "runs";
+/**
+ * Run artifacts live under `runs/<run_id>/` (ARCHITECTURE §4). Defined in
+ * `src/run.ts`, which owns the run layout, and re-exported here so this
+ * module's existing callers keep one import. Note the two spellings of `root`:
+ * `evidenceStore(id, root)` takes the *runs* root, `runPaths(id, root)` takes
+ * the repo root.
+ */
+export { RUNS_ROOT };
 
 /**
  * Per-record text budget. One constant because ADR-0003 identifies bundle

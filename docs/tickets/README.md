@@ -59,8 +59,8 @@ index of the same thing. Three values, and only three:
 | [0006](./0006-ticket-config-and-model-routing.md) | Config and model routing | Provider swap is an env change | Done |
 | [0007](./0007-ticket-evidence-store.md) | Evidence store | Content-addressed ids | Done |
 | [0008](./0008-ticket-cached-fetch-layer.md) | Cached fetch layer | One choke point for all network | Done |
-| [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | **Reopened** — two fixes from the 0013 gate |
-| [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | **Reopened** — three fixes from the 0013 gate |
+| [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | **Reopened** — three fixes from the 0013 gate (F1, F2, and F4 moved from 0010) |
+| [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | Done — reopened by the gate, F3 and F5 landed, F4 moved to 0009 |
 | [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | Done — the clarifier is a seam 0018 fills |
 | [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | Done |
 | **[0013](./0013-ticket-gate-hand-check-candidates.md)** | **GATE — hand-check the candidates** | **Junk rate · D-5 · D-6** | Done — [worklog 0022](../worklog/0022-gate-hand-check.md) |

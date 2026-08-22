@@ -20,6 +20,7 @@ that is retroactively made to look correct is worth nothing.
 | How the thing was built, session by session | The numbered entries here |
 | How prompts evolved and why | `prompts/CHANGELOG.md` — arrives with stage 2 |
 | How prompt and rubric changes were evaluated | `docs/evals/` — arrives with the first golden set |
+| What is left to build, in order | [../tickets/](../tickets/) |
 | What was cut and why | [../SCOPE.md](../SCOPE.md) |
 | How the AI was steered | [../../CLAUDE.md](../../CLAUDE.md) |
 
@@ -43,3 +44,4 @@ are unfinished, not delegated.
 |---|---|---|
 | [0001](./0001-scoping-and-architecture.md) | 2026-08-22 | Scoping, thesis selection, and architecture |
 | [0002](./0002-query-planning-tests-and-setup.md) | 2026-08-22 | Query planning, tests, CLI, setup |
+| [0003](./0003-ticket-breakdown.md) | 2026-08-22 | Ticket breakdown |

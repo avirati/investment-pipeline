@@ -70,6 +70,7 @@ the run if a memo cites a source that does not exist.
 | [docs/SPEC.md](docs/SPEC.md) | Thesis, rubric, call thresholds, memo contract |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Stages, contracts, replay, failure policy |
 | [docs/STATE.md](docs/STATE.md) | Current phase, open decisions, next step — **start here** |
+| [docs/tickets/](docs/tickets/) | The backlog — 30 tickets in dependency order |
 | [docs/SCOPE.md](docs/SCOPE.md) | What is not being built, and why |
 | [docs/TESTING.md](docs/TESTING.md) | What is tested, what is not, and the eval harness that was cut |
 | [docs/adr/](docs/adr/) | Eight decision records, each with the rejected options |

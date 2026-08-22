@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `c6ebd42` · **Phase: specification complete, no code yet**
+Last updated: 2026-08-22 · at commit `11d871d` · **Phase: specification complete, backlog derived, no code yet**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -19,6 +19,7 @@ Specification is written and committed across 12 atomic commits. There is no
 | ADRs 0001–0008 | Written |
 | Test strategy | Written, no tests exist |
 | Worklogs 0001–0002 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets derived from these docs |
 | Scaffold, `setup.sh`, `./pipeline` | Not started |
 | Stages 1–3 | Not started |
 | Sample run, walkthrough video | Not started |
@@ -72,22 +73,26 @@ Real defects, listed rather than silently patched.
 
 ## Next session — start here
 
-1. **Scaffold.** `package.json`, `tsconfig`, `biome`, `vitest`, `.env.example`,
-   `setup.sh`, `./pipeline`. Resolve D-1 and D-3 while doing it.
-2. **Zod contracts** in `src/contracts/` — `QueryPlan`, `Candidate`, `Evidence`,
-   `Fact`, `Analysis`. These are the stage boundary; get them right before any
+The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
+from the documents in this directory, in dependency order, each one leaving the
+repo runnable. Start at [TICKET-0001](./tickets/0001-ticket-repo-scaffold.md) and
+work down the index.
+
+The shape is unchanged from what this section said before the backlog existed:
+
+1. **Scaffold** — tickets 0001–0004. Resolves D-1 and D-3.
+2. **Zod contracts** — ticket 0005. The stage boundary; get it right before any
    stage logic exists.
-3. **Stage 1 against live HN.** Query planning (probe first), then fetch,
-   resolve, dedup.
-4. **Stop and hand-check the candidate list before writing a line of stage 2.**
-   This gate is deliberate. Stage 1 gates everything downstream, and the probe
-   threshold (D-6) and the usable-vs-unusable classifier can only be validated
-   against real output. Record what the junk rate actually was.
-5. Capture fixtures from that run so the test suite is offline from the start.
+3. **Stage 1 against live HN** — tickets 0006–0012.
+4. **Stop and hand-check the candidate list before writing a line of stage 2** —
+   [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md). This gate
+   is deliberate. Stage 1 gates everything downstream, and the probe threshold
+   (D-6) and the usable-vs-unusable classifier can only be validated against real
+   output. Record what the junk rate actually was.
+5. Capture fixtures from that run — ticket 0014 — so the suite is offline from
+   the start.
 
 Do not build stages 2 and 3 speculatively before step 4 reports back.
-
----
 
 ## Invariants a new session must not break
 

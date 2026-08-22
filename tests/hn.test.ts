@@ -13,6 +13,7 @@ import {
   hnItemUrl,
   hnSearchUrl,
   parseSearchResponse,
+  searchHn,
   windowStartUnix,
 } from "../src/source/hn.js";
 
@@ -321,5 +322,203 @@ describe("classifyHits", () => {
     expect(usable).toEqual([]);
     expect(rejected).toHaveLength(5);
     expect(rejected.every((c) => c.classification.kind === "no_url")).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// searchHn — the fetch half. Every test here drives a stub transport through
+// the real `httpGet`, so url building, pagination and the cache-disabled path
+// are the production ones; only the socket is fake (TESTING §4: offline, no key).
+// ---------------------------------------------------------------------------
+
+const FIXTURE_PAGE_SIZE = 5;
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+/**
+ * A transport that answers from a route table keyed by `label:page`, so a test
+ * says what each arm's each page returns and nothing depends on call order.
+ * An unrouted request is a test bug and says so rather than defaulting to empty.
+ */
+function router(routes: Record<string, Response | (() => Response)>) {
+  const calls: { label: string; page: number; url: string }[] = [];
+  const transport = async (url: string): Promise<Response> => {
+    const params = new URL(url).searchParams;
+    const query = params.get("query") ?? "";
+    const tags = params.get("tags") ?? "";
+    const label = tags.includes("show_hn")
+      ? "show_hn"
+      : query.endsWith(" launch")
+        ? "launch"
+        : query.endsWith(" raises seed funding")
+          ? "funding"
+          : "raw";
+    const page = Number(params.get("page") ?? "0");
+    calls.push({ label, page, url });
+    const route = routes[`${label}:${page}`] ?? routes.default;
+    if (!route) throw new Error(`no fixture routed for ${label}:${page}`);
+    const response = typeof route === "function" ? route() : route;
+    return response.clone();
+  };
+  return { transport, calls };
+}
+
+function searchOptions(transport: (url: string) => Promise<Response>, over = {}) {
+  return {
+    hitsPerPage: FIXTURE_PAGE_SIZE,
+    now: () => NOW,
+    // `cacheDir: ""` disables the on-disk cache: these tests are about
+    // pagination, not about the cache, which has its own suite.
+    http: { transport, cacheDir: "", retry: { retries: 0 }, sleep: async () => {} },
+    ...over,
+  };
+}
+
+describe("searchHn", () => {
+  it("paginates past page 1 and runs all four expansion arms", async () => {
+    const { transport, calls } = router({
+      "raw:0": json(fixture("search-page-0")),
+      "raw:1": json(fixture("search-page-1")),
+      default: json(fixture("search-empty")),
+    });
+    const result = await searchHn("llm observability", searchOptions(transport));
+
+    expect(result.pages_fetched).toBe(5); // raw's two, plus one each for the rest
+    expect(result.arms.map((arm) => arm.label)).toEqual(["raw", "show_hn", "launch", "funding"]);
+    expect(calls.filter((call) => call.label === "raw").map((call) => call.page)).toEqual([0, 1]);
+    expect(result.hits).toHaveLength(10);
+    expect(result.failures).toEqual([]);
+  });
+
+  it("carries the window and the arm's tags into every url it requests", async () => {
+    const { transport, calls } = router({ default: json(fixture("search-empty")) });
+    await searchHn("llm observability", searchOptions(transport, { sinceDays: 180 }));
+
+    for (const call of calls) {
+      const params = new URL(call.url).searchParams;
+      expect(params.get("numericFilters")).toBe(`created_at_i>${windowStartUnix(180, NOW)}`);
+    }
+    const showHn = calls.find((call) => call.label === "show_hn");
+    expect(new URL(showHn?.url ?? "").searchParams.get("tags")).toBe("story,show_hn");
+  });
+
+  it("dedups across arms and records every arm that found a hit", async () => {
+    const page0 = fixture("search-page-0");
+    const { transport } = router({
+      "raw:0": json(page0),
+      "show_hn:0": json(page0),
+      default: json(fixture("search-empty")),
+    });
+    const result = await searchHn("llm observability", searchOptions(transport));
+
+    expect(result.hits).toHaveLength(FIXTURE_PAGE_SIZE);
+    expect(result.hits.every((sourced) => sourced.found_by.length === 2)).toBe(true);
+    expect(result.hits[0]?.found_by).toEqual(["raw", "show_hn"]);
+
+    // The arm returned five hits and contributed none: exactly the signal
+    // TICKET-0013 needs to decide whether an arm earns its request budget.
+    const showHn = result.arms.find((arm) => arm.label === "show_hn");
+    expect(showHn?.hits).toBe(FIXTURE_PAGE_SIZE);
+    expect(showHn?.new_hits).toBe(0);
+  });
+
+  it("returns [] for a seed nobody has posted about, rather than throwing", async () => {
+    const { transport } = router({ default: json(fixture("search-empty")) });
+    const result = await searchHn("qzxvnowaythisisareal term xyzzy", searchOptions(transport));
+
+    expect(result.hits).toEqual([]);
+    expect(result.failures).toEqual([]);
+    expect(result.arms.every((arm) => arm.hits === 0)).toBe(true);
+  });
+
+  it("stops an arm at the page count Algolia reports", async () => {
+    const single = { ...(fixture("search-page-0") as object), nbPages: 1 };
+    const { transport, calls } = router({
+      "raw:0": json(single),
+      default: json(fixture("search-empty")),
+    });
+    await searchHn("llm observability", searchOptions(transport));
+
+    expect(calls.filter((call) => call.label === "raw")).toHaveLength(1);
+  });
+
+  it("stops an arm on a short page even when nbPages disagrees", async () => {
+    // Four hits for a five-hit request: the last page, whatever the count says.
+    const page0 = fixture("search-page-0") as { hits: unknown[] };
+    const short = { ...page0, hits: page0.hits.slice(0, 4), nbPages: 36 };
+    const { transport, calls } = router({
+      "raw:0": json(short),
+      default: json(fixture("search-empty")),
+    });
+    await searchHn("llm observability", searchOptions(transport));
+
+    expect(calls.filter((call) => call.label === "raw")).toHaveLength(1);
+  });
+
+  it("records a source failure as data and keeps the arms that worked", async () => {
+    const { transport } = router({
+      "raw:0": json(fixture("search-page-0")),
+      "raw:1": json({ error: "boom" }, 500),
+      default: json(fixture("search-empty")),
+    });
+    const result = await searchHn("llm observability", searchOptions(transport));
+
+    expect(result.failures).toHaveLength(1);
+    expect(result.failures[0]).toMatchObject({ label: "raw", page: 1, status: 500 });
+    // ARCHITECTURE §5 fails the *run* on a source failure — but that is
+    // TICKET-0012's call to make, and it needs page 0's five hits to make it.
+    expect(result.hits).toHaveLength(FIXTURE_PAGE_SIZE);
+    expect(result.arms).toHaveLength(4);
+  });
+
+  it("treats a 200 that is not a search response as a failure, not a crash", async () => {
+    const { transport, calls } = router({
+      "raw:0": new Response("<html>gateway error</html>", { status: 200 }),
+      default: json(fixture("search-empty")),
+    });
+    const result = await searchHn("llm observability", searchOptions(transport));
+
+    expect(result.failures[0]?.status).toBe(200);
+    expect(result.failures[0]?.reason).toMatch(/unreadable response/);
+    // The arm stops rather than spending page 1 on the same broken endpoint.
+    expect(calls.filter((call) => call.label === "raw")).toHaveLength(1);
+    expect(result.arms).toHaveLength(4);
+  });
+
+  it("surfaces dropped hits from every page it read", async () => {
+    const { transport } = router({
+      "raw:0": json(fixture("search-malformed")),
+      default: json(fixture("search-empty")),
+    });
+    const result = await searchHn("llm observability", searchOptions(transport));
+
+    // Four of the malformed fixture's five survive; the one with no objectID
+    // is dropped with a reason rather than taking the page down with it.
+    expect(result.hits).toHaveLength(4);
+    expect(result.dropped).toHaveLength(1);
+    expect(result.dropped[0]?.reason).toBeTruthy();
+  });
+
+  it("classifies what it fetched — the probe's number, end to end", async () => {
+    const { transport } = router({
+      "raw:0": json(fixture("search-page-0")),
+      default: json(fixture("search-empty")),
+    });
+    const result = await searchHn("llm observability", searchOptions(transport));
+    const { usable, rejected } = classifyHits(result.hits.map((sourced) => sourced.hit));
+
+    // Two GitHub repos usable; a signoz blog post, an InfoQ article and an
+    // Ask HN post rejected. This is the count D-6's threshold is compared to.
+    expect(usable).toHaveLength(2);
+    expect(rejected.map((entry) => entry.classification.kind).sort()).toEqual([
+      "content",
+      "content",
+      "no_url",
+    ]);
   });
 });

@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 import { pathToFileURL } from "node:url";
 import { Command, InvalidArgumentError } from "commander";
-import { loadDotEnv } from "./config.js";
+import { ConfigError, loadDotEnv } from "./config.js";
 import { EXIT } from "./exit-codes.js";
+import { RunError } from "./run.js";
+import { runSource, type SourceOutcome } from "./source/index.js";
+import { PlanError } from "./source/plan.js";
 
 const TITLE = "investment-pipeline — startup triage";
 
@@ -74,6 +77,110 @@ function notImplemented(command: string, ticket: string): never {
   process.exit(EXIT.UNIMPLEMENTED);
 }
 
+/**
+ * The exit-code contract in the `--help` epilogue, applied.
+ *
+ * A usage error is the operator's invocation — an unusable `--run`, a
+ * `--query-plan` that is not there, configuration the run needs and has not
+ * got. A data gap is the world being thin, including the source itself being
+ * down: `SourceError` covers all three of its kinds, and the message is what
+ * distinguishes them because the run's own manifest records which one it was.
+ * Anything else is a bug and is allowed to crash with its stack.
+ */
+function exitFor(error: unknown): number | null {
+  if (error instanceof RunError || error instanceof PlanError) return EXIT.USAGE;
+  if (error instanceof ConfigError) return EXIT.USAGE;
+  if (error instanceof Error && error.name === "SourceError") return EXIT.DATA_GAP;
+  return null;
+}
+
+function fail(error: unknown): never {
+  const code = exitFor(error);
+  if (code === null) throw error;
+  process.stderr.write(`pipeline: ${error instanceof Error ? error.message : String(error)}\n`);
+  process.exit(code);
+}
+
+/** What a person reads after a run. The manifest is what a reviewer reads. */
+function sourceSummary(outcome: SourceOutcome): string {
+  const { stage } = outcome;
+  const lines = [`run ${outcome.run_id}`];
+  if (stage.query) {
+    const probe = stage.query.probe;
+    const measured = probe ? ` (probe: ${probe.usable} usable of ${probe.hits})` : "";
+    lines.push(
+      `  query       ${JSON.stringify(stage.query.chosen)} — ${stage.query.chosen_by}${measured}`,
+    );
+  } else {
+    lines.push(
+      `  seed        ${outcome.manifest.seed.value} — url list, ` +
+        `${stage.filter.usable_posts} usable, ${stage.filter.rejected_posts} rejected`,
+    );
+  }
+  if (stage.search) {
+    lines.push(
+      `  search      ${stage.search.distinct_posts} posts · ${stage.search.arms.length} arms · ` +
+        `${stage.search.pages_fetched} pages · ${stage.search.failures.length} failures`,
+    );
+  }
+  if (stage.fallback) {
+    lines.push(
+      `  fallback    fired — window widened ${stage.fallback.from_days}d → ${stage.fallback.to_days}d, ` +
+        `${stage.fallback.sites_before} → ${stage.fallback.sites_after} sites`,
+    );
+  }
+  if (stage.search) {
+    lines.push(
+      `  filtered    ${stage.filter.usable_posts} usable, ${stage.filter.rejected_posts} rejected`,
+    );
+  }
+  lines.push(
+    `  companies   ${stage.dedup.sites} after dedup` +
+      (stage.dedup.sites_with_multiple_posts > 0
+        ? ` (${stage.dedup.sites_with_multiple_posts} found more than once)`
+        : ""),
+  );
+  if (stage.resolve) {
+    lines.push(
+      `  resolved    ${stage.resolve.requests} requests · ${stage.resolve.redirected} redirected · ` +
+        `${stage.resolve.unreachable} unreachable`,
+    );
+  }
+  lines.push(`  candidates  ${stage.counts.candidates} → ${outcome.paths.candidates}`);
+  lines.push(`  manifest    ${outcome.paths.manifest}`);
+  lines.push(`  next        ./pipeline analyse --run ${outcome.run_id}`);
+  return `${lines.join("\n")}\n`;
+}
+
+interface SourceFlags {
+  seed: string;
+  limit: number;
+  minHits: number;
+  since: number;
+  expand: boolean;
+  queryPlan?: string;
+  run?: string;
+  replay?: boolean;
+}
+
+async function sourceAction(flags: SourceFlags): Promise<void> {
+  try {
+    const outcome = await runSource({
+      seed: flags.seed,
+      limit: flags.limit,
+      minHits: flags.minHits,
+      sinceDays: flags.since,
+      expand: flags.expand,
+      ...(flags.queryPlan === undefined ? {} : { queryPlanFile: flags.queryPlan }),
+      ...(flags.run === undefined ? {} : { runId: flags.run }),
+      replay: flags.replay === true,
+    });
+    process.stdout.write(sourceSummary(outcome));
+  } catch (error) {
+    fail(error);
+  }
+}
+
 export function buildProgram(): Command {
   const program = new Command()
     .name("pipeline")
@@ -95,7 +202,7 @@ export function buildProgram(): Command {
       program.command("source").description("Stage 1 only — plan the query and find candidates"),
     ),
     { replay: true },
-  ).action(() => notImplemented("source", "TICKET-0012"));
+  ).action(sourceAction);
 
   program
     .command("analyse")
@@ -125,5 +232,12 @@ if (isEntrypoint()) {
   // the caller's environment alone. Absent is fine — every offline path runs
   // without it (TICKET-0006).
   loadDotEnv();
-  buildProgram().parse(process.argv);
+  // `parseAsync`, because stage 1 is asynchronous and commander would otherwise
+  // return before the run finished.
+  buildProgram()
+    .parseAsync(process.argv)
+    .catch((error: unknown) => {
+      process.stderr.write(`pipeline: ${error instanceof Error ? error.stack : String(error)}\n`);
+      process.exit(EXIT.INVARIANT);
+    });
 }

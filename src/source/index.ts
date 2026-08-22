@@ -295,6 +295,8 @@ export async function runSource(options: SourceOptions): Promise<SourceOutcome> 
   let fallback: SourceStage["fallback"] = null;
   let sites: ResolvedSite[] = [];
   let usablePosts = 0;
+  /** Companies after grouping. Sites on the topic path, candidates on the url path. */
+  let groupedSites = 0;
   let rejectedPosts: { kind: string }[] = [];
   let resolved: { sites: ResolvedSiteWithRedirect[]; rejected: { kind: string }[] } | null = null;
   /** Requests made, which is the shortlist — resolution can merge two sites into one. */
@@ -336,8 +338,11 @@ export async function runSource(options: SourceOptions): Promise<SourceOutcome> 
         rejected_by_kind: countKinds(rejectedPosts),
       },
       dedup: {
-        sites: sites.length,
-        sites_with_multiple_posts: sites.filter((site) => site.posts.length > 1).length,
+        sites: groupedSites,
+        sites_with_multiple_posts:
+          form === "urls"
+            ? candidates.filter((candidate) => candidate.provenance.length > 1).length
+            : sites.filter((site) => site.posts.length > 1).length,
       },
       resolve:
         resolved === null
@@ -386,7 +391,11 @@ export async function runSource(options: SourceOptions): Promise<SourceOutcome> 
     candidates = built.candidates.slice(0, limit);
     dropped = built.rejected.length;
     rejectedPosts = built.rejected;
-    usablePosts = built.candidates.length;
+    // Lines, not candidates: two lines pointing at one company are two usable
+    // lines and one candidate, and a count that conflated them would hide the
+    // collapse this stage exists to make.
+    usablePosts = entries.length - built.rejected.length;
+    groupedSites = built.candidates.length;
     if (candidates.length === 0) {
       fail("no_candidates", `no usable urls in ${seed} (${built.rejected.length} rejected)`);
     }
@@ -438,6 +447,7 @@ export async function runSource(options: SourceOptions): Promise<SourceOutcome> 
   rejectedPosts = classified.rejected.map((entry) => ({ kind: entry.classification.kind }));
 
   sites = dedupeHits(search.hits).sites;
+  groupedSites = sites.length;
 
   // The documented fallback (SCOPE's risks table): a thin yield widens the
   // window and searches again. It widens the *arms* only if the operator did
@@ -466,6 +476,7 @@ export async function runSource(options: SourceOptions): Promise<SourceOutcome> 
     usablePosts = reclassified.usable.length;
     rejectedPosts = reclassified.rejected.map((entry) => ({ kind: entry.classification.kind }));
     sites = dedupeHits(merged).sites;
+    groupedSites = sites.length;
     fallback = {
       fired: true,
       from_days: sinceDays,

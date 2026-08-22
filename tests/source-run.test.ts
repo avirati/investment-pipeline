@@ -372,3 +372,23 @@ describe("runSource — the urls seed form", () => {
     });
   });
 });
+
+describe("runSource — what the manifest counts", () => {
+  // Two lines pointing at one company are two usable lines and one candidate.
+  // Conflating them would hide the collapse this stage exists to make.
+  it("counts url-list lines as lines and companies as companies", async () => {
+    const { http } = stub();
+    const path = join(root, "urls.txt");
+    writeFileSync(path, "https://acme.dev\nhttps://acme.dev/pricing\nhttps://medium.com/@x/p\n");
+    const outcome = await runSource({ seed: path, root, http });
+    const source = stage(root, outcome.run_id);
+    expect(source.filter).toMatchObject({ usable_posts: 2, rejected_posts: 1 });
+    expect(source.dedup).toEqual({ sites: 1, sites_with_multiple_posts: 1 });
+  });
+
+  it("counts sites after dedup on the topic path", async () => {
+    const { http } = stub({ search: [searchPage(6)] });
+    const outcome = await runSource({ seed: SEED, root, http, limit: 2 });
+    expect(stage(root, outcome.run_id).dedup.sites).toBe(6);
+  });
+});

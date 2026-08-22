@@ -1,6 +1,6 @@
 # TICKET-0011 — Query planning: probe, then clarify (`src/source/plan.ts`)
 
-Status: **Done** — [worklog 0019](../worklog/0019-query-planning.md). The probe half, the artifact and the whole of ADR-0008's context table shipped; the clarifier is an injected seam (`Clarifier`, `Chooser`) that TICKET-0018 fills, and the below-threshold branch is tested through stubs · Depends on: 0009 (Done); 0018 for the clarifier call · Blocks: 0012
+Status: **Done** — [worklog 0019](../worklog/0019-query-planning.md). The probe half, the artifact and the whole of ADR-0008's context table shipped; the clarifier is an injected seam (`Clarifier`, `Chooser`) and the below-threshold branch is tested through stubs. **Reopens to wire it:** TICKET-0018 shipped `callModel` ([worklog 0025](../worklog/0025-llm-provider-and-cache.md)), but `withStructuredOutput` needs an object schema while `clarify-query.v1` asks for a bare JSON array — so wiring costs a `prompts/clarify-query.v2.md`, which also needs the rubric behind `{{thesis}}` (0021) · Depends on: 0009 (Done), 0018 (Done); 0021 for `{{thesis}}` · Blocks: 0012
 Reads: [ADR-0008](../adr/0008-query-planning.md) in full, [SPEC §3.1](../SPEC.md), [TESTING §5](../TESTING.md)
 
 ## Why

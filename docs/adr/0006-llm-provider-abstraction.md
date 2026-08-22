@@ -63,3 +63,38 @@ so replay works from a fresh clone with no services running. See
 
 The dependency's churn costs more than the ~150 lines it saves, or the pipeline
 settles permanently on one provider.
+
+---
+
+## Amendment — 2026-08-22 · the packages, pinned, and where the seam leaked
+
+Recorded in [TICKET-0018](../tickets/0018-ticket-llm-provider-and-cache.md), the
+first code behind this ADR. CLAUDE.md wants a line in an ADR for every runtime
+dependency; these are the three, at exact versions:
+
+| Package | Version | Why |
+|---|---|---|
+| `@langchain/core` | 1.2.9 | `withStructuredOutput`, the message and runnable types |
+| `@langchain/openai` | 1.5.10 | `LLM_PROVIDER=openai`, the default adapter |
+| `@langchain/anthropic` | 1.5.8 | `LLM_PROVIDER=anthropic`, the second provider `.env.example` and `LLM_PROVIDERS` already name |
+
+Exact, not caret: the "version churn is real" line above is the reason, and a
+range would let a minor bump change structured-output behaviour under a cache
+whose keys do not include a library version. `ollama` still has no adapter and
+the sketch line above stays aspirational (STATE inconsistency 10).
+
+**Both are loaded behind `await import`**, not at module top level, so the
+offline paths — `memo`, a replay, the whole test suite — never load a provider
+SDK they will not call.
+
+**Two places the abstraction leaked**, both predicted by the "leak" paragraph
+above and both worth naming rather than discovering twice:
+
+1. `usage_metadata` is typed off a message-structure generic and resolves to
+   `never` on the `BaseMessage` a runnable returns, so token counts are read
+   through one narrow structural type in `src/llm/provider.ts`.
+2. `withStructuredOutput` requires an **object** schema (`RunOutput extends
+   Record<string, any>`). A prompt whose natural answer is a bare JSON array —
+   `prompts/clarify-query.v1.md` is one — needs a wrapper object, and therefore
+   a prompt revision to match. Handed to TICKET-0011's clarifier wiring rather
+   than papered over here.

@@ -66,3 +66,4 @@ are unfinished, not delegated.
 | [0022](./0022-gate-hand-check.md) | 2026-08-22 | The gate: four live runs read by hand; TICKET-0013 closes |
 | [0023](./0023-gate-fixes-canonicalisation.md) | 2026-08-22 | The gate's canonicalisation fixes; TICKET-0010 closes again |
 | [0024](./0024-gate-fixes-classifier-and-naming.md) | 2026-08-22 | The gate's classifier and naming fixes; junk 5 → 1; TICKET-0009 closes again |
+| [0025](./0025-llm-provider-and-cache.md) | 2026-08-22 | LLM provider seam and the committed response cache; TICKET-0018 closes |

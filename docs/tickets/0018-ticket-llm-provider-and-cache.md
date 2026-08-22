@@ -1,6 +1,6 @@
 # TICKET-0018 — LLM provider seam and response cache
 
-Status: **Ready** — all dependencies Done · Depends on: 0006 · Blocks: 0011 (clarifier call), 0020
+Status: **Done** — [worklog 0025](../worklog/0025-llm-provider-and-cache.md). `src/llm/cache.ts` and `src/llm/provider.ts` ship with 25 offline tests against a stub model; no live provider call has been made, and `.cache/llm/` is committed-by-policy and empty in fact · Depends on: 0006 (Done) · Blocks: 0011 (clarifier call — also needs the rubric for `{{thesis}}`, so 0021), 0020
 Reads: [ADR-0006](../adr/0006-llm-provider-abstraction.md), [ARCHITECTURE §4](../ARCHITECTURE.md#4-replay)
 
 ## Sequencing

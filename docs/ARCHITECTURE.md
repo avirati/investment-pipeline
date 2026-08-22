@@ -149,7 +149,9 @@ runs/<run_id>/
   candidates.jsonl
   evidence/*.json
   analyses/*.json
-.cache/llm/<hash>.json   keyed on sha256(provider|model|prompt_version|input)
+.cache/llm/<hash>.json   keyed on sha256 over provider, model, prompt id,
+                         prompt version, output schema version and the
+                         rendered input (src/llm/cache.ts)
 ```
 
 - `pipeline memo --run <id>` re-renders memos from committed analyses. Zero API

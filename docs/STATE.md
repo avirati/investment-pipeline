@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `1654dd9` · **Phase: stage 1 — sourcing, url resolution and query planning are all complete; nothing has yet touched the live API**
+Last updated: 2026-08-22 · at commit `c4dfbe1` · **Phase: stage 1 — every piece the `source` command composes now exists, including run identity and candidate derivation; the command itself is unwritten and nothing has yet touched the live API**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -104,6 +104,27 @@ LLM chooses words, code chooses filters" stops being a convention — model outp
 reaches `query=` and nothing else, one line, deduped, length-capped, at most
 four. **TICKET-0011 is Done.**
 
+TICKET-0012 has started, from the inside out. Three pieces the wiring composes
+now exist. `Candidate.provenance` is a **non-empty list, primary first**
+(`schema_version` 2) — the fix for inconsistency 25, expressed as a tuple with a
+rest element so `provenance[0]` needs no undefined check — and it gained three
+fields the wiring found it needed: `title` (the post title the name was derived
+from), `posted_url` (the link as submitted, so a redirect is visible in one
+JSONL line) and `posted_at`, which is null when the hit carried no date while
+`at` stays the run clock. `src/run.ts` owns run identity for all three stages:
+`deriveRunId` is `<utc-day>-<seed-slug>` derived from the seed *as typed*
+(the id has to exist before the plan is written into the directory it names),
+`validateRunId` rejects an operator's `--run` rather than sanitising it,
+`runPaths` is the single definition of ARCHITECTURE §4's layout, and
+`createRunDir` is a bare `mkdir` — ADR-0001's concurrency guard without the race
+an `existsSync` check would leave — which only `--replay` may reuse.
+`src/source/candidate.ts` is the last pure step: a name is **lifted verbatim
+from the post title or it is the company's own address**, never composed, and a
+title is read as a name only when a separator splits a short head from a tail.
+Slugs are derived once, deduplicated within the run, and reserved only after the
+candidate parses. **TICKET-0012 is In progress**; `./pipeline source` still
+exits 70 and the manifest does not exist.
+
 `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` exist and nothing reads
 them: the prompt waits on 0018 for a provider and on 0020/0021 for the rubric
 that fills its `{{thesis}}` placeholder.
@@ -117,22 +138,24 @@ and it is the last ticket before the gate.
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 258 tests — 17 CLI (0003), 31 contracts (0005, 0011), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010), 34 probe and query planning (0011). Offline, no key |
-| Worklogs 0001–0019 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 11 Done, 2 Ready (0012, 0018), 17 Blocked. Status is in each ticket header |
+| Test strategy | Written; 320 tests — 17 CLI (0003), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010), 34 probe and query planning (0011), 24 run identity and 34 candidate derivation (0012). Offline, no key |
+| Worklogs 0001–0020 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 11 Done, 1 In progress (0012), 1 Ready (0018), 17 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
-| Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005). `QueryPlan` is at `schema_version` 2 — `probe` is nullable (0011) |
+| Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005). `QueryPlan` is at `schema_version` 2 — `probe` is nullable (0011). `Candidate` is at `schema_version` 2 — `provenance` is a non-empty list, primary first, carrying `title`, `posted_url` and `posted_at` (0012) |
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
 | HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier, paginated `searchHn` with failures as data (0009, Done) |
 | URL resolution and dedup | `src/source/resolve.ts` — canonicalisation, site keys, `dedupeHits`, redirect-following `resolveSites` (0010, Done) |
 | Query planning | `src/source/plan.ts` — `probeSeed`, `planQuery`, the `query_plan.json` artifact, the clarifier seam and the model-output sanitiser (0011, Done) |
+| Run identity | `src/run.ts` — `deriveRunId`/`validateRunId`, `runPaths` (ARCHITECTURE §4 in one place), `createRunDir` and ADR-0001's overwrite guard (0012, In progress) |
+| Candidate derivation | `src/source/candidate.ts` — `deriveName` (lift or fall back to the domain; never compose), `slugFor`, `toCandidates` with drops as data (0012, In progress) |
 | Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | Not wired — every command still exits 70. Stage 1's source adapter (0009), dedup layer (0010) and query planner (0011) are all complete; TICKET-0012 is the wiring |
+| Stages 1–3 | Not wired — every command still exits 70. Every module stage 1 needs now exists (0009–0012); what is missing is the command that calls them in order, the manifest, and the run-level failure decision |
 | Sample run, walkthrough video | Not started |
 
 ---
@@ -362,15 +385,13 @@ Real defects, listed rather than silently patched.
     Whether stage 2's scoring actually separates them is an open question the
     gate at 0013 should answer, not an assumption to carry quietly.
 
-25. **`Candidate.provenance` is singular and dedup produces a group.**
-    TICKET-0010's acceptance says two posts "collapse to one `Candidate` whose
-    provenance records both posts", but `Provenance` in
-    `src/contracts/candidate.ts` is one object, not a list — so the contract as
-    written cannot record both. TICKET-0010 shipped the group as its own type
-    (`ResolvedSite.posts`, primary first, never empty) and left the contract
-    alone, because TICKET-0012 is what writes `candidates.jsonl` and the fix —
-    `provenance: Provenance[]`, or a singular primary plus an `also_seen` list —
-    is its call plus a `schema_version` bump. Cheap now, not later.
+25. ~~**`Candidate.provenance` is singular and dedup produces a group.**~~
+    Fixed in TICKET-0012 ([worklog
+    0020](./worklog/0020-run-identity-and-candidates.md)). `provenance` is a
+    non-empty list, primary first, at `schema_version` 2 — one shape with a
+    documented order rather than a singular primary plus an `also_seen` list,
+    which would be two shapes a reader has to merge. It also gained `title`,
+    `posted_url` and `posted_at`.
 
 26. **`SHARED_SUFFIXES` is a hand-written stand-in for the public suffix list.**
     `registrableDomain` needs to know that `co.uk` is nobody's domain and that
@@ -426,37 +447,85 @@ Real defects, listed rather than silently patched.
     ADR only speaks about planning. Named here so 0012 decides it deliberately
     rather than inheriting whichever behaviour falls out of the wiring.
 
+32. **Two things called `root`, one letter apart in meaning.**
+    `evidenceStore(id, root)` takes the **runs** root (`runs/`) and
+    `runPaths(id, root)` takes the **repo** root, so `runPaths(id, ".")` and
+    `evidenceStore(id, "runs")` name the same directory. `RUNS_ROOT` is now
+    defined once, in `src/run.ts`, and re-exported from the store, so the
+    string cannot drift — but the two parameters can still be swapped by a
+    caller who reads only one signature. Both are documented at their
+    definitions. The wiring at TICKET-0012 is the first caller of both and is
+    where a mistake would show up; if it stings there, renaming the store's
+    parameter to `runsRoot` is a one-line change to a Done module.
+
+33. **The name-shape budgets are guesses, and one of them has a known false
+    negative.** `src/source/candidate.ts` reads a post title as a name only when
+    a separator splits off a head of at most 4 words and 40 characters that does
+    not start with a sentence opener (`we`, `how`, `a`, `the`, …). The rule's
+    cost is precise and deliberate: a real name that opens with an article —
+    "The Browser Company" — falls back to its domain, and a memo headed
+    `acmetraces.dev` is plain where one headed "We Rewrote Our Tracer" is wrong.
+    Same class of labelled guess as 14, 16, 17, 23 and 26. The hand-check at
+    TICKET-0013 is where the junk-name rate gets a number, and the cheaper rule
+    it might argue for is: no separator, no name — drop the word budget entirely.
+
+34. **`MAX_SEED_SLUG_LENGTH` is a number, and non-ASCII seeds get
+    `2026-08-22-run`.** `slugify` is ASCII-only, so a seed in another script
+    produces the fallback slug rather than a transliteration nobody asked for;
+    `--run` is the escape hatch and the error message does not currently say so.
+    Cheap to fix if it ever matters, flagged rather than fixed on a guess.
+
+35. **`--replay` reuses a run directory, and stage 1 would rewrite
+    `candidates.jsonl` inside it.** `createRunDir(id, { allowExisting })` is the
+    only exception to ADR-0001's overwrite guard, and `--replay` is what sets
+    it. `planQuery` already reads an existing `query_plan.json` rather than
+    re-prompting, so the plan is safe — but the search that follows would run
+    again (largely from the 24-hour HTTP cache) and rewrite the candidate list.
+    Whether a replay should instead read the committed candidates back is
+    TICKET-0027's replay semantics; the flag's own help text says "reuse cached
+    LLM responses", which is narrower than what it now also permits.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0011 are Done.**
-[TICKET-0012](./tickets/0012-ticket-stage-1-wiring.md) and
-[TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) are the two Ready
-ones.
+repo runnable. **0001–0011 are Done**, 0012 is **In progress**, and
+[TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) is the one Ready
+ticket that is not it.
 
-Every piece of stage 1 now exists as a module. Nothing calls any of them:
+Every piece of stage 1 now exists as a module — including run identity and
+candidate derivation, added this session. Nothing calls any of them:
 
 - [TICKET-0012](./tickets/0012-ticket-stage-1-wiring.md) — **the next ticket**,
-  and the last one before the gate. `./pipeline source` is `planQuery` →
-  `searchHn` → `dedupeHits` → `--limit` → `resolveSites` →
-  `candidates.jsonl` + `manifest.json`, and it is the first thing in this repo
-  to touch a live API. It owes four things beyond the wiring:
+  and the last one before the gate. What remains is the command itself:
+  `resolveRunId` → `createRunDir` → `planQuery` → `searchHn` → `dedupeHits` →
+  `--limit` → `resolveSites` → `toCandidates` → `candidates.jsonl` +
+  `manifest.json`, and it is the first thing in this repo to touch a live API.
+  Of the four things it owed beyond the wiring, one is closed:
   1. the run-level failure decision `searchHn` deliberately does not make
      (inconsistency 24) — ARCHITECTURE §5 says something fails the run and
-     nothing currently does;
-  2. the `Candidate.provenance` plurality question (inconsistency 25), which is
-     a `schema_version` bump and is cheap now;
+     nothing currently does. **Open**;
+  2. ~~the `Candidate.provenance` plurality question (inconsistency 25)~~ —
+     **closed**: a non-empty list, primary first, `schema_version` 2;
   3. the `dedupeHits` → `--limit` → `resolveSites` ordering, which is what keeps
-     redirect resolution to one request per candidate rather than one per post;
+     redirect resolution to one request per candidate rather than one per post.
+     **Open**, and now a matter of writing the calls in that order;
   4. whether `--no-expand` also cuts the four search arms (inconsistency 31).
+     **Open**.
 
-  Note that `planQuery` wants a `planPath` of `runs/<run_id>/query_plan.json`
-  and 0012 owns run-id derivation, so the run id has to be settled before the
-  plan is written — which also means the "refuse to overwrite an existing run
-  directory" guard and `writeQueryPlan`'s `wx` are two guards on the same thing.
+  Two more the command still owes: the `urls` seed form (one url per line, the
+  other survivor of TICKET-0002), and the documented fallback when candidate
+  yield comes in under 10 — widened window and expansion, *recorded in the
+  manifest* so a reviewer sees that it fired.
+
+  The run-id sequencing note this section carried is now settled in code:
+  `resolveRunId` derives the id from the seed as typed, before `planQuery` runs,
+  so `runs/<run_id>/query_plan.json` has a directory to be written into. The
+  "refuse to overwrite" guard (`createRunDir`) and `writeQueryPlan`'s `wx` are
+  still two guards on the same thing, and they now nest rather than race —
+  see inconsistency 35 for what `--replay` is allowed to reuse.
 - [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — still Ready,
   still off the critical path to the gate. It is what turns the `Clarifier` seam
   in `plan.ts` into a real call, and what gives
@@ -469,8 +538,9 @@ The shape is unchanged from what this section said before the backlog existed:
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **0006–0011 Done.** 0012 is
-   the wiring, and the first ticket that spends a real request.
+3. **Stage 1 against live HN** — tickets 0006–0012. **0006–0011 Done**, 0012
+   In progress. 0012 is the wiring, and the first ticket that spends a real
+   request.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

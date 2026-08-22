@@ -61,3 +61,4 @@ are unfinished, not delegated.
 | [0017](./0017-url-canonicalisation-and-dedup.md) | 2026-08-22 | URL canonicalisation, site keys and dedup |
 | [0018](./0018-redirect-resolution.md) | 2026-08-22 | Redirect resolution; TICKET-0010 closes |
 | [0019](./0019-query-planning.md) | 2026-08-22 | Query planning: probe, then clarify; TICKET-0011 closes |
+| [0020](./0020-run-identity-and-candidates.md) | 2026-08-22 | Run identity, and posts become candidates |

@@ -9,8 +9,11 @@ import {
   detectLanguage,
   discoverLinks,
   englishRatio,
+  extractPeople,
   FETCHED_ROLES,
   LINK_RULES,
+  looksLikeName,
+  MAX_PEOPLE,
   pickPages,
   SHELL_MAX_CHARS,
   SITE_PAGE_BUDGET,
@@ -22,6 +25,7 @@ const fixture = (name: string): string =>
   readFileSync(join(import.meta.dirname, "fixtures", name), "utf8");
 
 const corootHome = fixture("sites/coroot-home.html");
+const corootAbout = fixture("sites/coroot-about.html");
 const ravenlake = fixture("company-site.html");
 
 const HOME = "https://coroot.com/";
@@ -306,5 +310,161 @@ describe("the hand-written rule lists", () => {
       expect(rule.name.length).toBeGreaterThan(0);
       expect(rule.host ?? rule.path ?? rule.text).toBeDefined();
     }
+  });
+});
+
+describe("looksLikeName", () => {
+  it("accepts ordinary two- and three-token names, particles and initials", () => {
+    for (const name of [
+      "Nikolay Sivko",
+      "Priya Raghavan",
+      "Ada M. Lovelace",
+      "Jan van Dijk",
+      "María José Ruiz",
+      "Seán O’Brien",
+    ]) {
+      expect(looksLikeName(name), name).toBe(true);
+    }
+  });
+
+  it("rejects headings and calls to action that happen to be title-cased", () => {
+    for (const value of [
+      "Meet The Team",
+      "Get Started",
+      "Read More",
+      "Privacy Policy",
+      "Cookie Settings",
+      "Why We Built Coroot",
+      "Zero Instrumentation",
+    ]) {
+      expect(looksLikeName(value), value).toBe(false);
+    }
+  });
+
+  it("rejects a job title, so nobody is ever called Head", () => {
+    expect(looksLikeName("Head Of Engineering")).toBe(false);
+    expect(looksLikeName("Chief Technology Officer")).toBe(false);
+  });
+
+  it("rejects one token, five tokens, digits and markup leftovers", () => {
+    expect(looksLikeName("Nikolay")).toBe(false);
+    expect(looksLikeName("A B C D E")).toBe(false);
+    expect(looksLikeName("Suite 400 Boston")).toBe(false);
+    expect(looksLikeName("Contact (us)")).toBe(false);
+  });
+
+  it("rejects initials alone: two capitals are not two names", () => {
+    expect(looksLikeName("J. R.")).toBe(false);
+  });
+
+  it("rejects the empty string and a paragraph, rather than throwing", () => {
+    expect(looksLikeName("")).toBe(false);
+    expect(looksLikeName("x".repeat(200))).toBe(false);
+  });
+});
+
+describe("extractPeople", () => {
+  it("names the three people on a real team page, with their roles verbatim", () => {
+    const { people, skipped } = extractPeople(corootAbout, "team");
+    expect(skipped).toBeNull();
+    expect(people.map((person) => [person.name, person.role])).toEqual([
+      ["Nikolay Sivko", "Co-founder, CEO"],
+      ["Peter Zaitsev", "Co-founder, Advisor"],
+      ["Alexander Lamberton", "Marketing Manager"],
+    ]);
+  });
+
+  /**
+   * The marketing manager is emitted alongside the two co-founders on purpose.
+   * Deciding who is a founder is SPEC D1's job and lives in the rubric
+   * (invariant 7); this module reports who is named and what the page calls
+   * them.
+   */
+  it("does not decide who counts as a founder", () => {
+    const { people } = extractPeople(corootAbout, "team");
+    expect(people.some((person) => /manager/i.test(person.role))).toBe(true);
+  });
+
+  it("reads a hand-written team list where name and role share a line", () => {
+    const { people } = extractPeople(ravenlake, "home");
+    expect(people.map((person) => person.name)).toEqual(["Priya Raghavan", "Tom Okafor"]);
+    expect(people[0]?.matched).toBe("name and role on one line");
+    expect(people[1]?.role).toContain("founded Bellhouse");
+  });
+
+  it("scans a home page only under a heading that says team", () => {
+    const { people, skipped } = extractPeople(corootHome, "home");
+    expect(people).toEqual([]);
+    expect(skipped).toBe("the page names no team section");
+  });
+
+  it("carries the surrounding block, so an extraction can be checked by hand", () => {
+    const { people } = extractPeople(corootAbout, "team");
+    expect(people[0]?.context).toContain("On a mission to make troubleshooting");
+    expect(people[0]?.context.length).toBeLessThanOrEqual(240);
+  });
+
+  it("drops a name with no role beside it, and says so", () => {
+    const html = `<body><section><h3>Nikolay Sivko</h3><p>Loves observability.</p></section></body>`;
+    const { people, rejected } = extractPeople(html, "team");
+    expect(people).toEqual([]);
+    expect(rejected).toEqual([
+      { name: "Nikolay Sivko", reason: "no role or prior position stated beside the name" },
+    ]);
+  });
+
+  it("drops a quoted testimonial rather than reading the customer as staff", () => {
+    const html =
+      `<body><section><h3>Dana Whitfield</h3><p>VP Engineering</p>` +
+      `<p>“We cut our mean time to resolution in half within a fortnight of rolling it out.”</p>` +
+      `</section></body>`;
+    const { people, rejected } = extractPeople(html, "team");
+    expect(people).toEqual([]);
+    expect(rejected[0]?.reason).toContain("quotation");
+  });
+
+  it("deduplicates a person listed twice on one page", () => {
+    const html =
+      `<body><section><h3>Ada Lovelace</h3><p>Co-founder</p></section>` +
+      `<section><h3>Ada Lovelace</h3><p>CTO</p></section></body>`;
+    expect(extractPeople(html, "team").people).toHaveLength(1);
+  });
+
+  it("caps a directory-sized page and records what it dropped", () => {
+    const rows = Array.from(
+      { length: MAX_PEOPLE + 3 },
+      (_, index) => `<div><h3>Ada Lovelace${"x".repeat(index + 1)}</h3><p>Engineer</p></div>`,
+    ).join("");
+    const { people, rejected } = extractPeople(`<body>${rows}</body>`, "team");
+    expect(people).toHaveLength(MAX_PEOPLE);
+    expect(rejected.every((entry) => entry.reason.includes(`more than ${MAX_PEOPLE}`))).toBe(true);
+  });
+
+  it("returns empty rather than throwing on markup that is not a page", () => {
+    expect(extractPeople("", "team")).toEqual({ people: [], rejected: [], skipped: null });
+    expect(() => extractPeople("<p", "home")).not.toThrow();
+  });
+
+  /**
+   * The false positive this module structurally cannot see, pinned rather than
+   * papered over — the same treatment `classifyHit` gives its own blind spot in
+   * `src/source/hn.ts`.
+   *
+   * A customer quote under a "Our team" heading, with a job title and no
+   * quotation marks around the endorsement, is indistinguishable from a staff
+   * card by any rule available here. Two things bound the damage: the role is
+   * carried verbatim ("VP Engineering, Northwind Freight" names another
+   * company), and the LLM extractor in TICKET-0020 reads the same page text
+   * with the context in front of it. It is a real gap and it is recorded in
+   * STATE rather than claimed to be handled.
+   */
+  it("cannot tell an unquoted endorsement under a team heading from a colleague", () => {
+    const html =
+      `<body><section><h2>Our team</h2>` +
+      `<div><h3>Dana Whitfield</h3><p>VP Engineering, Northwind Freight</p></div>` +
+      `</section></body>`;
+    const { people } = extractPeople(html, "home");
+    expect(people.map((person) => person.name)).toEqual(["Dana Whitfield"]);
+    expect(people[0]?.role).toContain("Northwind Freight");
   });
 });

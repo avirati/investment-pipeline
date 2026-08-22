@@ -490,3 +490,235 @@ export function detectLanguage(html: string, text: string): LanguageCheck {
     reason: "the page declares no language and has too little text to judge",
   };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Named people                                                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * One person named on a company's own page, with the words that say who they
+ * are. Never "a founder" — the role is quoted verbatim and this module does not
+ * decide what it means (rule 2). `Alexander Lamberton — Marketing Manager` is
+ * as much an output of this function as the CEO is; SPEC D1 is what separates
+ * them, and it lives in the rubric.
+ */
+export interface Person {
+  /** As written on the page, whitespace-normalised. Never composed or corrected. */
+  name: string;
+  /** The corroborating text: a job title, a prior role, verbatim and capped. */
+  role: string;
+  /** Which pattern found this, so a wrong extraction is traceable to a rule. */
+  matched: "role element after name" | "name and role on one line";
+  /** The surrounding block, capped — the reviewer's check on the extraction. */
+  context: string;
+}
+
+/**
+ * A name that looked like a person and was not emitted, and why. Rule 1's
+ * "fail loudly" half: a run that under-extracts should be able to say what it
+ * threw away, because the alternative is a silent zero that looks like a site
+ * with no team page.
+ */
+export interface RejectedPerson {
+  name: string;
+  reason: string;
+}
+
+export interface PeopleResult {
+  people: Person[];
+  rejected: RejectedPerson[];
+  /** Non-null when nothing was scanned at all, naming why. */
+  skipped: string | null;
+}
+
+/**
+ * Words that make a nearby line a *statement about a person's job*. The
+ * corroboration rule 1 requires: without one of these next to it, a
+ * name-shaped string is not emitted, whatever else the page says.
+ *
+ * The list is deliberately broad — it includes `Marketing Manager` and
+ * `Advisor`, not just the founder titles — because narrowing it here would be
+ * this module deciding who counts, which is the rubric's job (rule 2). What it
+ * must not include is anything that fires on ordinary marketing prose.
+ */
+export const ROLE_CUES =
+  /\b(co[-\s]?founder|founder|founded|founding|ceo|cto|coo|cfo|cpo|cro|chief\s+\w+\s+officer|president|partner|principal|chair(man|woman|person)?|board\s+member|advis[oe]r|investor|head\s+of\b|vp\b|vice\s+president|director|manager|lead\b|engineer(ing)?|developer|architect|scientist|researcher|designer|sre\b|ex-|previously|formerly|prior\s+to)\b/i;
+
+/**
+ * Title-cased words that turn up in headings and calls to action and never in
+ * a person's name. The shape test alone accepts "Why We Built Coroot"; the
+ * role-cue requirement usually rejects it afterwards, and this list is the
+ * second lock on the same door — cheap, and the failure it prevents is the
+ * expensive one.
+ */
+const NAME_STOPWORDS = new Set(
+  (
+    "about all and are ask book built by can case company contact cookie demo docs " +
+    "download engineering enterprise every for free get github how join learn log " +
+    "login made make meet more news now our out platform policy pricing privacy " +
+    "product ready read request see settings sign start started stories story team " +
+    "teams terms the their they this to try up us use want was way we what when " +
+    "where who why with work you your zero"
+  ).split(" "),
+);
+
+/** Lowercase particles that are part of a surname rather than a new word. */
+const NAME_PARTICLES = new Set(
+  "van von de del della den der di da du la le los bin ibn al ter dos".split(" "),
+);
+
+/** Longest a person's name may be. Past this it is a sentence, not a name. */
+const NAME_MAX_CHARS = 60;
+/** People emitted from one page. A team page lists a team, not a directory. */
+export const MAX_PEOPLE = 12;
+/** How much surrounding text is kept as the reviewer's check. */
+const CONTEXT_LIMIT = 240;
+
+const squash = (text: string): string => text.replace(/\s+/g, " ").trim();
+
+/**
+ * Whether a string has the shape of a person's name in English. Shape only —
+ * on its own this is *not* enough to emit anything, and the two callers below
+ * both require a role beside it.
+ *
+ * Two to four tokens, each either a capitalised word, an initial, or a
+ * lowercase particle; at least two real capitalised words, so "J. R." is not a
+ * person; no digits, no stopwords, and no role cue inside the name itself,
+ * which is what stops "Head Of Engineering" from being read as somebody called
+ * Head.
+ */
+export function looksLikeName(value: string): boolean {
+  const name = squash(value);
+  if (name.length === 0 || name.length > NAME_MAX_CHARS) return false;
+  if (/[0-9@#|/\\()[\]{}<>]/.test(name)) return false;
+  if (ROLE_CUES.test(name)) return false;
+
+  const tokens = name.split(" ");
+  if (tokens.length < 2 || tokens.length > 4) return false;
+
+  let words = 0;
+  for (const token of tokens) {
+    const bare = token.replace(/[.,]$/, "");
+    if (NAME_STOPWORDS.has(bare.toLowerCase())) return false;
+    if (NAME_PARTICLES.has(bare.toLowerCase())) continue;
+    // An initial: "M." arrives here as "M", the trailing stop already gone.
+    if (/^\p{Lu}$/u.test(bare)) continue;
+    if (!/^\p{Lu}[\p{L}'’-]+$/u.test(bare)) return false;
+    words += 1;
+  }
+  return words >= 2;
+}
+
+/** Headings that mean "the people are below this". */
+const TEAM_HEADING =
+  /\b(team|founders?|who\s+we\s+are|leadership|about\s+us|meet\s+the|our\s+people|the\s+people)\b/i;
+
+/**
+ * A quoted sentence next to a name is a testimonial, and a testimonial is a
+ * *customer*. This is the false-positive class that would otherwise put a
+ * stranger's name in a memo as though they worked here, so a name whose
+ * surrounding block quotes forty or more characters is rejected with a reason
+ * rather than emitted.
+ */
+const TESTIMONIAL = /["“”][^"“”]{40,}["“”]/;
+
+/** How far a name element's siblings are searched for the role beside it. */
+const ROLE_LOOKAHEAD = 2;
+
+/**
+ * Named people on one page, best-effort and biased towards missing them.
+ *
+ * `pageRole` decides what is scanned, and it is the cheapest guard in the
+ * module. On a page fetched *because* it is the team page, the whole page is
+ * the team. On a home page the scan is confined to the subtree under a heading
+ * that says "team" — which is what keeps a wall of customer logos and a
+ * quote-carousel out of the founder list, since neither sits under that
+ * heading. A home page with no such heading yields nothing and says so.
+ *
+ * Two patterns produce a person, and both need a role beside the name:
+ *
+ * - **role element after name** — `<h3>Nikolay Sivko</h3><p>Co-founder, CEO</p>`,
+ *   which is what a team-card component compiles to.
+ * - **name and role on one line** — `Priya Raghavan — previously staff SRE at
+ *   Fathom Logistics`, which is what a hand-written team list looks like.
+ */
+export function extractPeople(html: string, pageRole: "home" | "team"): PeopleResult {
+  const $ = load(html);
+  $("script,style,noscript,template,svg,nav,footer").remove();
+
+  let scope = $("body");
+  if (pageRole === "home") {
+    const heading = $("h1,h2,h3,h4,h5,h6,legend").filter((_, element) =>
+      TEAM_HEADING.test(squash($(element).text())),
+    );
+    if (heading.length === 0) {
+      return { people: [], rejected: [], skipped: "the page names no team section" };
+    }
+    // The heading's own container, not the whole page: a "Team" heading and
+    // the cards under it share a parent, and stopping there is what confines
+    // the scan. `.parent()` is right for the common case and one level too
+    // narrow for a flat layout, which costs people and never invents them.
+    scope = heading.first().parent();
+  }
+
+  const people: Person[] = [];
+  const rejected: RejectedPerson[] = [];
+  const seen = new Set<string>();
+
+  const accept = (name: string, role: string, matched: Person["matched"], block: string): void => {
+    const key = name.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    if (TESTIMONIAL.test(block)) {
+      rejected.push({ name, reason: "the surrounding block is a quotation — probably a customer" });
+      return;
+    }
+    if (people.length >= MAX_PEOPLE) {
+      rejected.push({ name, reason: `more than ${MAX_PEOPLE} names on one page` });
+      return;
+    }
+    people.push({
+      name,
+      role: squash(role).slice(0, CONTEXT_LIMIT),
+      matched,
+      context: squash(block).slice(0, CONTEXT_LIMIT),
+    });
+  };
+
+  scope.find("*").each((_, element) => {
+    const node = $(element);
+    // Leaves only. A name lives in its own element; a wrapper's text is the
+    // name plus everything beside it, which no shape test should be asked to
+    // read.
+    if (node.children().length > 0) return;
+    const text = squash(node.text());
+    if (text === "") return;
+
+    // Pattern A: this element is the name, the next one is the role.
+    if (looksLikeName(text)) {
+      let sibling = node.next();
+      for (let step = 0; step < ROLE_LOOKAHEAD && sibling.length > 0; step += 1) {
+        const beside = squash(sibling.text());
+        if (beside !== "" && ROLE_CUES.test(beside)) {
+          accept(text, beside, "role element after name", squash(node.parent().text()));
+          return;
+        }
+        if (beside !== "") break;
+        sibling = sibling.next();
+      }
+      rejected.push({ name: text, reason: "no role or prior position stated beside the name" });
+      return;
+    }
+
+    // Pattern B: name and role share a line, split by a dash, a comma or a pipe.
+    const split = text.match(/^(.{2,60}?)\s*[—–\-–|,:]\s+(.{3,})$/);
+    if (split) {
+      const [, head, tail] = split;
+      if (head !== undefined && tail !== undefined && looksLikeName(head) && ROLE_CUES.test(tail)) {
+        accept(head.trim(), tail, "name and role on one line", text);
+      }
+    }
+  });
+
+  return { people, rejected, skipped: null };
+}

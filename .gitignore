@@ -1,0 +1,20 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build
+dist/
+*.tsbuildinfo
+
+# secrets
+.env
+.env.local
+
+# Caches: raw HTTP bodies are bulky and re-fetchable, so they stay local.
+# Normalised evidence records (runs/*/evidence/*.json) and the LLM response
+# cache (.cache/llm/) ARE committed — they are what makes a run replayable
+# and claims spot-checkable without re-running. See docs/ARCHITECTURE.md.
+.cache/http/
+
+# os
+.DS_Store

@@ -5,8 +5,10 @@ import { githubAuth, loadDotEnv } from "../src/config.js";
 import { extractHtml, type HttpOptions, httpGet } from "../src/evidence/fetch.js";
 import { hnSearchUrl } from "../src/source/hn.js";
 import {
+  type AuthoredFixture,
   deriveMalformedPage,
   findSecrets,
+  modelFixtures,
   normaliseHtml,
   normaliseJson,
   pickHeaders,
@@ -201,9 +203,10 @@ export function fixtureSpecs(now: Date): FixtureSpec[] {
 
 export interface FixtureRecord {
   path: string;
-  kind: FixtureSpec["kind"];
+  /** A superset of `FixtureSpec["kind"]`: an authored fixture may be plain text. */
+  kind: FixtureSpec["kind"] | "text";
   /** How these bytes came to exist. `hand` predates the script; see `legacy`. */
-  captured_by: "script" | "hand" | "derived";
+  captured_by: "script" | "hand" | "derived" | "authored";
   /** Null for a derived fixture; see `derived_from`. */
   url: string | null;
   /** Set when the fixture was built from another fixture rather than fetched. */
@@ -315,6 +318,31 @@ export function deriveMalformed(sourceJson: string, now: Date): Captured {
       captured_at: now.toISOString(),
       bytes: Buffer.byteLength(content),
       sha256: sha256(content),
+    },
+  };
+}
+
+/**
+ * Model output cannot be captured — the interesting shapes are the ones a model
+ * produces on a bad day — so these are written from a table with the defect each
+ * one demonstrates next to it (`FACT_DEFECTS`). Rewritten every run, which is
+ * safe because they are a pure function of that table.
+ */
+export function authoredRecord(fixture: AuthoredFixture, now: Date): Captured {
+  return {
+    spec: { path: fixture.path, kind: "json", url: "", note: fixture.note },
+    content: fixture.content,
+    record: {
+      path: fixture.path,
+      kind: fixture.path.endsWith(".json") ? "json" : "text",
+      captured_by: "authored",
+      url: null,
+      derived_from: "scripts/fixtures.ts",
+      note: fixture.note,
+      status: null,
+      captured_at: now.toISOString(),
+      bytes: Buffer.byteLength(fixture.content),
+      sha256: sha256(fixture.content),
     },
   };
 }
@@ -484,6 +512,14 @@ async function main(argv: readonly string[]): Promise<number> {
         reason: `adopt failed: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
+  }
+
+  for (const fixture of modelFixtures()) {
+    if (flags.only !== null && !fixture.path.startsWith(flags.only)) continue;
+    const authored = authoredRecord(fixture, now);
+    captured.push(authored);
+    writeFixture(FIXTURE_ROOT, fixture.path, fixture.content);
+    process.stdout.write(`  ok    ${fixture.path} — authored from scripts/fixtures.ts\n`);
   }
 
   // Derived last, so a refreshed source page produces a matching malformed one

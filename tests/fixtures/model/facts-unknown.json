@@ -1,0 +1,33 @@
+[
+  {
+    "schema_version": 1,
+    "key": "founder.prior_exit",
+    "statement": "No prior exit is stated anywhere on the site.",
+    "value": null,
+    "evidence_ids": [
+      "bce0ab514b07a85c"
+    ],
+    "confidence": "low"
+  },
+  {
+    "schema_version": 1,
+    "key": "funding.raised_usd",
+    "statement": "No funding is mentioned on the site or in the repository.",
+    "value": null,
+    "evidence_ids": [
+      "a55c35a284bc355c",
+      "4a8752310d71146d"
+    ],
+    "confidence": "low"
+  },
+  {
+    "schema_version": 1,
+    "key": "team.size_visible",
+    "statement": "No team or about section names anyone.",
+    "value": null,
+    "evidence_ids": [
+      "a55c35a284bc355c"
+    ],
+    "confidence": "low"
+  }
+]

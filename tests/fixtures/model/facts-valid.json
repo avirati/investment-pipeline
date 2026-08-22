@@ -1,0 +1,53 @@
+[
+  {
+    "schema_version": 1,
+    "key": "founder.prior_exit",
+    "statement": "Co-founder Peter Zaitsev previously built Percona and FerretDB.",
+    "value": true,
+    "evidence_ids": [
+      "bce0ab514b07a85c"
+    ],
+    "confidence": "high"
+  },
+  {
+    "schema_version": 1,
+    "key": "team.size_visible",
+    "statement": "Three people are named on the about page: a CEO, an advisor and a marketing manager.",
+    "value": 3,
+    "evidence_ids": [
+      "bce0ab514b07a85c"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "schema_version": 1,
+    "key": "product.one_liner",
+    "statement": "eBPF-powered observability platform that needs no code changes.",
+    "value": "Full-stack observability in minutes",
+    "evidence_ids": [
+      "a55c35a284bc355c"
+    ],
+    "confidence": "high"
+  },
+  {
+    "schema_version": 1,
+    "key": "traction.github_stars",
+    "statement": "The main repository has 7,884 stars.",
+    "value": 7884,
+    "evidence_ids": [
+      "4a8752310d71146d"
+    ],
+    "confidence": "high"
+  },
+  {
+    "schema_version": 1,
+    "key": "org.github_account_type",
+    "statement": "The GitHub owner is an organisation, not a personal account.",
+    "value": "Organization",
+    "evidence_ids": [
+      "16c5fcf829243a3b",
+      "4a8752310d71146d"
+    ],
+    "confidence": "high"
+  }
+]

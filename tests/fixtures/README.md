@@ -16,6 +16,7 @@ disagree. Each record says how the bytes came to exist:
 | `script` | Fetched by this script on the date in the record |
 | `hand` | The four HN fixtures TICKET-0009 captured by `curl` before the script existed. A bare run **adopts** them — records the digest of the committed bytes without fetching — rather than replacing them. Their `url` is a transcription of the command that produced them |
 | `derived` | Built from another fixture, not from a response. Only `hn/search-malformed.json` |
+| `authored` | Written from a table in `scripts/fixtures.ts`. Model output cannot be captured on demand — the interesting shapes are the ones a model produces on a bad day — so `model/` is authored, with the defect each file demonstrates written next to it |
 
 ```bash
 pnpm capture-fixtures                 # write what is missing; skip what exists
@@ -46,6 +47,10 @@ on the same day they were taken, which is that rule earning its keep.
 | `github/repo-hobby.json` | `nullswan/bpfsnitch`, a personal-account repo from the gate's list. Its `homepage` is `""` — **an empty string, not null**, which is the missing-data path for the join and the kind of thing only a real payload tells you |
 | `sites/coroot-home.html` | A real company landing page: nav, footer, cookie banner, testimonials, and 5.9k characters of extractable text |
 | `sites/coroot-about.html` | The team page behind it — three named people with roles and one prior exit in prose. This is the surface founder facts are extracted from |
+| `model/facts-valid.json` | The extraction output a good day produces: five facts about Coroot, every evidence id resolving to a fixture in this directory |
+| `model/facts-malformed.json` | Eight items, one deliberate defect each — see below |
+| `model/facts-unknown.json` | [TESTING §6](../../docs/TESTING.md)'s missing-data case: valid JSON where the model found nothing. Every value null, every fact still cited |
+| `model/not-json.txt` | The model that answered the question instead of filling in the schema |
 | `company-site.html` | **Hand-written, not captured.** TICKET-0008's extraction fixture: every hazard on purpose, and no licence question. It says so in a comment at the top |
 
 `capture.json` carries a one-line note per file saying why it exists, plus
@@ -70,6 +75,28 @@ for byte and a test asserts it.
 
 The mix is the point: four of the five are *survivable*, and a parser that treats
 malformed as fatal throws away four usable posts to reject one.
+
+## `model/facts-malformed.json`, item by item
+
+The table lives in [`scripts/fixtures.ts`](../../scripts/fixtures.ts) and
+`tests/model-fixtures.test.ts` asserts each row against the real `Fact` contract,
+so a defect the parser quietly tolerates fails the suite rather than becoming a
+fixture TICKET-0020 writes a passing test against.
+
+| Item | Defect | Parse |
+|---|---|---|
+| 0 | `evidence_ids` absent | dropped — the citation guarantee *is* this drop (ADR-0003) |
+| 1 | `evidence_ids` present but empty | dropped — an empty array is not a weaker citation, it is none |
+| 2 | an `evidence_ids` entry that resolves to nothing | **kept** — well-formed and still wrong |
+| 3 | `value` is an object | dropped — facts are atoms |
+| 4 | `confidence` outside the enum | dropped — a model asked for three levels invents a fourth |
+| 5 | `schema_version` from a future contract | dropped — a version bump must fail loudly |
+| 6 | `statement` is empty | dropped — a citation attached to nothing |
+| 7 | `key` absent | dropped — the rubric switches on `key` |
+
+Item 2 is the one that matters. Nothing at parse time can tell a well-formed id
+from a resolvable one, so it is the memo validator that must (TICKET-0025), and
+this item is the fixture that proves the gap is real rather than theoretical.
 
 ## Credentials
 

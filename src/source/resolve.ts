@@ -391,8 +391,12 @@ export interface RejectedHit {
  * anywhere, and the run reports the primary post's numbers, so a primary with
  * no numbers reports nothing where a sibling could have reported something.
  * `object_id` is the final tie-break, only so the order is deterministic.
+ *
+ * Exported because TICKET-0012 ranks *sites* by their primary post before
+ * `--limit` cuts, and the ranking rule for a company and for a post inside one
+ * company should not be two rules that can drift apart.
  */
-function strongerPost(a: SitePost, b: SitePost): number {
+export function strongerPost(a: SitePost, b: SitePost): number {
   const points = (post: SitePost) => post.hit.points;
   const [pa, pb] = [points(a), points(b)];
   if (pa !== pb) {

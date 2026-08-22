@@ -5,7 +5,14 @@ import {
   type Provenance,
 } from "../contracts/index.js";
 import { slugify } from "../run.js";
-import type { ResolvedSite, SitePost } from "./resolve.js";
+import { classifyUrl } from "./hn.js";
+import {
+  canonicaliseUrl,
+  classifySite,
+  type ResolvedSite,
+  type SiteKind,
+  type SitePost,
+} from "./resolve.js";
 
 /**
  * `ResolvedSite` → `Candidate` (TICKET-0012).
@@ -101,9 +108,13 @@ export function looksLikeName(head: string): boolean {
  * `github.com/acme/traces`) and the registrable domain everywhere else. Both
  * are the identity dedup keyed on, so the name and the grouping cannot drift.
  */
+export function nameFromKey(key: string, domain: string): string {
+  const segments = key.split("/");
+  return segments.length > 1 ? segments.slice(1).join("/") : domain;
+}
+
 export function fallbackName(site: ResolvedSite): string {
-  const segments = site.key.split("/");
-  return segments.length > 1 ? segments.slice(1).join("/") : site.domain;
+  return nameFromKey(site.key, site.domain);
 }
 
 /**
@@ -220,4 +231,115 @@ export function toCandidates(
   }
 
   return { candidates, dropped };
+}
+
+// ---------------------------------------------------------------------------
+// The `urls` seed form (SPEC §3.1) — the other survivor of TICKET-0002.
+//
+// A hand-written list of company urls, one per line. It reuses the classifier
+// and the dedup key so a url typed by an operator is held to the same standard
+// as one posted to HN, and it makes **no network requests at all**: there is no
+// post to rank, so there is nothing for redirect resolution to disambiguate,
+// and the site gets fetched in stage 2 as evidence anyway — where a redirect is
+// followed, recorded and citable. A shortened url in a hand-written list is
+// therefore resolved one stage later than an HN link, which is a real
+// difference and a deliberate one.
+// ---------------------------------------------------------------------------
+
+/** A line that will not become a candidate, and why. */
+export interface RejectedUrl {
+  line: number;
+  url: string;
+  kind: SiteKind;
+  reason: string;
+}
+
+/** Blank lines and `#` comments are skipped; everything else must be a url. */
+export function parseUrlList(text: string): { line: number; url: string }[] {
+  return text
+    .split(/\r?\n/)
+    .map((raw, index) => ({ line: index + 1, url: raw.trim() }))
+    .filter((entry) => entry.url.length > 0 && !entry.url.startsWith("#"));
+}
+
+/**
+ * Candidates from a url list. Grouped by the same `siteKey` as HN sourcing, so
+ * a list naming `acme.dev` and `acme.dev/pricing` produces one candidate whose
+ * provenance records both lines.
+ *
+ * The name is always the domain: a hand-written list has no title to lift from,
+ * and inventing one from the domain is the guess rule 1 forbids.
+ */
+export function candidatesFromUrls(
+  entries: readonly { line: number; url: string }[],
+  context: CandidateContext,
+): { candidates: Candidate[]; rejected: RejectedUrl[] } {
+  const groups = new Map<string, { name: string; url: string; provenance: Provenance[] }>();
+  const rejected: RejectedUrl[] = [];
+
+  for (const entry of entries) {
+    const site = canonicaliseUrl(entry.url);
+    if (site === null) {
+      rejected.push({ ...entry, kind: "bad_url", reason: `not an http(s) url: ${entry.url}` });
+      continue;
+    }
+    const classification = classifyUrl(site.canonical_url);
+    if (!classification.usable) {
+      rejected.push({ ...entry, kind: classification.kind, reason: classification.reason });
+      continue;
+    }
+    const verdict = classifySite(site);
+    if (!verdict.usable) {
+      rejected.push({ ...entry, kind: verdict.kind, reason: verdict.reason });
+      continue;
+    }
+
+    const provenance: Provenance = {
+      source: "url_list",
+      query: context.query,
+      at: context.at,
+      // No source-native id, no title, no post date. Three absences, all
+      // written as absences (invariant 4).
+      ref: null,
+      title: null,
+      posted_url: entry.url,
+      posted_at: null,
+    };
+    const existing = groups.get(site.key);
+    if (existing) {
+      existing.provenance.push(provenance);
+      continue;
+    }
+    groups.set(site.key, {
+      name: nameFromKey(site.key, site.domain),
+      url: site.canonical_url,
+      provenance: [provenance],
+    });
+  }
+
+  const taken = new Set<string>();
+  const candidates: Candidate[] = [];
+  for (const group of groups.values()) {
+    const slug = slugFor(group.name, group.name, taken);
+    const parsed = Candidate.safeParse({
+      schema_version: CANDIDATE_SCHEMA_VERSION,
+      slug,
+      name: group.name,
+      url: group.url,
+      one_liner: "",
+      provenance: group.provenance,
+    });
+    if (!parsed.success) {
+      rejected.push({
+        line: 0,
+        url: group.url,
+        kind: "bad_url",
+        reason: parsed.error.issues[0]?.message ?? "invalid",
+      });
+      continue;
+    }
+    taken.add(slug);
+    candidates.push(parsed.data);
+  }
+  return { candidates, rejected };
 }

@@ -288,6 +288,13 @@ no API key, so a fresh clone proves the whole toolchain works *before* the
 operator has obtained a single credential. "Did the install work?" becomes an
 assertion rather than a hope.
 
+**Steps 1–5 exist as of TICKET-0004. Step 6 does not yet** — `memo` exits 70
+until TICKET-0026 and there is no sample run to re-render until TICKET-0028, so
+shipping the step now would mean shipping a check that always fails. The script
+ends with a `TODO(0028)` naming it, and prints a line saying the verification is
+not wired up, so the gap is visible to whoever runs it rather than only to
+whoever reads this file.
+
 `./pipeline` is a thin wrapper (`exec pnpm exec tsx src/cli.ts "$@"`) so nobody
 needs to know pnpm exists to run this. It stays a wrapper — not a task runner.
 

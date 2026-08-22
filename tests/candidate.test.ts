@@ -160,6 +160,40 @@ describe("fallbackName", () => {
   });
 });
 
+// F1 — TICKET-0013. The gate produced `torrix-ai/install` and
+// `betterdb-inc/monitor` as candidate names: worse than plain, because
+// `install` and `monitor` read as the product.
+describe("nameFromKey drops a repo slug that is a word rather than a name (F1)", () => {
+  it("keeps the owner when the slug is generic", () => {
+    // Both real, from the gate's `LLM observability` run. Lowercase because
+    // the name is lifted from the dedup key and the key is lowercased for
+    // identity — so `BetterDB-inc` prints as `betterdb-inc`. A real loss of
+    // fidelity, and cheaper than letting the name and the grouping drift.
+    expect(fallbackName(site("https://github.com/torrix-ai/install"))).toBe("torrix-ai");
+    expect(fallbackName(site("https://github.com/BetterDB-inc/monitor"))).toBe("betterdb-inc");
+  });
+
+  it("keeps the owner when the slug repeats it", () => {
+    expect(fallbackName(site("https://github.com/Rocketgraph/rocketgraph"))).toBe("rocketgraph");
+  });
+
+  it("keeps a distinctive slug, which is the word that names the thing", () => {
+    // Also real, and the reason the list is short: dropping these would lose
+    // the only word that tells two repos from one owner apart.
+    expect(fallbackName(site("https://github.com/nullswan/bpfsnitch"))).toBe("nullswan/bpfsnitch");
+    expect(fallbackName(site("https://github.com/liquidos-ai/AutoAgents"))).toBe(
+      "liquidos-ai/autoagents",
+    );
+    expect(fallbackName(site("https://github.com/yantrikos/yantrikdb-server"))).toBe(
+      "yantrikos/yantrikdb-server",
+    );
+  });
+
+  it("does not touch an ordinary domain", () => {
+    expect(fallbackName(site("https://monitor.dev"))).toBe("monitor.dev");
+  });
+});
+
 describe("slugFor", () => {
   it("slugifies the name, and the fallback when the name has no ASCII in it", () => {
     expect(slugFor("Acme Traces", "acmetraces.dev", new Set())).toBe("acme-traces");

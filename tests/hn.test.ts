@@ -281,6 +281,46 @@ describe("classifyHit", () => {
     expect(classifyHit(hit("https://blog.medium.com/x")).kind).toBe("content");
   });
 
+  // F2 and F4 — TICKET-0013. Two real urls from the gate's four topics, one
+  // per rule. Both are narrow additions, not a smarter classifier: the gate
+  // found the classes, not a general principle.
+  it("rejects an ACM paper served from ACM's typesetting vendor (F2)", () => {
+    const verdict = classifyHit(
+      hit(
+        "https://camps.aptaracorp.com/ACM_PMS/PMS/ACM/HCDS25/10/13a8f7c0-0a7e-11f0-ada9-16bb50361d1f/OUT/hcds25-10.html",
+      ),
+    );
+    // Neither `acm.org` nor a `.pdf` extension is in that url, which is how it
+    // reached a candidate list in the first place.
+    expect(verdict).toMatchObject({ usable: false, kind: "paper" });
+  });
+
+  it("rejects a host that announces itself as a blog (F4)", () => {
+    // The gate's own url: a personal blog on a domain `PERSONAL_HOSTS` cannot
+    // enumerate, with a path `ARTICLE_PATH` cannot see.
+    expect(
+      classifyHit(hit("https://blog.zmalik.dev/p/who-will-observe-the-observability")),
+    ).toMatchObject({
+      usable: false,
+      kind: "content",
+    });
+    // Whoever owns it: a company's own blog is not the company's own surface
+    // either, which `ARTICLE_PATH` already said about `acme.dev/blog/x`.
+    expect(classifyHit(hit("https://blog.acme.dev/launching-traces")).kind).toBe("content");
+  });
+
+  it("does not reject a `/p/<slug>` path on its own (F4, deliberately narrower)", () => {
+    // The fix as written down also proposed treating `/p/<slug>` as an article.
+    // It is one publisher's convention rather than a shape, and a wrong reject
+    // leaves no trace anywhere in the output while a wrong accept is visible in
+    // a memo. Pinned so the omission is a decision and not an oversight.
+    expect(classifyHit(hit("https://acme.dev/p/pricing")).usable).toBe(true);
+  });
+
+  it("still accepts a company whose name merely starts with the letters `blog`", () => {
+    expect(classifyHit(hit("https://blogstash.dev")).usable).toBe(true);
+  });
+
   it("carries a reason on every rejection — the filter is auditable (ADR-0004)", () => {
     const urls = [null, "not a url", "https://arxiv.org/abs/1", "https://medium.com/@a/b"];
     for (const url of urls) {

@@ -2,7 +2,7 @@
 
 [TICKET-0012](../tickets/0012-ticket-stage-1-wiring.md) — stage 1's wiring, and
 the first ticket in this repo that will spend a real request. This session took
-the three pieces the wiring *needs to already exist* before `./pipeline source`
+the three pieces the wiring _needs to already exist_ before `./pipeline source`
 can be written as a straight line: the contract question the ticket owed
 (inconsistency 25), the run identity every stage shares, and the pure step that
 turns a group of posts into a `Candidate`. The command itself, the manifest and
@@ -17,19 +17,19 @@ reflection hints coming, update the ticket statuses.
 
 Three commits, in dependency order.
 
-| Commit                  | What it is                                                              |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `contracts(candidate)`  | `provenance` becomes a non-empty list; `schema_version` 1 → 2           |
-| `feat(run)`             | `src/run.ts` — run ids, artifact paths, the run directory guard         |
-| `feat(source)`          | `src/source/candidate.ts` — `ResolvedSite` → `Candidate` without guessing |
+| Commit                 | What it is                                                                |
+| ---------------------- | ------------------------------------------------------------------------- |
+| `contracts(candidate)` | `provenance` becomes a non-empty list; `schema_version` 1 → 2             |
+| `feat(run)`            | `src/run.ts` — run ids, artifact paths, the run directory guard           |
+| `feat(source)`         | `src/source/candidate.ts` — `ResolvedSite` → `Candidate` without guessing |
 
-| Export                                       | What it is                                                        |
-| -------------------------------------------- | ------------------------------------------------------------------ |
-| `deriveRunId`, `validateRunId`, `resolveRunId` | `<utc-day>-<seed-slug>`, and what `--run` is allowed to be        |
-| `runPaths`, `createRunDir`                   | ARCHITECTURE §4's layout in one place, plus ADR-0001's guard       |
-| `deriveName`, `looksLikeName`, `fallbackName` | Where a candidate's name comes from, and where it does not         |
-| `slugFor`                                    | One slug per candidate per run, deduplicated                        |
-| `toCandidates`                               | The whole step, contract-parsed, with drops as data                 |
+| Export                                         | What it is                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------ |
+| `deriveRunId`, `validateRunId`, `resolveRunId` | `<utc-day>-<seed-slug>`, and what `--run` is allowed to be   |
+| `runPaths`, `createRunDir`                     | ARCHITECTURE §4's layout in one place, plus ADR-0001's guard |
+| `deriveName`, `looksLikeName`, `fallbackName`  | Where a candidate's name comes from, and where it does not   |
+| `slugFor`                                      | One slug per candidate per run, deduplicated                 |
+| `toCandidates`                                 | The whole step, contract-parsed, with drops as data          |
 
 ## Four judgement calls
 
@@ -38,14 +38,14 @@ inconsistency 25 offered both. Dedup produces a group and the group is ordered �
 primary first, by the ranking `resolve.ts` already applies — so one field with a
 documented order is one shape to read, where a singular-plus-list is two shapes
 that a reader has to merge and a writer can let disagree. It is expressed as a
-Zod tuple with a rest element rather than `z.array().min(1)` so the *type*
+Zod tuple with a rest element rather than `z.array().min(1)` so the _type_
 carries the guarantee too: `provenance[0]` is the primary and needs no undefined
 check under `noUncheckedIndexedAccess`. A v1 artifact fails to parse, which is
 the point of the bump — and nothing has written a `candidates.jsonl` yet, so the
 bump cost nothing today and would not have been free next session.
 
 **2. A name is lifted or it is the domain. It is never composed.** The rule is
-that a title is read as a name only when its *shape* marks one: a separator
+that a title is read as a name only when its _shape_ marks one: a separator
 splitting a short head from a tail. `Show HN: Acme Traces – OTel-native tracing`
 names a product; `We rewrote our tracer in Rust` does not, and the domain is
 used instead with the whole title kept as the one-liner. The alternative —
@@ -56,7 +56,7 @@ article: "The Browser Company" is rejected by the sentence-opener rule and falls
 back to its domain. A plain memo heading beats a wrong one.
 
 **3. The run id is derived from the seed as typed, not from the query chosen.**
-The id has to exist before `planQuery` runs, because the plan is written *into*
+The id has to exist before `planQuery` runs, because the plan is written _into_
 `runs/<run_id>/query_plan.json`. An id that changed when a person picked a
 refinement would mean the artifact could not be filed under the run that
 produced it. It also makes the two guards on the same thing — the run directory
@@ -68,7 +68,7 @@ bare `mkdir` rather than an `existsSync` check precisely because the check has a
 race in the gap. But a replay is by definition a second look at a decided run,
 and `planQuery`'s first branch already reads an existing plan rather than
 re-prompting. So the guard takes an `allowExisting` flag, the flag is
-`--replay`, and the refusal message says so. Note what this does *not* yet
+`--replay`, and the refusal message says so. Note what this does _not_ yet
 settle: on a replay, `candidates.jsonl` would be rewritten from a fresh search
 (served largely from the 24-hour HTTP cache). Whether stage 1 should instead
 read the existing candidates back is TICKET-0027's replay semantics, and it is
@@ -133,15 +133,14 @@ ten sites carried points `74, 3, 2, 2, 2, 2, 2, 1, 1, 31`; the top ten by points
 were `105, 85, 74, 74, 59, 32, 31, 13, 12, 10`. `minicor.com` (105),
 `agnost.ai` (85), `superlog.sh` (74) and `voker.ai` (59) all fell off the end of
 a `--limit 10`. The fix is to rank sites by their primary post before `--limit`
-cuts, with the same rule `resolve.ts` already applies *within* a group — highest
+cuts, with the same rule `resolve.ts` already applies _within_ a group — highest
 points, earliest post breaking the tie. It costs nothing and it is TICKET-0012's
 own ordering question, so it goes into the wiring rather than into a Done module.
 
 **A real bug in a Done module, deliberately not fixed here.**
 `pypi.org/project/logmera` became a candidate keyed on `pypi.org`, so two PyPI
 launches in one run would silently become one candidate — the wrong-collapse
-direction `resolve.ts` itself calls the dangerous one. Recorded as inconsistency
-36. It is one list plus tests, and it lands on its own rather than inside a
+direction `resolve.ts` itself calls the dangerous one. Recorded as inconsistency 36. It is one list plus tests, and it lands on its own rather than inside a
 wiring commit.
 
 **Four more, all recorded rather than acted on** (inconsistencies 37–40): the
@@ -201,17 +200,7 @@ judgement calls above were made by the AI.
 
 ## Reflection
 
-TODO(author) — hints, not prose. Worth a paragraph on:
-
-- Whether "lift the name or use the domain" is the right call for a memo a
-  partner reads, or whether a plain `acmetraces.dev` heading undersells a
-  candidate badly enough to justify letting stage 2 rename it from evidence.
-- Whether the sentence-opener rule earns its false negatives ("The Browser
-  Company"), or whether the cheaper rule is: no separator, no name.
-- Whether `--replay` reusing a run directory is the semantics you want, given
-  that stage 1 would re-search and rewrite `candidates.jsonl` inside it.
-- Whether three commits with no runnable command at the end of them is the right
-  size to review, or whether you would rather see the wiring in the same PR.
+First evidence of junk results showed up after a smoke test. Added guardrails to avoid it for now. Incident recorded, moving on to next ticket
 
 ## Next
 

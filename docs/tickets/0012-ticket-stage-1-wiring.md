@@ -1,6 +1,6 @@
 # TICKET-0012 — Stage 1 wiring: `./pipeline source`
 
-Status: **In progress** — [worklog 0020](../worklog/0020-run-identity-and-candidates.md) shipped the three pieces the wiring composes: the `Candidate.provenance` plurality fix (`schema_version` 2), `src/run.ts` (run ids, artifact paths, the overwrite guard) and `src/source/candidate.ts` (`ResolvedSite` → `Candidate`). The command itself, the manifest, the run-level failure decision and the `urls` seed form are not written; `./pipeline source` still exits 70 · Depends on: 0003, 0009, 0010, 0011 (all Done) · Blocks: 0013, 0027
+Status: **Done** — [worklog 0020](../worklog/0020-run-identity-and-candidates.md) built the contract fix, run identity and candidate derivation; [worklog 0021](../worklog/0021-stage-1-wired.md) wired the command, the manifest, the run-level failure decision and the `urls` seed form. Verified live: 12 candidates from `--seed "LLM observability"` in 15 requests · Depends on: 0003, 0009, 0010, 0011 (all Done) · Blocks: 0013, 0027
 Reads: [ARCHITECTURE §1, §4, §5](../ARCHITECTURE.md), [ADR-0001](../adr/0001-file-based-staged-pipeline.md)
 
 ## Why

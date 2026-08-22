@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `c4dfbe1` · **Phase: stage 1 — every piece the `source` command composes now exists, including run identity and candidate derivation; the command itself is unwritten and nothing has yet touched the live API**
+Last updated: 2026-08-22 · at commit `bbefec3` · **Phase: stage 1 is done and has run against the live API. `./pipeline source` produces candidates, a query plan and a manifest. The gate at TICKET-0013 is next, and nothing downstream should start before it reports**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -104,35 +104,55 @@ LLM chooses words, code chooses filters" stops being a convention — model outp
 reaches `query=` and nothing else, one line, deduped, length-capped, at most
 four. **TICKET-0011 is Done.**
 
-TICKET-0012 has started, from the inside out. Three pieces the wiring composes
-now exist. `Candidate.provenance` is a **non-empty list, primary first**
+TICKET-0012 is **Done**, and stage 1 exists as a command. Three pieces landed
+first ([worklog 0020](./worklog/0020-run-identity-and-candidates.md)).
+`Candidate.provenance` is a **non-empty list, primary first**
 (`schema_version` 2) — the fix for inconsistency 25, expressed as a tuple with a
-rest element so `provenance[0]` needs no undefined check — and it gained three
-fields the wiring found it needed: `title` (the post title the name was derived
-from), `posted_url` (the link as submitted, so a redirect is visible in one
-JSONL line) and `posted_at`, which is null when the hit carried no date while
-`at` stays the run clock. `src/run.ts` owns run identity for all three stages:
-`deriveRunId` is `<utc-day>-<seed-slug>` derived from the seed *as typed*
-(the id has to exist before the plan is written into the directory it names),
-`validateRunId` rejects an operator's `--run` rather than sanitising it,
-`runPaths` is the single definition of ARCHITECTURE §4's layout, and
-`createRunDir` is a bare `mkdir` — ADR-0001's concurrency guard without the race
-an `existsSync` check would leave — which only `--replay` may reuse.
-`src/source/candidate.ts` is the last pure step: a name is **lifted verbatim
-from the post title or it is the company's own address**, never composed, and a
-title is read as a name only when a separator splits a short head from a tail.
-Slugs are derived once, deduplicated within the run, and reserved only after the
-candidate parses. **TICKET-0012 is In progress**; `./pipeline source` still
-exits 70 and the manifest does not exist.
+rest element so `provenance[0]` needs no undefined check — carrying `title` (the
+post title a name was derived from), `posted_url` (the link as submitted) and
+`posted_at`, which is null when the hit carried no date while `at` stays the run
+clock. `src/run.ts` owns run identity for all three stages: `deriveRunId` is
+`<utc-day>-<seed-slug>` from the seed *as typed*, `validateRunId` rejects an
+operator's `--run` rather than sanitising it, `runPaths` is the single
+definition of ARCHITECTURE §4's layout, and `createRunDir` is a bare `mkdir` —
+ADR-0001's guard without the race an `existsSync` check leaves — which only
+`--replay` may reuse. `src/source/candidate.ts` names a candidate by **lifting
+the post title or falling back to the company's own address**, never composing
+one, and reads a title as a name only when a separator splits a short head from
+a tail.
 
-**The first live run happened** — not through `./pipeline source`, which still
-exits 70, but by driving the modules in the order the command will call them
-against live HN Algolia (`"LLM observability"`, `--limit 10 --since 180`, 15
+Then the command ([worklog 0021](./worklog/0021-stage-1-wired.md)).
+`src/source/index.ts` is stage 1 end to end and its order is load-bearing:
+**dedup, rank, cut, resolve** — resolution is one request per company, so
+cutting before it keeps a 200-post result set to `--limit` requests, and ranking
+before cutting is the fix the first live run forced. It makes the run-level
+failure decision ARCHITECTURE §5 was owed (inconsistency 24): `SourceError` is
+`source_dead` when every request failed, `no_hits` when the source had nothing,
+`no_candidates` when nothing survived — and a failed run writes its manifest
+before throwing, because that is the run a reviewer most needs to read.
+`--no-expand` cuts the four arms as well as the planning (inconsistency 31,
+decided). A yield under 10 sites fires the documented fallback — window widened
+to 730 days, recorded in the manifest. The `urls` seed form makes **no**
+requests: nothing to disambiguate without a post, and stage 2 fetches the site
+as citable evidence anyway. `src/manifest.ts` is the run record all three stages
+append to, with the git sha, the flags as parsed, per-arm yields, per-candidate
+status and every decision the run took — `writeStage` merges, so stage 2 cannot
+erase how stage 1 found its candidates.
+
+**The first live run happened** mid-ticket — before the command existed, by
+driving the modules in the order it would call them, against live HN Algolia (`"LLM observability"`, `--limit 10 --since 180`, 15
 requests, 13.5s, scratch directory, nothing committed). It is not the sample run
 (D-5) and it is not the gate (TICKET-0013). What it measured is recorded in
 inconsistencies 36–40 below, and one number belongs here: **the probe returned
 50 hits, 35 of them usable**, against a `--min-hits` default of 8. On a query at
 the centre of the thesis the threshold is nowhere near binding.
+
+The command itself has since run live: `./pipeline source --seed "LLM
+observability" --limit 12` produced 12 candidates in 15 requests, a manifest
+carrying the git sha and a `query_plan.json` recording `chosen_by: probe`; a
+re-run of the same id refused; a two-line url list for one company produced one
+candidate with two provenance entries. **Nothing from those runs is committed** —
+the sample run is TICKET-0028's and its topic is D-5.
 
 `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` exist and nothing reads
 them: the prompt waits on 0018 for a provider and on 0020/0021 for the rubric
@@ -147,9 +167,9 @@ and it is the last ticket before the gate.
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 320 tests — 17 CLI (0003), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010), 34 probe and query planning (0011), 24 run identity and 34 candidate derivation (0012). Offline, no key |
-| Worklogs 0001–0020 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 11 Done, 1 In progress (0012), 1 Ready (0018), 17 Blocked. Status is in each ticket header |
+| Test strategy | Written; 362 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010), 34 probe and query planning (0011), 24 run identity, 34 candidate derivation, 12 manifest and 28 stage-1 wiring (0012). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0021 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 12 Done, 2 Ready (0013 — the gate — and 0018), 16 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -160,11 +180,13 @@ and it is the last ticket before the gate.
 | HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier, paginated `searchHn` with failures as data (0009, Done) |
 | URL resolution and dedup | `src/source/resolve.ts` — canonicalisation, site keys, `dedupeHits`, redirect-following `resolveSites` (0010, Done) |
 | Query planning | `src/source/plan.ts` — `probeSeed`, `planQuery`, the `query_plan.json` artifact, the clarifier seam and the model-output sanitiser (0011, Done) |
-| Run identity | `src/run.ts` — `deriveRunId`/`validateRunId`, `runPaths` (ARCHITECTURE §4 in one place), `createRunDir` and ADR-0001's overwrite guard (0012, In progress) |
-| Candidate derivation | `src/source/candidate.ts` — `deriveName` (lift or fall back to the domain; never compose), `slugFor`, `toCandidates` with drops as data (0012, In progress) |
+| Run identity | `src/run.ts` — `deriveRunId`/`validateRunId`, `runPaths` (ARCHITECTURE §4 in one place), `createRunDir` and ADR-0001's overwrite guard (0012, Done) |
+| Candidate derivation | `src/source/candidate.ts` — `deriveName` (lift or fall back to the domain; never compose), `slugFor`, `toCandidates`, and `candidatesFromUrls` for the `urls` seed form (0012, Done) |
+| Stage 1 wiring | `src/source/index.ts` — `runSource`: plan → search → dedup → rank → cut → resolve → candidates, the run-level failure decision, the thin-yield fallback (0012, Done) |
+| Run manifest | `src/manifest.ts` — git sha, flags, per-arm yields, per-candidate status; `writeStage` merges so later stages append (0012, Done) |
 | Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | Not wired — every command still exits 70. Every module stage 1 needs now exists (0009–0012); what is missing is the command that calls them in order, the manifest, and the run-level failure decision |
+| Stages 1–3 | **Stage 1 runs**: `./pipeline source` produces `candidates.jsonl`, `query_plan.json` and `manifest.json`, verified against the live API. Stages 2 and 3 still exit 70 (0022, 0026), and so does `run` (0027) |
 | Sample run, walkthrough video | Not started |
 
 ---
@@ -544,51 +566,63 @@ Real defects, listed rather than silently patched.
     head is short; or prefer the owner over a generic repo name) and both are
     guesses until the hand-check at TICKET-0013 says how often this happens.
 
+41. **Three failures share one exit code.** `SourceError` is `source_dead`,
+    `no_hits` or `no_candidates`, and the CLI maps all three to exit 2, "the run
+    completed but found too little to act on". The API being down is not really
+    that — but exit 1 is the operator's invocation and exit 3 is a bug in this
+    code, and a 503 from Algolia is neither. The message says which happened and
+    the manifest records it. A reviewer who wants `source_dead` to be its own
+    code needs a fifth exit code, a line in the `--help` epilogue and a row in
+    ARCHITECTURE §7 — cheap, and not taken on a guess.
+
+42. **The test suite fetched from the network, for one commit.**
+    `tests/cli.test.ts` asserted that all four commands exit 70 and it spawns
+    each one for real, so the moment `./pipeline source` became a real action
+    `pnpm test` ran stage 1 against live HN Algolia and wrote `runs/2026-08-22-x/`
+    into the repo. Caught by the assertion failing, fixed by taking `source` out
+    of that list, and recorded here rather than quietly: CLAUDE.md's rule was
+    not broken by adding a test, it was broken by a command becoming real
+    underneath a test that had been correct the day before. The structural fix —
+    a stubbed `fetch` in a vitest setup file, so no test *can* reach the network
+    — is not taken yet, and is a reasonable thing for a reviewer to ask for.
+
+43. **`--limit` is applied before redirect resolution, so a run can end with
+    fewer candidates than it asked for.** Two vanity domains that resolve to one
+    company merge after the cut, and nothing goes back for a replacement.
+    Deliberate — refilling means more requests and a second ranking pass — but a
+    manifest that says `limit: 12` above eleven candidates is not a bug.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0011 are Done**, 0012 is **In progress**, and
-[TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) is the one Ready
-ticket that is not it.
+repo runnable. **0001–0012 are Done.** Two tickets are Ready and only one of
+them is the next thing to do.
 
-Every piece of stage 1 now exists as a module — including run identity and
-candidate derivation, added this session. Nothing calls any of them:
+**Stage 1 runs.** `./pipeline source --seed "<topic>"` produces a run directory
+with `candidates.jsonl`, `query_plan.json` and `manifest.json`, and it has been
+run against the live API. So the next step is not code:
 
-- [TICKET-0012](./tickets/0012-ticket-stage-1-wiring.md) — **the next ticket**,
-  and the last one before the gate. What remains is the command itself:
-  `resolveRunId` → `createRunDir` → `planQuery` → `searchHn` → `dedupeHits` →
-  `--limit` → `resolveSites` → `toCandidates` → `candidates.jsonl` +
-  `manifest.json`, and it is the first thing in this repo to touch a live API.
-  Of the four things it owed beyond the wiring, one is closed:
-  1. the run-level failure decision `searchHn` deliberately does not make
-     (inconsistency 24) — ARCHITECTURE §5 says something fails the run and
-     nothing currently does. **Open**;
-  2. ~~the `Candidate.provenance` plurality question (inconsistency 25)~~ —
-     **closed**: a non-empty list, primary first, `schema_version` 2;
-  3. the `dedupeHits` → `--limit` → `resolveSites` ordering, which is what keeps
-     redirect resolution to one request per candidate rather than one per post.
-     **Open**, and now a matter of writing the calls in that order;
-  4. whether `--no-expand` also cuts the four search arms (inconsistency 31).
-     **Open**.
+- [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md) — **the
+  gate, and the next ticket.** Read a real candidate list by hand and write down
+  what is actually true: the junk rate (the first live run gave two junk in ten,
+  inconsistency 37), whether `--min-hits 8` is a sensible threshold (35 usable
+  of 50 on a centre-of-thesis query, D-6), whether the expansion arms earn their
+  requests (on that topic they contributed nothing, inconsistency 38), and
+  whether a weekend repo and a seed-stage company are distinguishable at all
+  (inconsistency 22). It is also where the deferred fixes get decided with
+  numbers behind them: registry hosts (36), the classifier's false positives
+  (37), 404 candidates (39) and code-host naming (40).
 
-  Two more the command still owes: the `urls` seed form (one url per line, the
-  other survivor of TICKET-0002), and the documented fallback when candidate
-  yield comes in under 10 — widened window and expansion, *recorded in the
-  manifest* so a reviewer sees that it fired.
-
-  The run-id sequencing note this section carried is now settled in code:
-  `resolveRunId` derives the id from the seed as typed, before `planQuery` runs,
-  so `runs/<run_id>/query_plan.json` has a directory to be written into. The
-  "refuse to overwrite" guard (`createRunDir`) and `writeQueryPlan`'s `wx` are
-  still two guards on the same thing, and they now nest rather than race —
-  see inconsistency 35 for what `--replay` is allowed to reuse.
+  **Do not start stage 2 before this reports.** The gate exists because stage 1
+  gates everything downstream, and it is now the only thing standing between a
+  working sourcing stage and a scoring stage built on unvalidated input.
 - [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — still Ready,
-  still off the critical path to the gate. It is what turns the `Clarifier` seam
-  in `plan.ts` into a real call, and what gives
-  `prompts/clarify-query.v1.md` somewhere to run.
+  still off the critical path. It turns the `Clarifier` seam in `plan.ts` into a
+  real call and gives `prompts/clarify-query.v1.md` somewhere to run. Worth
+  doing when the gate is waiting on a human rather than on code.
 
 0015 and 0016 still wait on 0014, which waits on the gate.
 
@@ -597,9 +631,8 @@ The shape is unchanged from what this section said before the backlog existed:
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **0006–0011 Done**, 0012
-   In progress. 0012 is the wiring, and the first ticket that spends a real
-   request.
+3. **Stage 1 against live HN** — tickets 0006–0012. **Done.** `./pipeline
+   source` produces candidates from a live topic.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

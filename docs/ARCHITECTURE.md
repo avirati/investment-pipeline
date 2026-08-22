@@ -190,12 +190,14 @@ src/
   cli.ts                 commander entry — source | analyse | memo | run
   config.ts              env parsing, model routing
   run.ts                 run ids, run directory, artifact paths
+  manifest.ts            the run record all three stages append to
   contracts/             Zod schemas — the stage boundary
   source/
     plan.ts              probe + clarification → query_plan.json
     hn.ts                HN Algolia adapter
     resolve.ts           post URL → company site, canonicalise, dedup
-    index.ts
+    candidate.ts         resolved site → Candidate; the urls seed form
+    index.ts             stage 1 wired: plan, search, rank, cut, resolve
   evidence/
     store.ts             content-addressed read/write
     fetch.ts             cached HTTP + cheerio extraction

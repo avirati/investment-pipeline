@@ -62,3 +62,4 @@ are unfinished, not delegated.
 | [0018](./0018-redirect-resolution.md) | 2026-08-22 | Redirect resolution; TICKET-0010 closes |
 | [0019](./0019-query-planning.md) | 2026-08-22 | Query planning: probe, then clarify; TICKET-0011 closes |
 | [0020](./0020-run-identity-and-candidates.md) | 2026-08-22 | Run identity, and posts become candidates |
+| [0021](./0021-stage-1-wired.md) | 2026-08-22 | Stage 1 wired; `./pipeline source` is real; TICKET-0012 closes |

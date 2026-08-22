@@ -58,15 +58,15 @@ index of the same thing. Three values, and only three:
 | [0005](./0005-ticket-zod-contracts.md) | Zod contracts | The stage boundary | Done |
 | [0006](./0006-ticket-config-and-model-routing.md) | Config and model routing | Provider swap is an env change | Done |
 | [0007](./0007-ticket-evidence-store.md) | Evidence store | Content-addressed ids | Done |
-| [0008](./0008-ticket-cached-fetch-layer.md) | Cached fetch layer | One choke point for all network | **Ready** — transport half shipped, HTML→text waits on **D-8** |
-| [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | Blocked · 0008 |
-| [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | Blocked · 0008 |
+| [0008](./0008-ticket-cached-fetch-layer.md) | Cached fetch layer | One choke point for all network | Done |
+| [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | **Ready** |
+| [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | **Ready** |
 | [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | Blocked · 0009, 0018 |
 | [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | Blocked · 0009, 0010, 0011 |
 | **[0013](./0013-ticket-gate-hand-check-candidates.md)** | **GATE — hand-check the candidates** | **Junk rate · D-5 · D-6** | Blocked · 0012 |
 | [0014](./0014-ticket-fixture-capture-script.md) | `pnpm capture-fixtures` | The suite stays offline | Blocked · 0013 |
-| [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | Blocked · 0008, 0014 |
-| [0016](./0016-ticket-company-site-adapter.md) | Company site adapter | Founders, positioning, self-serve path | Blocked · 0008, 0014 |
+| [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | Blocked · 0014 |
+| [0016](./0016-ticket-company-site-adapter.md) | Company site adapter | Founders, positioning, self-serve path | Blocked · 0014 |
 | [0017](./0017-ticket-evidence-gather.md) | Evidence gather (2a) | Bundles with ids, no LLM | Blocked · 0015, 0016 |
 | [0018](./0018-ticket-llm-provider-and-cache.md) | LLM seam and response cache | Replay costs nothing | **Ready** |
 | [0019](./0019-ticket-extraction-prompt.md) | Extraction prompt + CHANGELOG | Versioned, thesis-free | Blocked · 0017 |

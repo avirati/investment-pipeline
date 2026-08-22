@@ -173,6 +173,10 @@ caught it, which is what they are for.
 
 No open decision was closed. **D-8 is new** — `@mozilla/readability` and its DOM
 dependency, described above, with cheerio-only as the default if unanswered.
+
+> **Update, same day:** the author answered D-8 immediately, at its default —
+> cheerio only. Recorded in [worklog 0012](./0012-cheerio-only-extraction.md)
+> and as an amendment to ADR-0005. The entry above is left as it was written.
 D-2, D-4, D-5, D-6 and D-7 stay open. `HTTP_CACHE_MAX_AGE_MS` is a labelled
 guess of the same kind as `EVIDENCE_TEXT_LIMIT` and `--min-hits`, and for the
 same reason is not raised to a STATE decision: there is no fork behind it, only

@@ -1,0 +1,83 @@
+<!doctype html>
+<!--
+  TICKET-0008 fixture. A plausible seed-stage company landing page, hand-written
+  rather than captured, so it can be committed without a licence question and so
+  every extraction hazard is present on purpose:
+
+  - nav / footer / aside chrome that must not reach the extracted text
+  - an inline <script> and <style> whose source must not reach it either
+  - og: tags and a <meta name="description"> that differ from the visible copy
+  - a <header> hero, which is kept — it holds the one-line pitch
+  - block elements flush against each other, to catch "AboutCareers" mashing
+  - &nbsp;, tabs and stray blank lines, to catch whitespace normalisation
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ravenlake — infrastructure for on-call teams</title>
+    <meta name="description" content="Ravenlake turns noisy alerts into ranked, deduplicated incidents so on-call engineers page fewer people." />
+    <meta property="og:title" content="Ravenlake" />
+    <meta property="og:description" content="Ranked, deduplicated incidents for on-call teams." />
+    <meta property="og:site_name" content="Ravenlake" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://ravenlake.example/" />
+    <style>
+      :root { --ink: #101418; font-family: Inter, system-ui, sans-serif; }
+      .nav a { text-decoration: none; }
+    </style>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag("js", new Date());
+    </script>
+  </head>
+  <body>
+    <nav class="nav" aria-label="Primary">
+      <a href="/">Home</a><a href="/pricing">Pricing</a><a href="/careers">Careers</a><a href="/login">Log in</a>
+    </nav>
+
+    <header class="hero">
+      <h1>Ravenlake</h1>
+      <p>Infrastructure&nbsp;for on-call teams that are tired of being paged.</p>
+    </header>
+
+    <main>
+      <section id="what">
+        <h2>What it does</h2>
+        <p>
+          Ravenlake sits between your monitoring stack and your pager. It groups
+          related alerts	into a single incident, ranks incidents by blast radius,
+          and suppresses the ones that resolved themselves before anyone read them.
+        </p>
+        <p>
+          Teams running Ravenlake page a median of 4.1 fewer people per week.
+        </p>
+      </section>
+
+      <section id="team">
+        <h2>Team</h2>
+        <ul>
+          <li>Priya Raghavan — previously staff SRE at Fathom Logistics.</li>
+          <li>Tom Okafor — previously founded Bellhouse, acquired 2023.</li>
+        </ul>
+      </section>
+
+      <section id="traction">
+        <h2>Where we are</h2>
+        <p>Eleven design partners. Seed round opening in the autumn.</p>
+      </section>
+    </main>
+
+    <aside class="promo">
+      <h3>Free for open source</h3>
+      <p>Apply for a sponsored plan. Subscribe to the newsletter for updates.</p>
+    </aside>
+
+    <footer>
+      <p>© 2026 Ravenlake Inc. All rights reserved.</p>
+      <a href="/privacy">Privacy Policy</a><a href="/cookies">Cookie Settings</a><a href="/terms">Terms</a>
+    </footer>
+
+    <script src="/analytics.js"></script>
+  </body>
+</html>

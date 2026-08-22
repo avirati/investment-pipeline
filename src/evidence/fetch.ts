@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { load } from "cheerio";
 import pRetry, { AbortError } from "p-retry";
 import { z } from "zod";
-import type { Evidence } from "../contracts/index.js";
+import type { Evidence, EvidenceType } from "../contracts/index.js";
 import { makeEvidence } from "./store.js";
 
 /**
@@ -383,5 +384,208 @@ export function fetchFailedEvidence(result: HttpFailure): Evidence {
       from_cache: result.from_cache,
       ...(result.final_url ? { final_url: result.final_url } : {}),
     },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// HTML → text (TICKET-0008, second half)
+//
+// `cheerio` alone, no DOM: D-8 cut `@mozilla/readability` because it takes a
+// `Document` rather than markup, which makes it three dependencies instead of
+// one — see the ADR-0005 amendment. What that buys is article prose; what this
+// pipeline reads is a team page, a meta description and repo metadata, so the
+// trade is strip-and-select rather than readability scoring.
+//
+// The cost is recorded in the amendment and worth restating here: a long-form
+// page extracts with more chrome than readability would leave. `main_selector`
+// in the record's `meta` is the handle for noticing that — if facts start
+// arriving with navigation text attached, look at what it matched.
+// ---------------------------------------------------------------------------
+
+/**
+ * Removed outright: either never prose (`script`, `style`, `svg`) or chrome
+ * that repeats on every page of a site (`nav`, `footer`, `aside`). `header` is
+ * deliberately *not* here — on a company landing page the hero, and with it the
+ * one-line description of what the company does, usually lives in it.
+ */
+const STRIPPED = "script,style,noscript,template,svg,iframe,object,nav,footer,aside";
+
+/**
+ * Elements that end a line of text. Without this `.text()` returns
+ * "AboutCareersContact" and the extracted page reads as one mashed word, which
+ * is both unreadable and unsearchable.
+ */
+const BLOCK =
+  "address,article,blockquote,br,dd,div,dl,dt,fieldset,figcaption,figure,form," +
+  "h1,h2,h3,h4,h5,h6,header,hr,li,main,ol,p,pre,section,table,td,th,tr,ul";
+
+/**
+ * Tried in order for the main content block. `body` is the last resort and is
+ * always reachable, so extraction never returns nothing because a page used an
+ * unfashionable layout.
+ */
+const MAIN_SELECTORS = ["main", "[role=main]", "article", "#main", "#content", ".main", ".content"];
+
+/**
+ * Below this a matched block is treated as an empty shell and `body` is used
+ * instead. The case is real: a marketing site that renders client-side ships
+ * `<main id="root"></main>`, and selecting it would extract nothing from a page
+ * whose server-rendered chrome does contain the company's own description.
+ */
+const MAIN_MIN_CHARS = 200;
+
+export interface ExtractedHtml {
+  /** `<title>`, else `og:title`, else the first `<h1>`. Null if none has text. */
+  title: string | null;
+  /** The description line, when there is one, then the main block's text. */
+  text: string;
+  /** Which selector matched, plus the `og:`/`<meta>` values, for debugging. */
+  meta: Record<string, string>;
+}
+
+/** Collapse horizontal whitespace (`&nbsp;` included), drop blank lines. */
+function normaliseText(raw: string): string {
+  return raw
+    .split("\n")
+    .map((line) => line.replace(/[^\S\n]+/g, " ").trim())
+    .filter((line) => line.length > 0)
+    .join("\n");
+}
+
+/**
+ * Extract a page's title, description and main text. Pure and synchronous, so
+ * the boilerplate test is a fixture in and a string out with no transport
+ * involved. Malformed markup does not throw — `cheerio` parses HTML the way a
+ * browser does, and a page with no body yields an empty `text`.
+ */
+export function extractHtml(html: string): ExtractedHtml {
+  const $ = load(html);
+
+  const metaContent = (selector: string): string | undefined => {
+    const value = $(selector).first().attr("content")?.trim();
+    return value ? value : undefined;
+  };
+
+  // Read the head before stripping: `og:` tags are the page's own summary of
+  // itself and survive whatever the body layout turns out to be.
+  const meta: Record<string, string> = {};
+  for (const [key, selector] of [
+    ["og_title", 'meta[property="og:title"]'],
+    ["og_description", 'meta[property="og:description"]'],
+    ["og_site_name", 'meta[property="og:site_name"]'],
+    ["og_type", 'meta[property="og:type"]'],
+    ["description", 'meta[name="description"]'],
+  ] as const) {
+    const value = metaContent(selector);
+    if (value) meta[key] = value;
+  }
+  const canonical = $('link[rel="canonical"]').first().attr("href")?.trim();
+  if (canonical) meta.canonical = canonical;
+
+  const documentTitle = $("title").first().text().trim();
+  const heading = $("h1").first().text().trim();
+  const title = documentTitle || meta.og_title || heading || null;
+
+  $(STRIPPED).remove();
+  // Two text nodes rather than one so an inline element flush against a block
+  // ("<p>a</p><p>b</p>") cannot fuse across the boundary.
+  $(BLOCK).each((_, element) => {
+    $(element).prepend("\n").append("\n");
+  });
+
+  const bodyText = normaliseText($("body").text());
+  let selected = "body";
+  let text = bodyText;
+  for (const selector of MAIN_SELECTORS) {
+    const block = $(selector).first();
+    if (block.length === 0) continue;
+    const candidate = normaliseText(block.text());
+    if (candidate.length < MAIN_MIN_CHARS && bodyText.length > candidate.length) break;
+    selected = selector;
+    text = candidate;
+    break;
+  }
+  meta.main_selector = selected;
+
+  // The description leads the text rather than sitting in `meta`, because the
+  // model reads the text and not the metadata (see `store.ts`), and on a
+  // company site it is routinely the crispest statement of what they do. Only
+  // when the body does not already contain it, so a page whose hero copy *is*
+  // its meta description is not extracted twice.
+  const description = meta.og_description ?? meta.description;
+  if (description && !text.includes(description)) {
+    text = text ? `${description}\n\n${text}` : description;
+  }
+
+  return { title, text, meta };
+}
+
+/** `text/html`, `application/xhtml+xml`, and anything that opens like markup. */
+export function looksLikeHtml(body: string, contentType?: string): boolean {
+  const type = contentType?.toLowerCase() ?? "";
+  if (type.includes("html")) return true;
+  if (type && !type.includes("text/plain")) return false;
+  return /^\s*(<!doctype html|<html\b|<head\b|<body\b)/i.test(body);
+}
+
+/** `fetchEvidence` never writes a `fetch_failed` for a success. */
+export type FetchedEvidenceType = Exclude<EvidenceType, "fetch_failed">;
+
+export interface FetchEvidenceOptions extends HttpOptions {
+  /** Force extraction on or off. Default: decide from the content type. */
+  extract?: boolean;
+}
+
+/**
+ * The convenience the adapters (0015, 0016) actually call: one url in, one
+ * `Evidence` out, whatever happened. A failure is a `fetch_failed` record
+ * rather than a throw or a null, so a dead site costs coverage *with a
+ * citation* instead of disappearing (ARCHITECTURE §5).
+ *
+ * The record is addressed by the url as requested, not by `final_url`, so a
+ * redirect that changes between runs cannot change an evidence id. Where the
+ * body actually came from is in `meta`.
+ *
+ * A non-HTML body — a JSON API response — is passed through unextracted, which
+ * is what the HN and GitHub adapters want: they parse structure, not prose.
+ */
+export async function fetchEvidence(
+  url: string,
+  type: FetchedEvidenceType,
+  options: FetchEvidenceOptions = {},
+): Promise<Evidence> {
+  const { extract, ...http } = options;
+  const result = await httpGet(url, http);
+  if (!result.ok) return fetchFailedEvidence(result);
+
+  const contentType = result.headers["content-type"];
+  const base = {
+    from_cache: result.from_cache,
+    attempts: result.attempts,
+    ...(result.final_url ? { final_url: result.final_url } : {}),
+    ...(contentType ? { content_type: contentType } : {}),
+  };
+
+  if (extract === false || (extract === undefined && !looksLikeHtml(result.body, contentType))) {
+    return makeEvidence({
+      url: result.url,
+      type,
+      retrieved_at: result.retrieved_at,
+      status: result.status,
+      title: null,
+      text: result.body,
+      meta: { ...base, extracted: false },
+    });
+  }
+
+  const page = extractHtml(result.body);
+  return makeEvidence({
+    url: result.url,
+    type,
+    retrieved_at: result.retrieved_at,
+    status: result.status,
+    title: page.title,
+    text: page.text,
+    meta: { ...base, ...page.meta, extracted: true },
   });
 }

@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `51661e3` · **Phase: the network layer exists; no stage logic yet**
+Last updated: 2026-08-22 · at commit `6956b1f` · **Phase: the evidence layer is complete; no stage logic yet**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -21,31 +21,31 @@ run with no `.env` at all. `src/evidence/store.ts` now owns the citation
 guarantee's mechanics — one definition of an evidence id, one text limit, a
 double-write that is a no-op and a read that misses instead of throwing — so the
 fetch layer and the memo validator have something to build against.
-`src/evidence/fetch.ts` is the first module that can touch the network and the
-one choke point CLAUDE.md requires: `httpGet` resolves for every outcome rather
-than throwing, a cache hit replays the original `retrieved_at` so a re-run
-produces the same evidence ids, and a dead site becomes a `fetch_failed` record.
-Nothing calls either of them yet. Tickets 0001–0007 are done; **0008 is half
-done** — its HTML→text half is specified but not written. D-8 closed it to
-`cheerio` alone: `@mozilla/readability` needs a DOM and is therefore three
-dependencies, not one, which is the wrong trade for a pipeline that reads few
-articles. Recorded as an amendment to ADR-0005.
+`src/evidence/fetch.ts` is the one module that can touch the network and the
+choke point CLAUDE.md requires: `httpGet` resolves for every outcome rather than
+throwing, a cache hit replays the original `retrieved_at` so a re-run produces
+the same evidence ids, and a dead site becomes a `fetch_failed` record. Its
+HTML→text half now exists too — `cheerio` only, per D-8 — so `fetchEvidence(url,
+type)` takes a url and returns an `Evidence` whatever happened, and the adapters
+in 0009/0015/0016 have one function to call. **Tickets 0001–0008 are Done.** The
+evidence layer is finished and nothing calls it yet: 0009 and 0010, the first
+real callers, are the Ready work.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 103 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 25 fetch (0008). Offline, no key |
-| Worklogs 0001–0011 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 7 Done, 2 Ready (0008 half shipped, 0018), 21 Blocked. Status is in each ticket header |
+| Test strategy | Written; 123 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008). Offline, no key |
+| Worklogs 0001–0013 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 8 Done, 3 Ready (0009, 0010, 0018), 19 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
 | Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005) |
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
-| Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records (0008, transport half). HTML→text specified (cheerio, D-8) and unwritten |
+| Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
 | Stages 1–3 | Not started — every command exits 70 |
 | Sample run, walkthrough video | Not started |
@@ -82,8 +82,9 @@ default, state that you took it, and record it in that session's worklog.
   Recorded as an amendment to
   [ADR-0005](./adr/0005-typescript-stack.md), which is where the original
   `cheerio` + readability pairing was decided, and in
-  [worklog 0012](./worklog/0012-cheerio-only-extraction.md). The extraction code
-  itself is still unwritten — the decision landed without it, deliberately.
+  [worklog 0012](./worklog/0012-cheerio-only-extraction.md). The decision landed
+  one commit ahead of its code, deliberately; the code followed in
+  [worklog 0013](./worklog/0013-cheerio-extraction.md) and TICKET-0008 is Done.
 
 ### Deliberately closed — do not reopen without a new ADR
 
@@ -192,6 +193,28 @@ Real defects, listed rather than silently patched.
     wrong by more than a day. Revise at the first multi-day run. Same kind of
     labelled guess as 14; no fork behind it, only a number.
 
+17. **`MAIN_MIN_CHARS` is the third unmeasured guess in the evidence layer.**
+    `extractHtml` treats a matched main block shorter than 200 characters as a
+    client-rendered empty shell and falls back to `<body>`. The failure it
+    prevents is real — a marketing site shipping `<main id="root"></main>` would
+    otherwise extract nothing — but 200 is a number, not a measurement. Same
+    class as 14 and 16, and the three of them together are worth a look at the
+    first real extraction (TICKET-0016) rather than one at a time.
+
+18. **Extraction is not a pure transcription of the page.** Two deliberate
+    departures, both from TICKET-0008's second half
+    ([worklog 0013](./worklog/0013-cheerio-extraction.md)): the `og:` or
+    `<meta>` description is *prepended* to the extracted text — because the
+    model reads `text` and not `meta`, and it is often the crispest sentence on
+    the page — and `<header>` is **kept** while `nav`, `footer` and `aside` are
+    stripped, because a company site's hero usually lives there. The url and
+    `retrieved_at` are unchanged, so citations still resolve to the page the
+    text came from, but a reader comparing the record to the live page will find
+    the first line reordered and may find nav text that lives inside `<header>`.
+    `meta.main_selector` on every record says which block was selected. Flagged
+    rather than assumed: if a reviewer wants extraction to transcribe only, both
+    are a few lines to reverse.
+
 ---
 
 ## Next session — start here
@@ -203,19 +226,22 @@ repo runnable. **0001–0007 are Done.**
 half and is still Ready; [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md),
 the LLM seam and response cache, is the other Ready one.
 
-**Resume by writing 0008's HTML→text half** — `cheerio` only, per the closed
-D-8 and the ADR-0005 amendment, plus the `fetchEvidence(url, type)` convenience
-and a committed fixture page for the boilerplate test. It is the last thing
-between here and 0009, and 0009, 0010, 0015 and 0016 all wait on it. 0018 still
-only unblocks 0011's clarifier, which 0011 is designed to ship without.
+**0008 is Done and the evidence layer is finished.** Resume at
+[TICKET-0009](./tickets/0009-ticket-hn-algolia-adapter.md), the HN Algolia
+adapter — the first real caller of `httpGet`, and the one that decides the
+usable-vs-unusable classification the gate at 0013 is going to hand-check.
+[TICKET-0010](./tickets/0010-ticket-url-resolution-and-dedup.md) is Ready in
+parallel and independent of it. 0015 and 0016 no longer wait on 0008 but still
+wait on 0014, which waits on the gate. 0018 still only unblocks 0011's
+clarifier, which 0011 is designed to ship without.
 
 The shape is unchanged from what this section said before the backlog existed:
 
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **0006 and 0007 Done**;
-   0008 half done — transport shipped, cheerio extraction specified and unwritten.
+3. **Stage 1 against live HN** — tickets 0006–0012. **0006, 0007 and 0008
+   Done**; 0009 and 0010 are the Ready work and neither depends on the other.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

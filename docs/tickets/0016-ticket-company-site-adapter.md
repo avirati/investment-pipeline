@@ -1,6 +1,6 @@
 # TICKET-0016 — Company site adapter (`src/evidence/site.ts`)
 
-Status: Blocked · 0008, 0014 · Depends on: 0008, 0014 · Blocks: 0017
+Status: Blocked · 0014 · Depends on: 0008 (Done), 0014 · Blocks: 0017
 Reads: [SCOPE](../SCOPE.md) in-scope #2 and cut corner #1, [ADR-0005](../adr/0005-typescript-stack.md)
 
 ## Why

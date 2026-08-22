@@ -1,10 +1,12 @@
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { Evidence } from "../src/contracts/index.js";
 import {
   cacheKey,
+  extractHtml,
+  fetchEvidence,
   fetchFailedEvidence,
   type HttpFailure,
   type HttpOptions,
@@ -12,10 +14,11 @@ import {
   type HttpSuccess,
   httpGet,
   isFetchableUrl,
+  looksLikeHtml,
   retryAfterMs,
   USER_AGENT,
 } from "../src/evidence/fetch.js";
-import { evidenceId } from "../src/evidence/store.js";
+import { EVIDENCE_TEXT_LIMIT, evidenceId } from "../src/evidence/store.js";
 
 const URL_ = "https://example.com/about";
 const AT = new Date("2026-08-22T10:00:00.000Z");
@@ -337,3 +340,197 @@ function gone(): Response {
 function down(): Response {
   return new Response("unavailable", { status: 503 });
 }
+
+// --- HTML → text (TICKET-0008, second half) --------------------------------
+
+const FIXTURE = readFileSync(join(import.meta.dirname, "fixtures", "company-site.html"), "utf8");
+
+/** A 200 carrying markup, which is what `fetchEvidence` decides to extract on. */
+function page(body = FIXTURE, contentType = "text/html; charset=utf-8"): Response {
+  return new Response(body, { status: 200, headers: { "content-type": contentType } });
+}
+
+describe("extractHtml", () => {
+  it("keeps the main content of the committed fixture page", () => {
+    const { text } = extractHtml(FIXTURE);
+
+    expect(text).toContain("groups");
+    expect(text).toContain("Priya Raghavan");
+    expect(text).toContain("Eleven design partners");
+  });
+
+  it("strips nav, footer, aside, script and style", () => {
+    const { text } = extractHtml(FIXTURE);
+
+    // Chrome that repeats on every page of the site, and would otherwise be
+    // extracted once per candidate url and cited as if it said something.
+    expect(text).not.toContain("Careers");
+    expect(text).not.toContain("Privacy Policy");
+    expect(text).not.toContain("Cookie Settings");
+    expect(text).not.toContain("© 2026");
+    expect(text).not.toContain("newsletter");
+    // Source, not prose.
+    expect(text).not.toContain("dataLayer");
+    expect(text).not.toContain("font-family");
+  });
+
+  it("reads the title and the og: tags", () => {
+    const { title, meta } = extractHtml(FIXTURE);
+
+    expect(title).toBe("Ravenlake — infrastructure for on-call teams");
+    expect(meta.og_title).toBe("Ravenlake");
+    expect(meta.og_site_name).toBe("Ravenlake");
+    expect(meta.canonical).toBe("https://ravenlake.example/");
+    expect(meta.main_selector).toBe("main");
+  });
+
+  it("leads the text with the description, because the model reads text not meta", () => {
+    const { text } = extractHtml(FIXTURE);
+
+    expect(text.startsWith("Ranked, deduplicated incidents for on-call teams.")).toBe(true);
+  });
+
+  it("does not repeat a description the body already contains", () => {
+    const same = "We build ranked incident triage.";
+    const { text } = extractHtml(
+      `<html><head><meta name="description" content="${same}"></head>` +
+        `<body><main><p>${same}</p><p>${"x".repeat(300)}</p></main></body></html>`,
+    );
+
+    expect(text.split(same)).toHaveLength(2);
+  });
+
+  it("separates block elements instead of mashing them into one word", () => {
+    const { text } = extractHtml(
+      "<body><p>About</p><p>Contact</p><div>Team<br>Careers</div></body>",
+    );
+
+    expect(text).toBe("About\nContact\nTeam\nCareers");
+  });
+
+  it("collapses tabs, non-breaking spaces and blank lines", () => {
+    const { text } = extractHtml("<body><p>a\t\tb&nbsp;&nbsp;c</p><p>  </p><p>d</p></body>");
+
+    expect(text).toBe("a b c\nd");
+  });
+
+  describe("choosing the main block", () => {
+    const filler = `<p>${"word ".repeat(80)}</p>`;
+
+    it("falls back to body when no main-ish block exists", () => {
+      const { text, meta } = extractHtml(`<body><div>${filler}</div></body>`);
+
+      expect(meta.main_selector).toBe("body");
+      expect(text).toContain("word");
+    });
+
+    it("falls back to body when the main block is an empty client-rendered shell", () => {
+      // A marketing site that renders client-side ships `<main id="root"></main>`.
+      // Selecting it would extract nothing from a page that does say what the
+      // company does — in its server-rendered header.
+      const { text, meta } = extractHtml(`<body><header>${filler}</header><main></main></body>`);
+
+      expect(meta.main_selector).toBe("body");
+      expect(text).toContain("word");
+    });
+
+    it("prefers <main> over the surrounding page", () => {
+      const { text, meta } = extractHtml(`<body><div>chrome</div><main>${filler}</main></body>`);
+
+      expect(meta.main_selector).toBe("main");
+      expect(text).not.toContain("chrome");
+    });
+  });
+
+  it("returns empty rather than throwing on markup that is not a page", () => {
+    expect(extractHtml("").text).toBe("");
+    expect(extractHtml("<<<not html").title).toBeNull();
+    expect(extractHtml("<html><head><title>  </title></head></html>").title).toBeNull();
+  });
+
+  it("falls back from <title> to og:title to <h1>", () => {
+    expect(extractHtml('<head><meta property="og:title" content="Og"></head>').title).toBe("Og");
+    expect(extractHtml("<body><h1>Heading</h1></body>").title).toBe("Heading");
+  });
+});
+
+describe("looksLikeHtml", () => {
+  it("believes the content type first", () => {
+    expect(looksLikeHtml("{}", "text/html; charset=utf-8")).toBe(true);
+    expect(looksLikeHtml("<!doctype html>", "application/json")).toBe(false);
+  });
+
+  it("sniffs the body when the content type is absent or plain", () => {
+    expect(looksLikeHtml("<!doctype html><html>", undefined)).toBe(true);
+    expect(looksLikeHtml('{"hits":[]}', undefined)).toBe(false);
+    expect(looksLikeHtml("  <html lang=en>", "text/plain")).toBe(true);
+  });
+});
+
+describe("fetchEvidence", () => {
+  it("turns a company page into a valid, addressable record", async () => {
+    const { transport } = stub(page());
+    const evidence = await fetchEvidence(URL_, "company_site", options({ transport }));
+
+    expect(Evidence.safeParse(evidence).success).toBe(true);
+    expect(evidence.type).toBe("company_site");
+    expect(evidence.id).toBe(evidenceId(URL_, evidence.retrieved_at));
+    expect(evidence.title).toBe("Ravenlake — infrastructure for on-call teams");
+    expect(evidence.text).toContain("Priya Raghavan");
+    expect(evidence.text).not.toContain("Privacy Policy");
+    expect(evidence.meta.extracted).toBe(true);
+    expect(evidence.meta.main_selector).toBe("main");
+  });
+
+  it("passes a JSON body through unextracted, for the API adapters", async () => {
+    const body = '{"hits":[{"title":"Show HN: Ravenlake"}]}';
+    const { transport } = stub(page(body, "application/json"));
+    const evidence = await fetchEvidence(URL_, "hn_item", options({ transport }));
+
+    expect(evidence.text).toBe(body);
+    expect(evidence.title).toBeNull();
+    expect(evidence.meta.extracted).toBe(false);
+  });
+
+  it("records a failure as fetch_failed rather than throwing", async () => {
+    const { transport } = stub(gone());
+    const evidence = await fetchEvidence(URL_, "company_site", options({ transport }));
+
+    expect(evidence.type).toBe("fetch_failed");
+    expect(evidence.status).toBe(404);
+    expect(evidence.text).toBe("HTTP 404");
+  });
+
+  it("gives the same evidence id on a cache hit, so a re-run does not duplicate", async () => {
+    const shared = options({ transport: stub(page()).transport });
+    const first = await fetchEvidence(URL_, "company_site", shared);
+    const { transport, calls } = stub(page("<html><body>different</body></html>"));
+    const second = await fetchEvidence(URL_, "company_site", { ...shared, transport });
+
+    expect(calls).toHaveLength(0);
+    expect(second.id).toBe(first.id);
+    expect(second.meta.from_cache).toBe(true);
+  });
+
+  it("truncates an oversized page and says so", async () => {
+    const huge = `<body><main><p>${"long ".repeat(4000)}</p></main></body>`;
+    const { transport } = stub(page(huge));
+    const evidence = await fetchEvidence(URL_, "company_site", options({ transport }));
+
+    expect(evidence.text.length).toBeLessThanOrEqual(EVIDENCE_TEXT_LIMIT);
+    expect(evidence.meta.text_truncated).toBe(true);
+  });
+
+  it("records where a redirect actually landed without changing the id", async () => {
+    const redirected = page();
+    Object.defineProperty(redirected, "url", { value: "https://www.example.com/about" });
+    const evidence = await fetchEvidence(
+      URL_,
+      "company_site",
+      options({ transport: async () => redirected }),
+    );
+
+    expect(evidence.url).toBe(URL_);
+    expect(evidence.meta.final_url).toBe("https://www.example.com/about");
+  });
+});

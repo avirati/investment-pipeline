@@ -1,6 +1,6 @@
 # TICKET-0008 — Cached fetch layer (`src/evidence/fetch.ts`)
 
-Status: **Ready** — transport half shipped ([worklog 0011](../worklog/0011-cached-fetch-layer.md)); the HTML→text half is specified (D-8 closed, [worklog 0012](../worklog/0012-cheerio-only-extraction.md)) and not yet written · Depends on: 0007 · Blocks: 0009, 0010, 0015, 0016
+Status: **Done** — transport half in [worklog 0011](../worklog/0011-cached-fetch-layer.md), D-8 in [worklog 0012](../worklog/0012-cheerio-only-extraction.md), HTML→text half in [worklog 0013](../worklog/0013-cheerio-extraction.md) · Depends on: 0007 · Blocks: 0009, 0010, 0015, 0016
 Reads: [ARCHITECTURE §5, §8](../ARCHITECTURE.md), [CLAUDE.md](../../CLAUDE.md) conventions
 
 ## Why
@@ -34,18 +34,21 @@ the only way the failure policy in ARCHITECTURE §5 can be applied consistently.
 
 ## Progress
 
-Shipped in worklog 0011 — `httpGet`, the disk cache, the bounded retry policy
-with `Retry-After`, `fetchFailedEvidence`, `isFetchableUrl`, and 25 offline
-tests. `p-retry` added; `cheerio` not yet — nothing imports it.
+**Shipped in two sittings.**
 
-Left to do — the HTML→text half. **D-8 is closed**: `cheerio` alone, no
-`@mozilla/readability` and no DOM, recorded in the
-[ADR-0005 amendment](../adr/0005-typescript-stack.md) and
-[worklog 0012](../worklog/0012-cheerio-only-extraction.md). Nothing blocks it
-now; it was simply not written in the same session as the decision. When it
-lands it brings with it the `fetchEvidence(url, type)` convenience that returns
-an `Evidence` for a success as well as a failure, plus the committed fixture
-page for the boilerplate test.
+[Worklog 0011](../worklog/0011-cached-fetch-layer.md) — the transport half:
+`httpGet`, the disk cache, the bounded retry policy with `Retry-After`,
+`fetchFailedEvidence`, `isFetchableUrl`, 25 offline tests, and `p-retry`. It
+raised D-8, which [worklog 0012](../worklog/0012-cheerio-only-extraction.md)
+closed at its default in documents only.
 
-The ticket is not Done until that half ships, so 0009, 0010, 0015 and 0016 stay
-Blocked — even though 0009 only needs the transport half that already exists.
+[Worklog 0013](../worklog/0013-cheerio-extraction.md) — the HTML→text half:
+`extractHtml`, `looksLikeHtml`, `fetchEvidence(url, type)`, `cheerio`, the
+committed fixture page at `tests/fixtures/company-site.html`, and 20 more tests.
+Acceptance met: `grep -rn "fetch(" src/ --include='*.ts'` returns only the
+injectable default inside this module. 123 tests pass offline with no key.
+
+Three judgement calls inside the extraction are recorded in worklog 0013 and
+carried as STATE inconsistencies rather than left implicit: `<header>` is kept
+while `nav`/`footer`/`aside` are stripped, the meta description leads the
+extracted text, and an empty `<main>` falls back to `<body>`.

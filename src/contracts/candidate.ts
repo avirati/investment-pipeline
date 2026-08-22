@@ -15,9 +15,25 @@ export const Provenance = z.object({
   source: CandidateSource,
   /** The query as approved in `query_plan.json` — not the raw seed. */
   query: z.string().min(1),
+  /**
+   * When this run sourced the candidate, not when the post was made. The two
+   * are separate fields because `created_at` can be absent on a hit and `at`
+   * can not: dating a candidate by the run clock is a fact about the run, while
+   * writing the run clock into `posted_at` would be inventing a post date.
+   */
   at: z.iso.datetime(),
   /** Source-native id: an HN `objectID`, or null for a URL-list seed. */
   ref: z.string().nullable(),
+  /**
+   * The post title, verbatim. What `name` and `one_liner` were derived from
+   * (`src/source/candidate.ts`), so the hand-check at TICKET-0013 can see the
+   * input beside the output. Null when the source carried no title.
+   */
+  title: z.string().nullable(),
+  /** The link as submitted, before canonicalisation and redirect resolution. */
+  posted_url: z.url(),
+  /** When the post was made. Null when the source did not say (invariant 4). */
+  posted_at: z.iso.datetime().nullable(),
 });
 export type Provenance = z.infer<typeof Provenance>;
 

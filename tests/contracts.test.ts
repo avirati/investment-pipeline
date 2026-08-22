@@ -28,13 +28,24 @@ const fact = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
+const provenance = (over: Record<string, unknown> = {}) => ({
+  source: "hn",
+  query: "LLM observability",
+  at: AT,
+  ref: "41234567",
+  title: "Show HN: Acme Traces – OpenTelemetry-native tracing for LLM calls",
+  posted_url: "https://acmetraces.dev",
+  posted_at: "2026-08-10T11:22:33.000Z",
+  ...over,
+});
+
 const candidate = (over: Record<string, unknown> = {}) => ({
   schema_version: CANDIDATE_SCHEMA_VERSION,
   slug: "acme-traces",
   name: "Acme Traces",
   url: "https://acmetraces.dev",
   one_liner: "OpenTelemetry-native tracing for LLM calls.",
-  provenance: [{ source: "hn", query: "LLM observability", at: AT, ref: "41234567" }],
+  provenance: [provenance()],
   ...over,
 });
 
@@ -87,10 +98,7 @@ describe("Candidate — provenance is a group (TICKET-0010, TICKET-0012)", () =>
   // candidate, and a singular provenance could record only one of them.
   it("carries every post that pointed at the company, primary first", () => {
     const both = candidate({
-      provenance: [
-        { source: "hn", query: "LLM observability", at: AT, ref: "41234567" },
-        { source: "hn", query: "LLM observability", at: AT, ref: "40999999" },
-      ],
+      provenance: [provenance(), provenance({ ref: "40999999" })],
     });
     expect(Candidate.safeParse(both).success).toBe(true);
   });
@@ -104,7 +112,7 @@ describe("Candidate — provenance is a group (TICKET-0010, TICKET-0012)", () =>
   it("rejects the v1 singular object", () => {
     const v1 = candidate({
       schema_version: 1,
-      provenance: { source: "hn", query: "LLM observability", at: AT, ref: "41234567" },
+      provenance: provenance(),
     });
     expect(Candidate.safeParse(v1).success).toBe(false);
   });

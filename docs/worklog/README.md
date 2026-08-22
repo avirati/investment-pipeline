@@ -48,3 +48,4 @@ are unfinished, not delegated.
 | [0004](./0004-repo-scaffold.md) | 2026-08-22 | Repo scaffold |
 | [0005](./0005-cut-feed-seed-form.md) | 2026-08-22 | Cutting the `feed` seed form |
 | [0006](./0006-cli-skeleton.md) | 2026-08-22 | CLI skeleton and the `--help` contract |
+| [0007](./0007-setup-script-and-wrapper.md) | 2026-08-22 | `setup.sh` and the `./pipeline` wrapper |

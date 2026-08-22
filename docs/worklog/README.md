@@ -64,3 +64,4 @@ are unfinished, not delegated.
 | [0020](./0020-run-identity-and-candidates.md) | 2026-08-22 | Run identity, and posts become candidates |
 | [0021](./0021-stage-1-wired.md) | 2026-08-22 | Stage 1 wired; `./pipeline source` is real; TICKET-0012 closes |
 | [0022](./0022-gate-hand-check.md) | 2026-08-22 | The gate: four live runs read by hand; TICKET-0013 closes |
+| [0023](./0023-gate-fixes-canonicalisation.md) | 2026-08-22 | The gate's canonicalisation fixes; TICKET-0010 closes again |

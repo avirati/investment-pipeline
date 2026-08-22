@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `8354717` · **Phase: stage 2 has started. The GitHub adapter (0015) is in and has run against the live API; the repo ↔ site join the gate lost a quarter of one run to is now made. Nothing calls the model yet. Next: TICKET-0016, then TICKET-0017**
+Last updated: 2026-08-22 · at commit `d08783b` · **Phase: stage 2's evidence layer is complete. Both adapters (0015, 0016) are in and both have run against live sources; the repo ↔ site join is made and the company's own pages are read. Nothing calls the model yet. Next: TICKET-0017, which owns the run-level request budget**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -284,14 +284,71 @@ had been a fallback for `homepage`, which would have sent TICKET-0016 to extract
 founders from a personal profile page. Only `repo.homepage` makes the join now;
 `blog` survives as a signal. **TICKET-0015 is Done.**
 
+**Stage 2's second adapter is in, and it is the last one.**
+`src/evidence/site.ts` ([worklog 0028](./worklog/0028-company-site-adapter.md),
+TICKET-0016) reads a company's own pages — the home page, then up to three of
+the pages it links to that the rubric has a use for. It answers the two
+questions nothing else in the pipeline can: **who is named on the team page**
+(SPEC D1) and **whether a developer can adopt this without a contract** (the
+D-4 disqualifier). It is the first customer of the `homepage` join 0015 closed.
+
+Four rules shape it, three inherited from the GitHub adapter so stage 2's two
+modules fail the same way. The fourth is its own and it is
+[SCOPE](./SCOPE.md) cut corner 1 made structural: **a wrong founder is worse
+than a missing one**, so no name is emitted without a *corroborating role*
+beside it, and every name seen and dropped comes back in `rejected[]` with a
+reason. The failure is asymmetric — under-extracting costs coverage the memo has
+to state; over-extracting puts a stranger's name in an investment memo. Two
+patterns produce a person and both need the role: an adjacent role element
+(what a team-card component compiles to) and a name-dash-role line (what a
+hand-written team list looks like). A home page is scanned only under a heading
+that says *team*, which is the cheapest guard in the module and what keeps a
+logo wall and a quote carousel out of the founder list.
+
+**The module concludes nothing.** `site.pricing_url`, `site.docs_url`,
+`site.signup_url`, `site.repo_url` and `site.contact_url` are five facts about
+links; whether they add up to a self-serve motion is D-4, decided in
+`src/analyse/score.ts` and nowhere else. Coroot's marketing manager is emitted
+next to its two co-founders with the page's own words for each — deciding who is
+a *founder* is SPEC D1's job, and a test pins that.
+
+**TESTING §6's three failure shapes are three recorded outcomes.** A 404 and a
+timeout become `fetch_failed` records; an empty JS shell becomes a
+`company_site` record at status 200 with `empty_shell: true`, and **its text is
+the reason**, because a record whose text is a cookie banner reads downstream as
+a company that says nothing about itself rather than as a page this pipeline
+cannot render. SCOPE cut corner 4 became `detectLanguage`: three tests in order
+of how hard they are to fool — a declared `lang`, a dominant non-Latin script
+that overrules it, a stopword ratio that only speaks with enough text — and
+`unknown` is deliberately *not* "not English", because most company sites
+declare nothing and refusing to read them would cut coverage to nearly nothing
+for a hazard that hardly occurs on this source. That is a stated assumption,
+not a measurement.
+
+**`Signal` now lives in `src/evidence/signal.ts`**, moved unchanged out of the
+GitHub adapter in its own commit. Two copies of "a metric that cannot be dated
+is an unknown, never a zero" would be one too many: the rule is only structural
+while there is one function that can produce a signal.
+
+**The first live run touched seven of the gate's own candidates** — read-only,
+nothing committed. Five ran clean: `coroot.com` gave 3 people and all five D-4
+links in 4 requests and 1.2s; `hypercubic.ai`'s team page is at `/company` and
+yielded two co-founders; `pylonsync.com` has docs and a repo and no team page,
+so `site.people_named` is an unknown with a reason; `syn-cause.com` DNS-failed
+into one `fetch_failed` record at status 0, which is correct. **Two defects
+changed the code** — inconsistencies 62 and 63 below: a one-page site recorded
+*no* contact link because its "Book a demo" points at `cal.com`, and a
+client-rendered page was reported as merely thin because it had no named mount
+element. **TICKET-0016 is Done.**
+
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 595 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0027 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 18 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 1 Ready (0016), 11 Blocked. Status is in each ticket header |
+| Test strategy | Written; 670 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0028 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 19 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 1 Ready (0017), 10 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -308,6 +365,8 @@ founders from a personal profile page. Only `repo.homepage` makes the join now;
 | Run manifest | `src/manifest.ts` — git sha, flags, per-arm yields, per-candidate status; `writeStage` merges so later stages append (0012, Done) |
 | LLM response cache | `src/llm/cache.ts` — committed and content-addressed on the whole call (provider, model, prompt id, prompt version, output schema version, rendered input); a hit is verified against the fields it was keyed on; the first answer wins; a miss says why (0018, Done). **No entry is committed yet** |
 | GitHub adapter | `src/evidence/github.ts` — `parseGithubRef`, five API calls, tolerant schemas, evidence projections, dated `Signal`s, `defaultCalls(mode)` as the degraded-mode budget (0015, Done). Verified against the live API on three of the gate's own candidates |
+| Company-site adapter | `src/evidence/site.ts` — `discoverLinks` and the six link roles, `pickPages` against `SITE_PAGE_BUDGET`, `detectEmptyShell`, `detectLanguage`, `extractPeople` (a role beside every name, rejections with reasons), `gatherSite` (0016, Done). Verified live against seven of the gate's own candidates; two defects found and fixed |
+| Signal shape | `src/evidence/signal.ts` — `Signal`, `UnknownSignal`, `SignalSet` and the `collector` that makes invariant 4 structural. Shared by both stage-2 adapters, re-exported from `github.ts` (0016) |
 | LLM provider seam | `src/llm/provider.ts` — `createModel(role)` behind `await import`, `callModel` through the cache, `--replay` fails loudly on a cold cache, tokens recorded per call, `PRICES` ships empty so `cost_usd` is `null` (0018, Done). **Never run against a live provider** |
 | Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
 | Fixture capture | `scripts/capture-fixtures.ts` and `scripts/fixtures.ts` — `pnpm capture-fixtures`, a secret scan that refuses rather than redacts, `--refresh` as a deliberate act, and a generated `tests/fixtures/capture.json` (0014, Done). Not wired into `pnpm test`, never in CI |
@@ -496,6 +555,14 @@ Real defects, listed rather than silently patched.
     otherwise extract nothing — but 200 is a number, not a measurement. Same
     class as 14 and 16, and the three of them together are worth a look at the
     first real extraction (TICKET-0016) rather than one at a time.
+
+    **TICKET-0016 looked, and the number is not binding either way.** Seven live
+    sites: the five that render server-side extracted 4,100–5,400 characters and
+    the one that does not extracted 71. Nothing landed near 200, or near
+    `SHELL_MAX_CHARS`'s 300 — the distribution is bimodal by two orders of
+    magnitude, which is a better argument for the threshold than the threshold's
+    own value is. Seven sites is not a measurement, but it is the first evidence
+    any of these three numbers has had.
 
 18. **Extraction is not a pure transcription of the page.** Two deliberate
     departures, both from TICKET-0008's second half
@@ -1015,6 +1082,49 @@ Real defects, listed rather than silently patched.
     committed run** to difference against, which is a TICKET-0028 shape rather
     than an adapter one.
 
+62. ~~**A one-page site records no adoption path at all.**~~ Found by the first
+    live run of TICKET-0016 and fixed in the same ticket. `zatanna.ai`'s whole
+    navigation is in-page fragments and its only call to action is "Book a
+    15-min demo" pointing at `zatanna.cal.com`; the same-site filter dropped it,
+    so the run recorded a company offering **neither** self-serve nor sales — a
+    state that does not exist, and precisely the distinction D-4 turns on. The
+    off-site exemption is now a per-rule `offsite` flag and a scheduling host
+    carries it for the same reason a code host does.
+
+63. ~~**A client-rendered page was reported as merely thin.**~~ Same live run,
+    same ticket. `crosscanon.com` returns 71 characters behind a Remix bundle
+    with no named mount element, so the mount test alone missed it — and "the
+    company says little" and "we cannot render this page" are exactly the two
+    readings `detectEmptyShell`'s reason exists to separate. A
+    `<script type="module">` or a hashed bundle path is now the second tell.
+
+64. **An unquoted endorsement under a team heading is indistinguishable from a
+    colleague.** `extractPeople` requires a role beside every name and rejects a
+    block that quotes forty or more characters, which kills the ordinary
+    testimonial. What it cannot see is a customer card with a job title and no
+    quotation marks — `<h3>Dana Whitfield</h3><p>VP Engineering, Northwind
+    Freight</p>` under an "Our team" heading. Two things bound the damage: the
+    role is carried verbatim, so the other company's name travels with the
+    person, and TICKET-0020's extractor reads the same page text with the
+    context in front of it. Pinned by a test, the same treatment `classifyHit`
+    gives its own blind spot. This is the failure SCOPE cut corner 1 is about,
+    so if a memo ever names the wrong founder, look here first.
+
+65. **A one-pager's in-page sections are invisible to link discovery.** `#team`,
+    `#pricing` and `#faq` on a single-page site are dropped with every other
+    fragment, because a fragment is not a page to fetch. It costs nothing today
+    — the home page is scanned for people anyway — but `site.team_url` will
+    report "the home page links to no team page" about a site that has a team
+    section, which is a false negative a reader of the manifest would not
+    expect. Seen live on `zatanna.ai` and `splabs.io`.
+
+66. **The site request budget is decided per candidate and spent per run** —
+    the same shape as inconsistency 60, one module along. `SITE_PAGE_BUDGET` is
+    3, so a company costs up to 4 requests and the live runs averaged about 6
+    requests and 3 seconds a company across both adapters. Nothing yet counts
+    requests across candidates. That loop is TICKET-0017 and both budgets
+    belong to it.
+
 ---
 
 ## Next session — start here
@@ -1089,15 +1199,32 @@ session should carry out of it:
    candidate while it is spent per run. That is inconsistency 60 and it is
    TICKET-0017's to settle.
 
+**TICKET-0016 is Done** ([worklog
+0028](./worklog/0028-company-site-adapter.md)) — `src/evidence/site.ts`, 75
+tests, and the second stage-2 module to have run against live sources. Three
+things a new session should carry out of it:
+
+1. **The live run changed the code again, and both changes came from reading a
+   page rather than from reading the ticket.** That is now the fourth time a
+   defect of this class has surfaced this way (inconsistencies 62 and 63). The
+   pattern is stable enough to plan around: budget a live pass at the end of
+   every adapter ticket, on candidates the gate already vetted.
+2. **The people extractor is deliberately biased towards missing people**, and
+   the one false positive it structurally cannot see is inconsistency 64. If a
+   memo ever names the wrong founder, that is where to look.
+3. **Whether a heuristic founder extractor should exist at all** next to
+   TICKET-0020's LLM extractor is an open question, raised in worklog 0028's
+   reflection and left for the author. It is cheap, auditable and cites a block
+   a reviewer can check; it is also a second source of truth for one fact.
+
 **Nothing is blocking. One Ready ticket:**
 
-- [TICKET-0016](./tickets/0016-ticket-company-site-adapter.md) — **Ready.** The
-  company site adapter, against a real landing page and a real team page. It now
-  has a first customer: `gatherGithub` returns the homepage it should fetch, and
-  the reason that url is trustworthy is that the weaker route to it was removed.
-- [TICKET-0017](./tickets/0017-ticket-evidence-gather.md) — Blocked on 0016.
-  It owns the run-level request budget (inconsistency 60) and is where a bundle
-  can carry a repo and a site for one company.
+- [TICKET-0017](./tickets/0017-ticket-evidence-gather.md) — **Ready.** Evidence
+  gathering per candidate: both adapters exist, both return the same `Signal`
+  shape, and `GithubResult.homepage` joins one to the other. It owns the
+  run-level request budget for **both** adapters (inconsistencies 60 and 66),
+  which is the one decision it must not inherit from whichever behaviour falls
+  out of the wiring.
 - [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
   does not, and `{{thesis}}` waits on 0021.
@@ -1131,7 +1258,9 @@ The shape of the whole thing, unchanged:
 6. **The provider seam and the committed response cache** — ticket 0018.
    **Done**, and outside the gate throughout: it encodes no thesis, no score
    and no prompt.
-7. **Stage 2's evidence layer** — ticket 0015 **Done**, 0016 Ready, 0017 next.
+7. **Stage 2's evidence layer** — tickets 0015 and 0016 **Done**; both adapters
+   have run against live sources and both live runs changed the code. 0017 is
+   next and is the only thing between here and extraction.
 8. Then extraction and the rubric, stage 3, and the sample run on
    `AI agent infrastructure`.
 

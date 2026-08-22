@@ -1,6 +1,6 @@
 # TICKET-0017 — Evidence gather, step 2a (`src/analyse/gather.ts`)
 
-Status: Blocked · 0015, 0016 · Depends on: 0015, 0016 · Blocks: 0019, 0020, 0022
+Status: **Ready** — 0015 and 0016 are both Done; both adapters return the same `Signal` shape and `GithubResult.homepage` joins one to the other · Depends on: 0015 (Done), 0016 (Done) · Blocks: 0019, 0020, 0022
 Reads: [ARCHITECTURE §1 stage 2a, §3](../ARCHITECTURE.md), [ADR-0003](../adr/0003-evidence-store-and-citations.md)
 
 ## Why

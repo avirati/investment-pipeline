@@ -15,13 +15,13 @@ keep the worklogs going with reflection hints, update ticket statuses.
 
 ## What landed
 
-| Commit    | Contents                                                          | Tests |
-| --------- | ----------------------------------------------------------------- | ----- |
-| `e8a8f17` | Link discovery and roles, page budget, empty-shell and language checks | 39 |
-| `2c389b1` | `extractPeople` — named people with a corroborating role           | 17    |
-| `f588fbd` | `Signal` moved to `src/evidence/signal.ts`, shared by both adapters | —    |
-| `1f6bd94` | `gatherSite` — evidence, signals, failures as data                 | 16    |
-| `d08783b` | Two defects the first live run found                               | +3    |
+| Commit    | Contents                                                               | Tests |
+| --------- | ---------------------------------------------------------------------- | ----- |
+| `e8a8f17` | Link discovery and roles, page budget, empty-shell and language checks | 39    |
+| `2c389b1` | `extractPeople` — named people with a corroborating role               | 17    |
+| `f588fbd` | `Signal` moved to `src/evidence/signal.ts`, shared by both adapters    | —     |
+| `1f6bd94` | `gatherSite` — evidence, signals, failures as data                     | 16    |
+| `d08783b` | Two defects the first live run found                                   | +3    |
 
 **670 tests** (595 before this ticket: +75), typecheck and lint clean, offline
 and with no `.env`.
@@ -51,7 +51,7 @@ not that the company is self-serve. `site.pricing_url`, `site.docs_url`,
 `site.signup_url`, `site.repo_url` and `site.contact_url` are five facts about
 links; D-4 is decided in `src/analyse/score.ts` and nowhere else (CLAUDE.md
 invariant 7). Coroot's marketing manager is emitted next to its two co-founders
-with the page's own words for each — deciding who is a *founder* is SPEC D1's
+with the page's own words for each — deciding who is a _founder_ is SPEC D1's
 job, and a test pins that.
 
 **3 — Failure is data.** [TESTING §6](../TESTING.md)'s three failure shapes are
@@ -64,7 +64,7 @@ about itself, rather than as a page this pipeline cannot render.
 **4 — English only, and say so** (SCOPE cut corner 4). Three tests read in order
 of how hard they are to fool: a declared `lang`, a dominant non-Latin script
 which overrules it, and a stopword ratio which only speaks when there is enough
-text. `unknown` is a real verdict and is deliberately *not* treated as "not
+text. `unknown` is a real verdict and is deliberately _not_ treated as "not
 English": most company sites declare nothing, and refusing to read them would
 cut coverage to nearly nothing for a hazard that hardly occurs on this source.
 That is a stated assumption, not a measurement.
@@ -89,7 +89,7 @@ That is a stated assumption, not a measurement.
   CLAUDE.md requires is `fetch.ts`, which `httpGet` is.
 - **A home page is scanned for people only under a heading that says team.** The
   cheapest guard in the module, and what keeps a logo wall and a quote carousel
-  out of the founder list. A team page fetched *because* it is the team page is
+  out of the founder list. A team page fetched _because_ it is the team page is
   scanned whole.
 - **`Signal` moved out of the GitHub adapter** into `src/evidence/signal.ts`,
   unchanged. Two copies of "a metric that cannot be dated is an unknown, never a
@@ -104,17 +104,17 @@ nothing committed: `coroot.com`, `zatanna.ai`, `hypercubic.ai`,
 
 Five ran clean end to end. What they measured:
 
-| Site | Result |
-|---|---|
-| `coroot.com` | 4 pages, 4 requests, 1.2s. Three people with roles verbatim, all five D-4 links found |
-| `hypercubic.ai` | Team page is at `/company`; two co-founders extracted, no pricing page |
-| `pylonsync.com` | Docs and repo found, no team page — `site.people_named` an unknown with a reason |
-| `splabs.io` | Two sign-up paths found, one matched on link text (`/login` behind "Try it free") |
-| `syn-cause.com` | DNS failure, 4 attempts, status 0, one `fetch_failed` record. Correct |
+| Site            | Result                                                                                |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `coroot.com`    | 4 pages, 4 requests, 1.2s. Three people with roles verbatim, all five D-4 links found |
+| `hypercubic.ai` | Team page is at `/company`; two co-founders extracted, no pricing page                |
+| `pylonsync.com` | Docs and repo found, no team page — `site.people_named` an unknown with a reason      |
+| `splabs.io`     | Two sign-up paths found, one matched on link text (`/login` behind "Try it free")     |
+| `syn-cause.com` | DNS failure, 4 attempts, status 0, one `fetch_failed` record. Correct                 |
 
 **Two defects changed the code.**
 
-*F1 — a one-page site recorded no contact link.* `zatanna.ai`'s whole navigation
+_F1 — a one-page site recorded no contact link._ `zatanna.ai`'s whole navigation
 is in-page fragments and its only call to action is "Book a 15-min demo"
 pointing at `zatanna.cal.com`. The same-site filter dropped it, so the run
 recorded a company offering **neither** self-serve nor sales — a state that does
@@ -122,7 +122,7 @@ not exist, and precisely the distinction D-4 turns on. The off-site exemption is
 now a per-rule `offsite` flag rather than a hardcoded check for `repo`, and a
 scheduling host carries it for the same reason a code host does.
 
-*F2 — a client-rendered page was reported as merely thin.* `crosscanon.com`
+_F2 — a client-rendered page was reported as merely thin._ `crosscanon.com`
 returns 71 characters behind a Remix bundle with no named mount element, so the
 mount test alone missed it — and "the company says little" versus "we cannot
 render this page" are exactly the two readings the reason exists to separate. A
@@ -144,7 +144,7 @@ Both are pinned by tests against the real markup shapes.
   page is scanned for people anyway — but `site.team_url` will say "the home
   page links to no team page" about a site that has a team section.
 - **`extractHtml`'s known cost showed up live.** `4,829,385,502Modeled total
-  requests processed` on zatanna's page: block-level separation does not split
+requests processed` on zatanna's page: block-level separation does not split
   two inline elements flush against each other. Recorded in the
   [ADR-0005 amendment](../adr/0005-typescript-stack.md) and unchanged here.
 
@@ -169,15 +169,7 @@ the AI's, taken after reading the pages the defects were found on.
 
 ## Reflection
 
-TODO(author) — worth a paragraph on whether a heuristic founder extractor
-earning its keep alongside the LLM extractor in TICKET-0020, or whether it is
-two sources of truth for one fact. The argument for keeping it is that it is
-cheap, auditable and cites a block a reviewer can check; the argument against is
-that `rejected_people` is a debugging surface nobody downstream reads.
-
-TODO(author) — the module is now the largest single file in `src/`. Judgement
-call on whether `site.ts` should split (links / people / gather) before
-TICKET-0017 adds a caller, or whether one file per adapter is the right unit.
+site.ts is quite bulky. Will do a separate pass on bulky files to split them up. For now, proceeding as usual.
 
 ## Next
 

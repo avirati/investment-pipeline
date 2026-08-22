@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `6b0023b` · **Phase: contracts and config pinned; no stage logic yet**
+Last updated: 2026-08-22 · at commit `99f2a25` · **Phase: contracts, config and evidence store pinned; no stage logic yet**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -17,21 +17,26 @@ boundary now exists as six Zod schemas, so stage work can start against a fixed
 contract rather than inventing one as it goes. `src/config.ts` is the one place
 `process.env` is read: model choice is an env change (ADR-0006), a missing
 variable names itself, and nothing validates at import — the offline paths still
-run with no `.env` at all. Tickets 0001–0006 are done.
+run with no `.env` at all. `src/evidence/store.ts` now owns the citation
+guarantee's mechanics — one definition of an evidence id, one text limit, a
+double-write that is a no-op and a read that misses instead of throwing — so the
+fetch layer and the memo validator have something to build against. Nothing
+calls it yet. Tickets 0001–0007 are done.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 59 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006). Offline, no key |
-| Worklogs 0001–0009 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 6 Done, 2 Ready (0007, 0018), 22 Blocked. Status is in each ticket header |
+| Test strategy | Written; 78 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007). Offline, no key |
+| Worklogs 0001–0010 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 7 Done, 2 Ready (0008, 0018), 21 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
 | Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005) |
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
+| Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
 | Stages 1–3 | Not started — every command exits 70 |
 | Sample run, walkthrough video | Not started |
@@ -148,23 +153,39 @@ Real defects, listed rather than silently patched.
 
 ---
 
+14. **`EVIDENCE_TEXT_LIMIT` is an unmeasured guess.** TICKET-0007 pinned
+    per-record text at 8,000 characters — roughly 2k tokens of prose — because
+    ADR-0003 names bundle length as the cost of closed-world citation without
+    naming a number. It is one constant in `src/evidence/store.ts` and it is
+    labelled as a guess in the code. Revise at the first real extraction call
+    (TICKET-0020), not before. Not raised to an open decision: there is no fork
+    behind it, only a number.
+15. **`makeEvidence` is the only sanctioned constructor, by convention.**
+    `Evidence.parse({ ... })` still works from anywhere, so an adapter that
+    assembles a record literal can skip the id helper and the text limit. Fine
+    at this size, and the reason `write` recomputes the id rather than trusting
+    it. If more constructors-by-convention accumulate, a branded type is the fix.
+
+---
+
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0006 are Done.** Two tickets are Ready:
-[TICKET-0007](./tickets/0007-ticket-evidence-store.md), the evidence store, and
-[TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md), the LLM seam and
-response cache. **Resume at 0007** — it unblocks the whole stage-1 chain, while
-0018 only unblocks 0011's clarifier, which 0011 is explicitly designed to ship
-without.
+repo runnable. **0001–0007 are Done.** Two tickets are Ready:
+[TICKET-0008](./tickets/0008-ticket-cached-fetch-layer.md), the cached fetch
+layer, and [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md), the
+LLM seam and response cache. **Resume at 0008** — it is the next link in the
+stage-1 chain and the first module that touches the network, while 0018 only
+unblocks 0011's clarifier, which 0011 is explicitly designed to ship without.
 
 The shape is unchanged from what this section said before the backlog existed:
 
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **0006 Done**; 0007 next.
+3. **Stage 1 against live HN** — tickets 0006–0012. **0006 and 0007 Done**;
+   0008 next.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

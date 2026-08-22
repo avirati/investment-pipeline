@@ -59,12 +59,12 @@ index of the same thing. Three values, and only three:
 | [0006](./0006-ticket-config-and-model-routing.md) | Config and model routing | Provider swap is an env change | Done |
 | [0007](./0007-ticket-evidence-store.md) | Evidence store | Content-addressed ids | Done |
 | [0008](./0008-ticket-cached-fetch-layer.md) | Cached fetch layer | One choke point for all network | Done |
-| [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | Done |
-| [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | Done |
+| [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | **Reopened** — two fixes from the 0013 gate |
+| [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | **Reopened** — three fixes from the 0013 gate |
 | [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | Done — the clarifier is a seam 0018 fills |
-| [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | **Ready** |
-| **[0013](./0013-ticket-gate-hand-check-candidates.md)** | **GATE — hand-check the candidates** | **Junk rate · D-5 · D-6** | Blocked · 0012 |
-| [0014](./0014-ticket-fixture-capture-script.md) | `pnpm capture-fixtures` | The suite stays offline | Blocked · 0013 |
+| [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | Done |
+| **[0013](./0013-ticket-gate-hand-check-candidates.md)** | **GATE — hand-check the candidates** | **Junk rate · D-5 · D-6** | Done — [worklog 0022](../worklog/0022-gate-hand-check.md) |
+| [0014](./0014-ticket-fixture-capture-script.md) | `pnpm capture-fixtures` | The suite stays offline | **Ready** |
 | [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | Blocked · 0014 |
 | [0016](./0016-ticket-company-site-adapter.md) | Company site adapter | Founders, positioning, self-serve path | Blocked · 0014 |
 | [0017](./0017-ticket-evidence-gather.md) | Evidence gather (2a) | Bundles with ids, no LLM | Blocked · 0015, 0016 |
@@ -93,8 +93,8 @@ rather than blocking:
 | D-2 memo rendering | 0024 | `eta` |
 | D-3 `feed` seed form | 0002 | Cut |
 | D-4 worklog reflections | 0029 | Left `TODO(author)` — **not** to be written by an assistant |
-| D-5 sample run topic | 0013 → 0028 | Decided from real stage-1 output |
-| D-6 `--min-hits` = 8 | 0013 | Kept until data contradicts it |
+| D-5 sample run topic | 0013 → 0028 | **Taken**: `AI agent infrastructure` — cleanest of four live runs |
+| D-6 `--min-hits` = 8 | 0013 | **Closed**: kept. 26–35/50 on three topics, 3/6 on the one that produced the junk |
 | D-7 ADR-0005/0006 padding | — | Author review; no code depends on it |
 
 ## Not tickets

@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `bbefec3` · **Phase: stage 1 is done and has run against the live API. `./pipeline source` produces candidates, a query plan and a manifest. The gate at TICKET-0013 is next, and nothing downstream should start before it reports**
+Last updated: 2026-08-22 · at commit `eb8cdcd` · **Phase: the gate at TICKET-0013 has reported. Stage 1 produces candidate lists that are 90% companies, and the five defects behind the other 10% are scoped back onto TICKET-0009 and TICKET-0010. Stage 2 is released to start once those land**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -158,18 +158,49 @@ the sample run is TICKET-0028's and its topic is D-5.
 them: the prompt waits on 0018 for a provider and on 0020/0021 for the rubric
 that fills its `{{thesis}}` placeholder.
 
-**Nothing in `src/source/` has touched the live API yet** — every test drives a
-stub transport over one topic's committed fixtures. TICKET-0012 is the wiring,
-and it is the last ticket before the gate.
+**The gate has reported.** TICKET-0013 ran stage 1 against four live topics —
+`AI agent infrastructure`, `LLM observability`, `vector database`, `eBPF
+observability` — and all 48 candidates were read by hand
+([worklog 0022](./worklog/0022-gate-hand-check.md)). The numbers everything
+downstream now rests on:
+
+| Measure | Result |
+|---|---|
+| Junk (not a company and not a product surface) | **5 of 48 — 10%**, and **4 of the 5 came from one run** |
+| Duplicate candidates | 2 of 48. Coroot took three of twelve slots on one run |
+| Fallback names (`owner/repo` or a bare domain) | 13 of 48 — 27%, of which 7 are avoidable |
+| Probe yield, three normal topics | 26, 33 and 35 usable of 50 — 3–4× `--min-hits` |
+| Probe yield, the narrow topic | **3 of 6** — under the threshold, and the source of 4 of the 5 junk |
+
+**D-6 is closed: keep `--min-hits 8`.** The argument is not the yield numbers,
+it is that the one topic that fell under the threshold is the one topic that
+produced a bad list. The threshold is behaving as a junk predictor and not just
+a yield gauge. **D-5 is taken at its default: `AI agent infrastructure`** — 12
+of 12 companies, no junk, no duplicates — with a recorded counter-argument that
+a uniformly positive memo set demonstrates the thesis less well than `vector
+database`'s messier one would.
+
+**One gate question could not be answered.** *Were the clarification options
+good, or was "keep my original" always right?* The clarifier is a seam until
+TICKET-0018, so all four runs recorded `probe` or `non-interactive` and nobody
+was ever asked. It moves to TICKET-0018 rather than being guessed at.
+
+**Five defects go back to their own tickets**, per TICKET-0013's instruction —
+three canonicalisation fixes reopen **TICKET-0010** (code-host urls collapsed to
+their repo root; `blog.` subdomains; registry hosts) and two classifier fixes
+reopen **TICKET-0009** (owner-over-generic-repo-name; ACM's proceedings host).
+Estimated effect on the gate's own 48: junk 5 → 1, fallback names 13 → 6. The
+survivor is the repo ↔ company-site join, which needs TICKET-0015's `homepage`
+field and must not be guessed at with name similarity.
 
 | Area | State |
 |---|---|
-| Thesis and rubric | Written, **unvalidated against any real company** |
+| Thesis and rubric | Written, **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
 | Test strategy | Written; 362 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010), 34 probe and query planning (0011), 24 run identity, 34 candidate derivation, 12 manifest and 28 stage-1 wiring (0012). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0021 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 12 Done, 2 Ready (0013 — the gate — and 0018), 16 Blocked. Status is in each ticket header |
+| Worklogs 0001–0022 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 13 Done, **2 Reopened** (0009, 0010 — five scoped fixes from the gate), 2 Ready (0014, 0018), 13 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -186,8 +217,8 @@ and it is the last ticket before the gate.
 | Run manifest | `src/manifest.ts` — git sha, flags, per-arm yields, per-candidate status; `writeStage` merges so later stages append (0012, Done) |
 | Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | **Stage 1 runs**: `./pipeline source` produces `candidates.jsonl`, `query_plan.json` and `manifest.json`, verified against the live API. Stages 2 and 3 still exit 70 (0022, 0026), and so does `run` (0027) |
-| Sample run, walkthrough video | Not started |
+| Stages 1–3 | **Stage 1 runs and has been audited** (TICKET-0013, four live topics): `./pipeline source` produces `candidates.jsonl`, `query_plan.json` and `manifest.json`, verified against the live API. Stages 2 and 3 still exit 70 (0022, 0026), and so does `run` (0027) |
+| Sample run, walkthrough video | Not started. Topic chosen (D-5): `AI agent infrastructure` |
 
 ---
 
@@ -200,11 +231,33 @@ default, state that you took it, and record it in that session's worklog.
 |---|---|---|---|
 | **D-2** | Memo rendering: `eta` templates vs typed TS render functions | Author preference | `eta` — a partner can edit a memo template without reading TypeScript |
 | **D-4** | Reflection sections in worklogs 0001 and 0002 | Author. Must not be AI-written — see CLAUDE.md | Leave as `TODO(author)`. Do not fill in |
-| **D-5** | Which topic becomes the committed sample run | First real stage-1 output | Pick whichever topic yields the cleanest 10–15 candidates and say why in the worklog |
-| **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one. Now *measured*: `probeSeed` computes `probe.usable` and `planQuery` compares it, so every run writes the number into `query_plan.json`. Both halves of the comparison lean generous — the classifier errs towards accepting (inconsistency 21) — so a thin probe is thinner than it looks. **First live measurement (2026-08-22, `"LLM observability"`): 35 usable of 50 hits.** Four times the threshold on a centre-of-thesis query, which says nothing yet about an awkward one |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
 
 ### Recently closed
+
+- **D-5 · the committed sample run topic** — taken at its default in
+  TICKET-0013: **`AI agent infrastructure`**. Of the four topics the gate ran it
+  is the cleanest by every measure — 12 of 12 candidates are companies, no junk,
+  no duplicates, one fallback name — and it exercises redirect resolution
+  (`Kampala` → `zatanna.ai`) and the expansion arms (+59, +22 new posts) so a
+  reviewer sees those paths work. **The counter-argument is on the record and is
+  the author's to overrule:** all twelve are launched, mostly YC-backed
+  companies, so the memo set may come out uniformly positive, and a memo set
+  with no interesting Pass in it demonstrates the thesis less well.
+  `vector database` — 11 companies, 5 of them hobby repos owned by personal
+  accounts — is the messier, more falsifiable alternative and costs one re-run
+  to switch to at TICKET-0028. See
+  [worklog 0022](./worklog/0022-gate-hand-check.md).
+- **D-6 · the probe threshold `--min-hits 8`** — closed in TICKET-0013: **keep
+  8.** Measured on four live topics. Three normal ones probed 26, 33 and 35
+  usable of 50 — three to four times the threshold, so it is nowhere near
+  binding and costs one request. The fourth (`eBPF observability`) probed **3 of
+  6**, fell under it, and was also the run that produced four of the gate's five
+  junk candidates and three separate entries for one company. The threshold is
+  behaving as a **junk predictor** rather than only a yield gauge, which is a
+  better argument for 8 than the yield numbers are. Both caveats stand: `usable`
+  is an upper bound (inconsistency 21) and the probe is one page of `story`
+  results, not the four arms.
 
 - **D-1 · default model in `.env.example`** — taken at its default in
   TICKET-0001. `MODEL_EXTRACT` and `MODEL_ANALYSE` ship empty with their roles
@@ -245,8 +298,10 @@ Real defects, listed rather than silently patched.
 2. ~~**`.env.example` is referenced but does not exist.**~~ Fixed in
    TICKET-0001; `ARCHITECTURE.md` §7.1 step 4 now resolves.
 3. **The sample run id is a placeholder** (`<committed_sample>`) in
-   `README.md`, `ARCHITECTURE.md`, and `SCOPE.md`. Replace all three once D-5 is
-   settled.
+   `README.md`, `ARCHITECTURE.md`, and `SCOPE.md`. D-5 is now settled — the
+   topic is `AI agent infrastructure` — but the run id is not minted until
+   TICKET-0028 actually commits a run, so the three placeholders stand until
+   then and are replaced there.
 4. **Worklog index dangling link.** Commit `1035b1d` lists session 0002 before
    its file exists at `f5e1938`. Transient, one-commit window, left as-is rather
    than rewriting history.
@@ -413,8 +468,20 @@ Real defects, listed rather than silently patched.
     sold" makes the repo the product surface for a dev-tools launch, and
     ADR-0004 already treats GitHub as the enrichment source. The cost is that a
     weekend project and a seed-stage company look identical to this layer.
-    Whether stage 2's scoring actually separates them is an open question the
-    gate at 0013 should answer, not an assumption to carry quietly.
+    **The gate measured it: 10 of 48 candidates are open-source projects with no
+    company behind them, and from a url alone they are indistinguishable** — but
+    one free signal separated all ten. Every hobby project was owned by a
+    **personal** GitHub account (`satyasairay`, `visionscaper`, `Agastya910`,
+    `pandyamarut`, `nullswan`); every candidate that turned out to be a company
+    was owned by an **organisation** (`getomnico`, `HelixDB`, `InsForge`,
+    `penca-io`, `XTraceAI`, `coroot`, `linnix-os`, `Infisical`,
+    `kontext-security`). `ccfos/huatuo` is the exception that keeps it a signal
+    rather than a rule: an org, and a foundation rather than a company.
+    `GET /users/<owner>` returns `type: "User" | "Organization"` in one request
+    TICKET-0015 makes anyway. **It is a fact for the rubric, never a stage-1
+    filter** — narrowing on it would be exactly the widening-yes-narrowing-no
+    violation. This inconsistency stays open: the question it asks is whether
+    *stage 2's scoring* separates them, and stage 2 does not exist.
 
 25. ~~**`Candidate.provenance` is singular and dedup produces a group.**~~
     Fixed in TICKET-0012 ([worklog
@@ -538,6 +605,13 @@ Real defects, listed rather than silently patched.
     ten. Left alone on purpose: TICKET-0013 is the gate that is supposed to make
     this call against a hand-checked list, and tightening a classifier on two
     examples is how it starts rejecting real companies.
+    **The gate answered it.** Neither of those two urls recurred — ranking by
+    traction demoted both — but the *classes* did, on a different topic:
+    `blog.zmalik.dev/p/…` is the same personal-blog class and
+    `camps.aptaracorp.com/ACM_PMS/…` is a paper on a host `PAPER_HOSTS` never
+    heard of. Two narrow, nameable rules go back to TICKET-0009 and TICKET-0010
+    (fixes F2 and F4); the classifier is **not** made smarter in general, which
+    is what tightening on two examples would have meant.
 
 38. **On one topic the three expansion arms contributed nothing.** `show_hn`
     returned 42 hits and 0 new, `launch` 4 and 0, `funding` 0 and 0 — the `raw`
@@ -548,6 +622,11 @@ Real defects, listed rather than silently patched.
     (`HN_MAX_PAGES_PER_ARM`) and 31 (`--no-expand`), and because the fixture
     capture at TICKET-0014 should include a topic where the arms do earn their
     requests — otherwise the suite only ever tests the case where they do not.
+    **Four topics now, and the answer changed.** `show_hn` contributed **+59**
+    new posts on `AI agent infrastructure` and **+23** on `vector database`, and
+    0 on the two thin topics — the right way round, since a thin topic has
+    nothing to add. `launch` earned one request of four. See inconsistency 46
+    for the arm that earned none.
 
 39. **A 404 stays a candidate.** `github.com/anilatambharii/argus-ai` returned
     404 during redirect resolution and became candidate 9 of 10. `resolveSites`
@@ -557,6 +636,10 @@ Real defects, listed rather than silently patched.
     real anyway: a deleted repo will spend a stage-2 analysis to produce a memo
     that says nothing. Whether a hard 404 on the *only* url a candidate has
     should drop it is a TICKET-0013 question with real numbers behind it.
+    **The numbers arrived: one unreachable site in 48 candidates across four
+    runs.** Not a rate worth changing a rule for. Left as specified — a
+    `fetch_failed` record and a coverage drop in stage 2, not a rejection in
+    stage 1.
 
 40. **A generic repository name makes a poor candidate name.**
     `github.com/torrix-ai/install` is named `torrix-ai/install` while its own
@@ -592,58 +675,130 @@ Real defects, listed rather than silently patched.
     Deliberate — refilling means more requests and a second ranking pass — but a
     manifest that says `limit: 12` above eleven candidates is not a bug.
 
+44. **A url that points *inside* something becomes a candidate for the thing it
+    is inside.** Three of the gate's five junk candidates share one shape:
+    `github.com/alibaba/anolisa/blob/main/docs/…/agentsight.md` (a documentation
+    page in Alibaba's monorepo, which became a company called "AgentSight"),
+    `github.com/xqlsystems/xarray-sql/blob/claude/…/benchmarks/nn.py` (one
+    Python file on a feature branch) and `demo.coroot.com/p/…` (a live demo
+    instance of a company already in the same list). `canonicaliseUrl` strips
+    tracking parameters and directory indexes but does not know that a code
+    host's `/blob/` and `/tree/` paths are *inside* a repo rather than another
+    repo. Scoped as fix F3 on the reopened TICKET-0010. The demo-instance case
+    is not fixed by F3 and needs the repo ↔ site join — see 45.
+
+45. **One company took three of twelve slots, and no url said they were one
+    company.** On `eBPF observability` the gate produced Coroot three times:
+    `github.com/coroot/coroot`, `coroot.ai` and `demo.coroot.com`. All three
+    `siteKey`s are correct in isolation — a repo and a company site share
+    nothing in their urls, `coroot.com` and `coroot.ai` are genuinely two
+    registrable domains, and `demo.coroot.com` collapses to a `coroot.com` that
+    was never itself a candidate. Inconsistency 28 predicted the first of the
+    three and named the fix: the repo's `homepage` field, which **TICKET-0015**
+    fetches. Deliberately **not** patched with a name-similarity heuristic in
+    stage 1 — that is the wrong-collapse direction `resolve.ts` argues is
+    unrecoverable. The cost is bounded and visible: 25% of one run spent on one
+    company, on the run that could least afford it.
+
+46. **The `funding` expansion arm returned zero hits on all four gate topics.**
+    `expandQuery` builds `"<seed> raises seed funding"` and runs it `story`
+    tagged; on `AI agent infrastructure`, `LLM observability`, `vector database`
+    and `eBPF observability` it returned 0 hits and therefore 0 new posts, for
+    four requests. As a full-text query against HN post *titles* it matches
+    almost nothing. Not cut, because four topics is not a measurement and the
+    arm exists precisely for the case where a company's only HN presence is a
+    funding announcement — which none of these four contained. Named here so it
+    is cut deliberately at TICKET-0028 if the sample run reproduces it, rather
+    than surviving because nobody looked. Same class of labelled guess as 23.
+
+47. **The thin-yield fallback buys volume by reaching back past the point where
+    a launch is still a launch.** `eBPF observability` yielded 3 sites, fired
+    the under-10 fallback, widened 180 → 730 days and re-searched to 13. **Every
+    one of that run's five junk candidates came from the widened window** — an
+    ACM paper from April 2025, a personal blog post from November 2025, a demo
+    instance from December 2024. This is not an argument for cutting the
+    fallback (3 candidates is not a pipeline) and the manifest already records
+    loudly that it fired. It is an argument for reading `fallback.fired: true`
+    in a manifest as *expect a worse list*, which nothing currently says.
+
+48. **The gate was specified as a human reading a list, and an assistant read
+    it.** TICKET-0013 says *"this is not a coding ticket; its deliverable is a
+    written finding"* — the finding in [worklog
+    0022](./worklog/0022-gate-hand-check.md) is AI-written end to end, including
+    the classification of all 48 candidates into company / project / junk. Six
+    borderline sites were fetched to confirm what they were; the rest were
+    judged from url and post title. The junk rate that stages 2 and 3 are being
+    released on is therefore an assistant's reading, and every candidate is
+    named in the worklog so the author can check the ones that matter rather
+    than re-doing all 48. Flagged rather than glossed: CLAUDE.md's attribution
+    rule is about modules, and this is the first time it applies to a *judgement*.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0012 are Done.** Two tickets are Ready and only one of
-them is the next thing to do.
+repo runnable. **0001–0013 are Done.** The gate has reported, so stage 2 is
+released — but two tickets reopened on the way out of it, and they are cheap.
 
-**Stage 1 runs.** `./pipeline source --seed "<topic>"` produces a run directory
-with `candidates.jsonl`, `query_plan.json` and `manifest.json`, and it has been
-run against the live API. So the next step is not code:
+**Do the five gate fixes first.** They are two small commits against tickets
+that already have tests, files and a shape:
 
-- [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md) — **the
-  gate, and the next ticket.** Read a real candidate list by hand and write down
-  what is actually true: the junk rate (the first live run gave two junk in ten,
-  inconsistency 37), whether `--min-hits 8` is a sensible threshold (35 usable
-  of 50 on a centre-of-thesis query, D-6), whether the expansion arms earn their
-  requests (on that topic they contributed nothing, inconsistency 38), and
-  whether a weekend repo and a seed-stage company are distinguishable at all
-  (inconsistency 22). It is also where the deferred fixes get decided with
-  numbers behind them: registry hosts (36), the classifier's false positives
-  (37), 404 candidates (39) and code-host naming (40).
+- [TICKET-0010](./tickets/0010-ticket-url-resolution-and-dedup.md) — **Reopened.**
+  F3: collapse a code-host url to its repo root (`/blob/…`, `/tree/…`) — fixes
+  three of the gate's five junk candidates and makes two urls into one repo
+  dedup. F4: a `blog.` subdomain and a `/p/<slug>` path are an article. F5:
+  registry hosts key on the package, not the host (inconsistency 36).
+- [TICKET-0009](./tickets/0009-ticket-hn-algolia-adapter.md) — **Reopened.**
+  F1: prefer the repo **owner** over a generic repo slug (`install`, `monitor`,
+  `server`) — fixes 7 of the 13 fallback names. F2: add ACM's proceedings host
+  to `PAPER_HOSTS`.
 
-  **Do not start stage 2 before this reports.** The gate exists because stage 1
-  gates everything downstream, and it is now the only thing standing between a
-  working sourcing stage and a scoring stage built on unvalidated input.
-- [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — still Ready,
-  still off the critical path. It turns the `Clarifier` seam in `plan.ts` into a
-  real call and gives `prompts/clarify-query.v1.md` somewhere to run. Worth
-  doing when the gate is waiting on a human rather than on code.
+Expected effect on the gate's own 48 candidates: junk 5 → 1, fallback names
+13 → 6, duplicates 2 → 1. Each fix has real urls behind it in
+[worklog 0022](./worklog/0022-gate-hand-check.md); write the tests from those.
 
-0015 and 0016 still wait on 0014, which waits on the gate.
+Then, in either order:
 
-The shape is unchanged from what this section said before the backlog existed:
+- [TICKET-0014](./tickets/0014-ticket-fixture-capture-script.md) — **Ready.**
+  `pnpm capture-fixtures`. Capture `eBPF observability` alongside a rich topic:
+  it is the thin, awkward result set the suite has never had — 3 usable of 6, a
+  fallback that fires, a paper, a blog and a triple-counted company all in one
+  payload. Fixing 0009/0010 first means the fixtures capture the post-fix
+  behaviour.
+- [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — **Ready**,
+  still outside the gate. It turns the `Clarifier` seam in `plan.ts` into a real
+  call, and it is the only way to answer the one question TICKET-0013 could not:
+  *were the clarification options actually good?* The gate found exactly one
+  topic in four where the clarifier would have fired, and `eBPF observability`
+  is now a reproducible test case for it.
+
+Then stage 2 proper: 0015 and 0016 (adapters), 0017 (evidence gather), 0019/0020
+(extraction), 0021 (the rubric), 0022 (wiring). Two things the gate hands
+forward into them:
+
+1. **`GET /users/<owner>` → `type: User | Organization`** separated all ten
+   hobby projects from every real company in the gate's 48 (inconsistency 22).
+   It is a **fact for the rubric**, extracted in TICKET-0015 and scored in
+   TICKET-0021 — never a filter in stage 1.
+2. **The repo ↔ company-site join** (inconsistency 45) is TICKET-0015's
+   `homepage` field, and it is the one gate defect stage 1 structurally cannot
+   fix.
+
+The shape of the whole thing, unchanged:
 
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
-2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
-   places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **Done.** `./pipeline
-   source` produces candidates from a live topic.
-   0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
-   but it is not on the critical path to the gate.
-4. **Stop and hand-check the candidate list before writing a line of stage 2** —
-   [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md). This gate
-   is deliberate. Stage 1 gates everything downstream, and the probe threshold
-   (D-6) and the usable-vs-unusable classifier can only be validated against real
-   output. Record what the junk rate actually was.
-5. Capture fixtures from that run — ticket 0014 — so the suite is offline from
-   the start.
-
-Do not build stages 2 and 3 speculatively before step 4 reports back.
+2. **Zod contracts** — ticket 0005. **Done.** Two places where it is
+   deliberately incomplete are inconsistencies 8 and 9 above.
+3. **Stage 1 against live HN** — tickets 0006–0012. **Done.**
+4. **Hand-check the candidate list before writing a line of stage 2** —
+   [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md). **Done**
+   — 10% junk, D-6 kept, D-5 taken, five fixes scoped back. Read
+   [worklog 0022](./worklog/0022-gate-hand-check.md) before touching stage 2;
+   it is the only place the input's real quality is written down.
+5. Capture fixtures from those runs — ticket 0014 — so the suite stays offline.
+6. Stage 2, then stage 3, then the sample run on `AI agent infrastructure`.
 
 ## Invariants a new session must not break
 

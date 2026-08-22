@@ -87,6 +87,14 @@ interface LinkRule {
   text?: RegExp;
   /** `docs.acme.com` and the like: matched on the host, not the path. */
   host?: RegExp;
+  /**
+   * Kept even when it leaves the company's own site. True for exactly two
+   * rules, and for the same reason in both: the thing D-4 asks about is not
+   * hosted by the company. The open-source path lives on GitHub and the
+   * book-a-call path lives on Cal or Calendly, so a same-site filter applied
+   * to those two deletes the evidence rather than the noise.
+   */
+  offsite?: boolean;
 }
 
 export const LINK_RULES: readonly LinkRule[] = [
@@ -97,6 +105,18 @@ export const LINK_RULES: readonly LinkRule[] = [
     role: "repo",
     name: "code host",
     host: /^(www\.)?(github\.com|gitlab\.com|codeberg\.org|git\.sr\.ht)$/i,
+    offsite: true,
+  },
+  {
+    // The first live run's finding. A one-page site whose only call to action
+    // is "Book a 15-min demo" pointing at `<company>.cal.com` recorded *no*
+    // contact link, which reads downstream as a company offering neither
+    // self-serve nor sales — a state that does not exist. D-4 turns on exactly
+    // this distinction, so a scheduling host is kept the way a code host is.
+    role: "contact",
+    name: "scheduling host",
+    host: /(^|\.)(cal|calendly|savvycal|zcal|tidycal|chilipiper)\.(com|co|io)$/i,
+    offsite: true,
   },
   {
     role: "signup",
@@ -191,7 +211,14 @@ export interface DiscoveredLink {
   same_site: boolean;
 }
 
-function classify(url: string, text: string): { role: LinkRole; matched: string } {
+interface Classified {
+  role: LinkRole;
+  matched: string;
+  /** Whether the matching rule survives the same-site filter. */
+  offsite: boolean;
+}
+
+function classify(url: string, text: string): Classified {
   let host: string;
   let path: string;
   try {
@@ -199,14 +226,16 @@ function classify(url: string, text: string): { role: LinkRole; matched: string 
     host = parsed.hostname.toLowerCase();
     path = parsed.pathname;
   } catch {
-    return { role: "other", matched: "unparseable url" };
+    return { role: "other", matched: "unparseable url", offsite: false };
   }
   for (const rule of LINK_RULES) {
-    if (rule.host?.test(host)) return { role: rule.role, matched: `${rule.name} (host)` };
-    if (rule.path?.test(path)) return { role: rule.role, matched: `${rule.name} (path)` };
-    if (rule.text?.test(text)) return { role: rule.role, matched: `${rule.name} (link text)` };
+    const offsite = rule.offsite === true;
+    if (rule.host?.test(host)) return { role: rule.role, matched: `${rule.name} (host)`, offsite };
+    if (rule.path?.test(path)) return { role: rule.role, matched: `${rule.name} (path)`, offsite };
+    if (rule.text?.test(text))
+      return { role: rule.role, matched: `${rule.name} (link text)`, offsite };
   }
-  return { role: "other", matched: "no rule matched" };
+  return { role: "other", matched: "no rule matched", offsite: false };
 }
 
 /**
@@ -237,16 +266,16 @@ export function discoverLinks(html: string, base: string): DiscoveredLink[] {
       .trim();
     const label = text || (anchor.attr("aria-label") ?? "").replace(/\s+/g, " ").trim();
 
-    const { role, matched } = classify(url, label);
+    const { role, matched, offsite } = classify(url, label);
     if (role === "other") {
       seen.add(url);
       return;
     }
     const onSite = sameSite(url, base);
-    // A code host is the only role worth following off-site, because the
-    // open-source adoption path D-4 asks about is by definition not hosted by
-    // the company. Everything else off-site is somebody else's page.
-    if (!onSite && role !== "repo") {
+    // Only the two rules that carry `offsite` survive leaving the company's
+    // own domain, because only they name something D-4 asks about that is not
+    // hosted there. Everything else off-site is somebody else's page.
+    if (!onSite && !offsite) {
       seen.add(url);
       return;
     }
@@ -336,11 +365,20 @@ export function detectEmptyShell(page: ExtractedHtml, html: string): ShellVerdic
   if (chars > SHELL_MAX_CHARS) return { empty: false, chars, reason: null };
 
   const scripts = (html.match(/<script\b/gi) ?? []).length;
-  const clientRendered =
-    scripts > 0 && /<div[^>]+id=["'](root|app|__next|___gatsby)["']/i.test(html);
+  // Two tells, because the first live run met a page the first tell missed.
+  // A named mount element is the classic one and stays the clearest; but
+  // `crosscanon.com` ships a Remix bundle behind `<script type="module">` with
+  // no such element and 71 characters of text — unmistakably client-rendered,
+  // and reported as merely "thin" until the module test was added.
+  const mount = /<div[^>]+id=["'](root|app|__next|___gatsby|svelte|q-app)["']/i.test(html);
+  const bundled =
+    /<script[^>]+type=["']module["']/i.test(html) ||
+    /<script[^>]+src=["'][^"']*\/(assets|_next|_nuxt|static|build)\/[^"']*\.js/i.test(html);
+  const clientRendered = scripts > 0 && (mount || bundled);
+  const tell = mount ? "an empty mount element" : "a JavaScript bundle and no server-rendered text";
   const reason = clientRendered
     ? `the page returned 200 with ${chars} characters of text and renders client-side ` +
-      `(${scripts} script tags, an empty mount element); this pipeline does not run a browser`
+      `(${scripts} script tags, ${tell}); this pipeline does not run a browser`
     : `the page returned 200 with ${chars} characters of extractable text`;
   return { empty: true, chars, reason };
 }

@@ -160,6 +160,30 @@ describe("discoverLinks", () => {
     expect(discoverLinks(html, HOME)[0]?.role).toBe("contact");
   });
 
+  /**
+   * The first live run's finding, pinned. `zatanna.ai` is a one-page site
+   * whose only call to action is "Book a 15-min demo" pointing at
+   * `zatanna.cal.com`. Under a plain same-site filter it recorded no contact
+   * link at all, which reads downstream as a company offering neither
+   * self-serve nor sales — a state that does not exist.
+   */
+  it("keeps a scheduling host, the other thing D-4 asks about that is off-site", () => {
+    const html = `<a href="https://acme.cal.com/tarun/30min">Book a 15-min demo</a>`;
+    const [link] = discoverLinks(html, HOME);
+    expect(link?.role).toBe("contact");
+    expect(link?.same_site).toBe(false);
+    expect(link?.matched).toBe("scheduling host (host)");
+  });
+
+  it("keeps calendly and the like, and still drops an unrelated off-site link", () => {
+    const html =
+      `<a href="https://calendly.com/acme/intro">Talk to us</a>` +
+      `<a href="https://notion.so/acme/pricing">Pricing</a>`;
+    expect(discoverLinks(html, HOME).map((link) => link.url)).toEqual([
+      "https://calendly.com/acme/intro",
+    ]);
+  });
+
   it("names the rule that fired, so a wrong guess is readable", () => {
     for (const link of links) {
       expect(link.matched).toMatch(/\((host|path|link text)\)$/);
@@ -237,6 +261,23 @@ describe("detectEmptyShell", () => {
     expect(verdict.empty).toBe(true);
     expect(verdict.reason).toContain("renders client-side");
     expect(verdict.reason).toContain("does not run a browser");
+  });
+
+  /**
+   * The other live-run finding. `crosscanon.com` returns 71 characters of text
+   * behind a Remix bundle with no named mount element, so the mount test alone
+   * called it merely thin — and "thin" and "we cannot render this" are the two
+   * things the reason exists to separate.
+   */
+  it("names client-side rendering from a module bundle with no mount element", () => {
+    const html =
+      `<html><head><title>Acme</title>` +
+      `<script type="module" async="" src="/assets/entry.client-Bn.js"></script>` +
+      `</head><body><p>Loading…</p></body></html>`;
+    const verdict = detectEmptyShell(extractHtml(html), html);
+    expect(verdict.empty).toBe(true);
+    expect(verdict.reason).toContain("renders client-side");
+    expect(verdict.reason).toContain("JavaScript bundle");
   });
 
   it("reports a thin page as thin rather than as client-rendered", () => {

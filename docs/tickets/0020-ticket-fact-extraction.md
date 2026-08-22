@@ -1,6 +1,6 @@
 # TICKET-0020 — Fact extraction, step 2b (`src/analyse/extract.ts`)
 
-Status: Blocked · 0019 · Depends on: 0018 (Done), 0019 · Blocks: 0021, 0022
+Status: **Ready** — 0019 is Done. `loadPrompt(PROMPTS.extract)` renders the prompt; this ticket owns the three things it left open: the key vocabulary that fills `{{keys}}`, the rendering of `bundleItems` into `{{evidence}}`, and the first captured model output · Depends on: 0018 (Done), 0019 (Done) · Blocks: 0021, 0022
 Reads: [ARCHITECTURE §1 stage 2b, §5](../ARCHITECTURE.md), [ADR-0002](../adr/0002-deterministic-scoring.md), [ADR-0003](../adr/0003-evidence-store-and-citations.md), [TESTING §2](../TESTING.md)
 
 ## Why

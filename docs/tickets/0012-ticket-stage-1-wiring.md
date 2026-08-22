@@ -1,6 +1,6 @@
 # TICKET-0012 — Stage 1 wiring: `./pipeline source`
 
-Status: Blocked · 0009, 0010, 0011 · Depends on: 0003, 0009, 0010, 0011 · Blocks: 0013, 0027
+Status: **Ready** — 0009, 0010 and 0011 are all Done · Depends on: 0003, 0009, 0010, 0011 (all Done) · Blocks: 0013, 0027
 Reads: [ARCHITECTURE §1, §4, §5](../ARCHITECTURE.md), [ADR-0001](../adr/0001-file-based-staged-pipeline.md)
 
 ## Why

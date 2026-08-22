@@ -58,3 +58,6 @@ are unfinished, not delegated.
 | [0014](./0014-hn-query-and-parse.md) | 2026-08-22 | HN Algolia: query building and hit parsing |
 | [0015](./0015-hn-usable-classifier.md) | 2026-08-22 | The usable-vs-unusable classifier |
 | [0016](./0016-hn-paginated-search.md) | 2026-08-22 | `searchHn`: pagination, dedup, failures as data; TICKET-0009 closes |
+| [0017](./0017-url-canonicalisation-and-dedup.md) | 2026-08-22 | URL canonicalisation, site keys and dedup |
+| [0018](./0018-redirect-resolution.md) | 2026-08-22 | Redirect resolution; TICKET-0010 closes |
+| [0019](./0019-query-planning.md) | 2026-08-22 | Query planning: probe, then clarify; TICKET-0011 closes |

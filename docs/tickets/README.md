@@ -60,9 +60,9 @@ index of the same thing. Three values, and only three:
 | [0007](./0007-ticket-evidence-store.md) | Evidence store | Content-addressed ids | Done |
 | [0008](./0008-ticket-cached-fetch-layer.md) | Cached fetch layer | One choke point for all network | Done |
 | [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | Done |
-| [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | **Ready** |
-| [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | **Ready** — probe half only; the clarifier waits on 0018 |
-| [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | Blocked · 0010, 0011 |
+| [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | Done |
+| [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | Done — the clarifier is a seam 0018 fills |
+| [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | **Ready** |
 | **[0013](./0013-ticket-gate-hand-check-candidates.md)** | **GATE — hand-check the candidates** | **Junk rate · D-5 · D-6** | Blocked · 0012 |
 | [0014](./0014-ticket-fixture-capture-script.md) | `pnpm capture-fixtures` | The suite stays offline | Blocked · 0013 |
 | [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | Blocked · 0014 |

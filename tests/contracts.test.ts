@@ -131,6 +131,35 @@ describe("Evidence", () => {
   });
 });
 
+describe("QueryPlan", () => {
+  const plan = (over: Record<string, unknown> = {}) => ({
+    schema_version: QUERY_PLAN_SCHEMA_VERSION,
+    original_seed: "LLM observability",
+    probe: { hits: 24, usable: 11 },
+    clarified: false,
+    options_offered: [],
+    chosen: "LLM observability",
+    chosen_by: "probe",
+    ...over,
+  });
+
+  // Schema version 2. A plan that skipped the probe records that it skipped it;
+  // `{ hits: 0, usable: 0 }` would claim a search happened and found nothing.
+  it("accepts a null probe — no probe ran is not a probe that found nothing", () => {
+    const skipped = plan({ probe: null, chosen_by: "no_expand" });
+    expect(QueryPlan.safeParse(skipped).success).toBe(true);
+  });
+
+  it("still requires the probe field to be present when it is null", () => {
+    const { probe: _omitted, ...withoutProbe } = plan();
+    expect(QueryPlan.safeParse(withoutProbe).success).toBe(false);
+  });
+
+  it("rejects a chosen_by outside ADR-0008's table", () => {
+    expect(QueryPlan.safeParse(plan({ chosen_by: "vibes" })).success).toBe(false);
+  });
+});
+
 describe("schema_version", () => {
   const cases = [
     ["Analysis", Analysis, analysis()],

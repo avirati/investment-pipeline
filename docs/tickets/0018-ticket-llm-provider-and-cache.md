@@ -1,7 +1,14 @@
 # TICKET-0018 — LLM provider seam and response cache
 
-Status: Open · Depends on: 0006 · Blocks: 0011 (clarifier call), 0020
+Status: **Ready** — all dependencies Done · Depends on: 0006 · Blocks: 0011 (clarifier call), 0020
 Reads: [ADR-0006](../adr/0006-llm-provider-abstraction.md), [ARCHITECTURE §4](../ARCHITECTURE.md#4-replay)
+
+## Sequencing
+
+Ready as soon as TICKET-0006 lands, and **not behind the TICKET-0013 gate** —
+see the note there. TICKET-0011's clarifier needs this, and 0011 is upstream of
+the gate. Nothing in this ticket encodes a thesis, a score, or a prompt, so
+there is no speculative judgement to invalidate.
 
 ## Why
 

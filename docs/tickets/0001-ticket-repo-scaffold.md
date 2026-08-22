@@ -1,6 +1,6 @@
 # TICKET-0001 — Repo scaffold and toolchain
 
-Status: Open · Depends on: — · Blocks: everything
+Status: **Done** — [worklog 0004](../worklog/0004-repo-scaffold.md) · Depends on: — · Blocks: everything
 Reads: [ARCHITECTURE §6, §8](../ARCHITECTURE.md), [ADR-0005](../adr/0005-typescript-stack.md), [STATE](../STATE.md) next-step 1
 
 ## Why

@@ -1,6 +1,6 @@
 # TICKET-0013 — GATE: hand-check the candidate list before stage 2
 
-Status: Open · Depends on: 0012 · Blocks: 0014–0022
+Status: Blocked · 0012 · Depends on: 0012 · Blocks: 0014–0017, 0019–0022, 0028
 Reads: [STATE](../STATE.md) next-step 4, D-5, D-6; [ADR-0008](../adr/0008-query-planning.md); [SCOPE](../SCOPE.md) risks
 
 ## Why
@@ -11,6 +11,15 @@ labelled guesses that only real output can settle. Building on top of an
 unvalidated candidate list is how a pipeline ends up confidently scoring junk.
 
 This is not a coding ticket. Its deliverable is a written finding.
+
+**TICKET-0018 is deliberately outside this gate.** It used to read
+`Blocks: 0014–0022`, which included it — but TICKET-0011 needs the provider seam
+for its clarifier call, and 0011 is upstream of 0012, which is upstream of this
+gate. The range was a cycle. 0018 is mechanism with no thesis content in it: a
+model factory and a response cache are equally correct whatever the junk rate
+turns out to be, so building it early risks nothing this gate exists to protect.
+What the gate protects is stages 2 and 3 — extraction, the rubric, the memo —
+and those stay behind it.
 
 ## Scope
 

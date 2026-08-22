@@ -1,6 +1,6 @@
 # TICKET-0014 — `pnpm capture-fixtures`
 
-Status: Open · Depends on: 0013 · Blocks: 0015, 0016, 0023
+Status: Blocked · 0013 · Depends on: 0013 · Blocks: 0015, 0016, 0023
 Reads: [TESTING — Fixtures](../TESTING.md#fixtures)
 
 ## Why

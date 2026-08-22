@@ -1,6 +1,6 @@
 # TICKET-0004 — `setup.sh` and the `./pipeline` wrapper
 
-Status: Open · Depends on: 0003 · Blocks: 0028
+Status: **Done** — [worklog 0007](../worklog/0007-setup-script-and-wrapper.md) · Depends on: 0003 · Blocks: 0028
 Reads: [ARCHITECTURE §7.1](../ARCHITECTURE.md#71-setup-and-the-wrapper-script), [SCOPE](../SCOPE.md) in-scope #11
 
 ## Why

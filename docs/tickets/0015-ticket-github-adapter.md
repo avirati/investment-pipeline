@@ -1,6 +1,6 @@
 # TICKET-0015 — GitHub adapter (`src/evidence/github.ts`)
 
-Status: Open · Depends on: 0008, 0014 · Blocks: 0017
+Status: Blocked · 0008, 0014 · Depends on: 0008, 0014 · Blocks: 0017
 Reads: [ADR-0004](../adr/0004-source-selection.md), [SCOPE](../SCOPE.md) in-scope #2, [SPEC §2](../SPEC.md) D1/D3/D5
 
 ## Why

@@ -1,6 +1,6 @@
 # TICKET-0002 — Cut the `feed` seed form
 
-Status: Open · Depends on: — · Blocks: 0003, 0005
+Status: **Done** — [worklog 0005](../worklog/0005-cut-feed-seed-form.md) · Depends on: — · Blocks: 0003, 0005
 Reads: [STATE](../STATE.md) D-3 and known inconsistency #1, [ADR-0004](../adr/0004-source-selection.md)
 
 ## Why

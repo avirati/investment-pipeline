@@ -1,6 +1,6 @@
 # TICKET-0010 — URL resolution, canonicalisation, dedup (`src/source/resolve.ts`)
 
-Status: Open · Depends on: 0008 · Blocks: 0012
+Status: Blocked · 0008 · Depends on: 0008 · Blocks: 0012
 Reads: [TESTING §3](../TESTING.md), [SCOPE](../SCOPE.md) in-scope #1, risks table
 
 ## Why

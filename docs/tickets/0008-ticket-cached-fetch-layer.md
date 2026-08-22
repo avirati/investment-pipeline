@@ -1,6 +1,6 @@
 # TICKET-0008 — Cached fetch layer (`src/evidence/fetch.ts`)
 
-Status: Open · Depends on: 0007 · Blocks: 0009, 0015, 0016
+Status: Blocked · 0007 · Depends on: 0007 · Blocks: 0009, 0010, 0015, 0016
 Reads: [ARCHITECTURE §5, §8](../ARCHITECTURE.md), [CLAUDE.md](../../CLAUDE.md) conventions
 
 ## Why

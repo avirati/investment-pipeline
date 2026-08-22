@@ -1,6 +1,6 @@
 # TICKET-0022 — Stage 2 wiring: `./pipeline analyse`
 
-Status: Open · Depends on: 0003, 0017, 0020, 0021 · Blocks: 0024, 0027
+Status: Blocked · 0017, 0020, 0021 · Depends on: 0003, 0017, 0020, 0021 · Blocks: 0023, 0024, 0027
 Reads: [ARCHITECTURE §1, §4, §5](../ARCHITECTURE.md)
 
 ## Why

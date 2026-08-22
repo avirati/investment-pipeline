@@ -1,6 +1,6 @@
 # TICKET-0024 — Memo template and renderer
 
-Status: Open · Depends on: 0022 · Blocks: 0026
+Status: Blocked · 0022 · Depends on: 0022 · Blocks: 0025, 0026
 Reads: [SPEC §4](../SPEC.md#4-memo-contract), [STATE](../STATE.md) D-2, [CLAUDE.md](../../CLAUDE.md) invariant 3
 
 ## Why

@@ -1,6 +1,6 @@
 # TICKET-0017 — Evidence gather, step 2a (`src/analyse/gather.ts`)
 
-Status: Open · Depends on: 0015, 0016 · Blocks: 0020
+Status: Blocked · 0015, 0016 · Depends on: 0015, 0016 · Blocks: 0019, 0020, 0022
 Reads: [ARCHITECTURE §1 stage 2a, §3](../ARCHITECTURE.md), [ADR-0003](../adr/0003-evidence-store-and-citations.md)
 
 ## Why

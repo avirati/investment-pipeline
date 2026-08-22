@@ -1,6 +1,6 @@
 # TICKET-0030 — Walkthrough video, one startup end-to-end
 
-Status: Open · Depends on: 0029 · Blocks: —
+Status: Blocked · 0029 · Depends on: 0029 · Blocks: —
 Reads: [STATE](../STATE.md) submission checklist
 
 ## Why

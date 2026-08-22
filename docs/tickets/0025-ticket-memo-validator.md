@@ -1,6 +1,6 @@
 # TICKET-0025 — Citation validator (`src/memo/validate.ts`)
 
-Status: Open · Depends on: 0007, 0024 · Blocks: 0026
+Status: Blocked · 0007, 0024 · Depends on: 0007, 0024 · Blocks: 0026
 Reads: [ADR-0003](../adr/0003-evidence-store-and-citations.md), [ARCHITECTURE §5](../ARCHITECTURE.md#5-failure-policy), [TESTING §2](../TESTING.md)
 
 ## Why

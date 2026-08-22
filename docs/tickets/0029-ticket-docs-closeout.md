@@ -1,6 +1,6 @@
 # TICKET-0029 — Docs closeout and submission checklist
 
-Status: Open · Depends on: 0028 · Blocks: 0030
+Status: Blocked · 0028 · Depends on: 0028 · Blocks: 0030
 Reads: [STATE](../STATE.md) submission checklist, [CLAUDE.md](../../CLAUDE.md) working rules, [worklog/README](../worklog/README.md)
 
 ## Why

@@ -1,6 +1,6 @@
 # TICKET-0005 — Zod contracts in `src/contracts/`
 
-Status: Open · Depends on: 0001 · Blocks: 0007–0027
+Status: **Done** — [worklog 0008](../worklog/0008-zod-contracts.md) · Depends on: 0001, 0002 · Blocks: 0006–0027
 Reads: [ARCHITECTURE §2](../ARCHITECTURE.md#2-stage-contracts), [ADR-0005](../adr/0005-typescript-stack.md), [ADR-0003](../adr/0003-evidence-store-and-citations.md)
 
 ## Why

@@ -1,6 +1,6 @@
 # TICKET-0003 — CLI skeleton and the `--help` contract
 
-Status: Open · Depends on: 0001, 0002 · Blocks: 0004, 0012, 0022, 0026, 0027
+Status: **Done** — [worklog 0006](../worklog/0006-cli-skeleton.md) · Depends on: 0001, 0002 · Blocks: 0004, 0012, 0022, 0026, 0027
 Reads: [ARCHITECTURE §7](../ARCHITECTURE.md#7-cli), [SCOPE](../SCOPE.md) in-scope #12
 
 ## Why

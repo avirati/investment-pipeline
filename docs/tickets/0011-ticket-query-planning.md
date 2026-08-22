@@ -1,6 +1,6 @@
 # TICKET-0011 — Query planning: probe, then clarify (`src/source/plan.ts`)
 
-Status: Open · Depends on: 0009; 0018 for the clarifier call · Blocks: 0012
+Status: Blocked · 0009, 0018 · Depends on: 0009; 0018 for the clarifier call · Blocks: 0012
 Reads: [ADR-0008](../adr/0008-query-planning.md) in full, [SPEC §3.1](../SPEC.md), [TESTING §5](../TESTING.md)
 
 ## Why

@@ -26,7 +26,7 @@ run with no `.env` at all. Tickets 0001–0006 are done.
 | ADRs 0001–0008 | Written |
 | Test strategy | Written; 59 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006). Offline, no key |
 | Worklogs 0001–0009 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets, 6 done |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 6 Done, 2 Ready (0007, 0018), 22 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -138,6 +138,13 @@ Real defects, listed rather than silently patched.
     promises exit 1 for a configuration error and `ConfigError` is built to be
     caught, but nothing calls `requireLlmConfig` yet, so the handler would guard
     an impossible throw. Lands with TICKET-0018, the first LLM call.
+13. ~~**TICKET-0013's gate range was a cycle.**~~ Fixed while flipping ticket
+    statuses. It read `Blocks: 0014–0022`, which swallowed TICKET-0018 — but
+    TICKET-0011 needs the provider seam for its clarifier and 0011 is upstream
+    of 0012, which is upstream of the gate. 0018 is mechanism with no thesis
+    content, so it now sits outside the gate and the range reads
+    `0014–0017, 0019–0022, 0028`. Eight further `Depends on` / `Blocks` edges
+    were wrong in the same pass — see worklog 0009.
 
 ---
 
@@ -145,15 +152,21 @@ Real defects, listed rather than silently patched.
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0006 are done**; resume at
-[TICKET-0007](./tickets/0007-ticket-evidence-store.md), the evidence store.
+repo runnable. **0001–0006 are Done.** Two tickets are Ready:
+[TICKET-0007](./tickets/0007-ticket-evidence-store.md), the evidence store, and
+[TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md), the LLM seam and
+response cache. **Resume at 0007** — it unblocks the whole stage-1 chain, while
+0018 only unblocks 0011's clarifier, which 0011 is explicitly designed to ship
+without.
 
 The shape is unchanged from what this section said before the backlog existed:
 
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **0006 done**; 0007 next.
+3. **Stage 1 against live HN** — tickets 0006–0012. **0006 Done**; 0007 next.
+   0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
+   but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —
    [TICKET-0013](./tickets/0013-ticket-gate-hand-check-candidates.md). This gate
    is deliberate. Stage 1 gates everything downstream, and the probe threshold

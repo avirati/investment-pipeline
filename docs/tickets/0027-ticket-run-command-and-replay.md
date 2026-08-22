@@ -1,6 +1,6 @@
 # TICKET-0027 — `./pipeline run` and replay
 
-Status: Open · Depends on: 0012, 0022, 0026 · Blocks: 0028
+Status: Blocked · 0012, 0022, 0026 · Depends on: 0012, 0022, 0026 · Blocks: 0028
 Reads: [ARCHITECTURE §4, §7](../ARCHITECTURE.md), [SPEC §5](../SPEC.md#5-acceptance-criteria), [ADR-0001](../adr/0001-file-based-staged-pipeline.md)
 
 ## Why

@@ -1,6 +1,6 @@
 # TICKET-0006 — `src/config.ts`: env parsing and model routing
 
-Status: Open · Depends on: 0001, 0005 · Blocks: 0018
+Status: **Done** — [worklog 0009](../worklog/0009-config-and-model-routing.md) · Depends on: 0001, 0005 · Blocks: 0018
 Reads: [ADR-0006](../adr/0006-llm-provider-abstraction.md), [ARCHITECTURE §6, §8](../ARCHITECTURE.md)
 
 ## Why

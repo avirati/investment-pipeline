@@ -1,6 +1,6 @@
 # TICKET-0028 — Commit the sample run and close `setup.sh`
 
-Status: Open · Depends on: 0013, 0023, 0027 · Blocks: 0029
+Status: Blocked · 0013, 0023, 0027 · Depends on: 0004, 0013, 0023, 0027 · Blocks: 0029
 Reads: [SCOPE](../SCOPE.md) in-scope #8, [ARCHITECTURE §7.1](../ARCHITECTURE.md#71-setup-and-the-wrapper-script), [STATE](../STATE.md) inconsistency #3 and D-5
 
 ## Why

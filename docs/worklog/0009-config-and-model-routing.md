@@ -5,6 +5,11 @@
 stage logic. This is the file every later ticket reads `process.env` through, so
 it lands before anything needs a model.
 
+Then a second, separate piece of work in the same session: the ticket backlog
+had been tracking status only in `STATE.md`, and all 30 ticket headers still
+read `Status: Open` — including the six that had shipped. Fixing that surfaced
+nine defects in the dependency graph, one of them a cycle.
+
 ## What I asked for
 
 Continue implementation, stop for review before committing, keep the diff small
@@ -109,6 +114,64 @@ passed a naive test, and would have made `./pipeline source` fail on a variable
 it never reads. Caught while writing the test for judgement call 1 — the test
 existing is what surfaced it.
 
+## Ticket statuses and the dependency graph
+
+Asked to update resolved tickets, unblock what they unblock, and make status
+mean something. Three parts.
+
+**1. A status vocabulary, and status where the ticket is.** Every header now
+reads one of three things, documented in `tickets/README.md`:
+
+- `**Done**`, followed by a link to the worklog entry that says what happened.
+  Worklogs rather than commit hashes: they are stable, they are one hop from the
+  commit, and 0006 had not been committed when this was written.
+- `**Ready** — all dependencies Done`.
+- `Blocked · NNNN, NNNN` — naming only the dependencies that are *not yet Done*,
+  not restating the whole `Depends on` list. That is the field a reader actually
+  wants, and it is the field that must change when something lands.
+
+`README.md` gained a Status column and a rule: a ticket's status changes in the
+commit that changes it, along with every ticket it unblocks.
+
+**2. Two tickets are Ready, not one.** 0006 unblocked
+[TICKET-0018](../tickets/0018-ticket-llm-provider-and-cache.md) — its only
+dependency. So 0007 and 0018 are both Ready. STATE now says resume at 0007
+anyway: it unblocks the whole stage-1 chain, and 0018 only unblocks 0011's
+clarifier, which 0011's own sequencing note says to ship without.
+
+**3. The graph was wrong in nine places.** Statuses are now derived from
+`Depends on`, so the edges have to be right. I checked them with a throwaway
+script — not committed; `SCOPE.md` does not want a task runner and one docs
+lint is not worth a `scripts/` directory yet — that verifies four properties:
+every `Blocks` entry is reachable in the dependency graph, every direct
+dependent appears in its blocker's `Blocks`, no cycles, and the README table
+matches the headers.
+
+The first run reported 42 failures, almost all of them my checker being wrong:
+`Blocks` is a *transitive* claim (0005 blocks `0007–0027`) while `Depends on` is
+direct edges. Re-run with the right semantics, nine real defects remained:
+
+| Defect | Fix |
+|---|---|
+| **0013 `Blocks: 0014–0022` swallowed 0018 — a cycle** | Gate range is now `0014–0017, 0019–0022, 0028` |
+| 0005 blocked `0007–0027` but 0006 depends on it | `0006–0027` |
+| 0005 did not depend on 0002, whose cut it encodes as `CandidateSource` | added |
+| 0028 closes `setup.sh` step 6 but did not depend on 0004 | added |
+| 0008, 0012, 0017, 0022, 0024 each omitted a direct dependent from `Blocks` | added |
+
+The cycle is the one that mattered. TICKET-0013 is a hard gate — "do not build
+stages 2 and 3 speculatively" — and it claimed to block 0018. But 0011 needs
+0018 for its clarifier call, 0011 blocks 0012, and 0012 blocks the gate. Read
+literally, 0018 had to come both before and after 0013.
+
+The range was written when the gate was described as "everything after stage 1",
+and 0018 happens to sit in that numeric range without belonging to it: a model
+factory and a response cache contain no thesis, no rubric, and no prompt, so
+there is nothing in them for a bad junk rate to invalidate. What the gate exists
+to protect is extraction, the rubric, and the memo, and those are still behind
+it. Recorded in 0013 itself rather than silently renumbered, and as STATE
+inconsistency 13.
+
 ## Decisions taken
 
 No open `STATE.md` decision was touched. D-2, D-4, D-5, D-6 and D-7 stay open.
@@ -122,6 +185,12 @@ where they are used.
 sections of this entry: AI-written end-to-end from one prompt, reviewed by me
 before the commit. The four judgement calls above were the AI's and were
 surfaced before commit.
+
+The ticket status pass, the status vocabulary, and the nine graph fixes: also
+AI-written end-to-end, from the follow-up prompt *"update tickets that are
+resolved, change status, unblock tickets etc"*. The cycle and the eight edge
+defects were found by the AI's own consistency check, not by me, and not asked
+for.
 
 ## Reflection
 

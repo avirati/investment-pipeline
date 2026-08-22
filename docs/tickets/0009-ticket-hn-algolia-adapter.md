@@ -1,6 +1,6 @@
 # TICKET-0009 — HN Algolia adapter (`src/source/hn.ts`)
 
-Status: Open · Depends on: 0008 · Blocks: 0011, 0012
+Status: Blocked · 0008 · Depends on: 0008 · Blocks: 0011, 0012
 Reads: [ADR-0004](../adr/0004-source-selection.md), [TESTING §4](../TESTING.md), [SCOPE](../SCOPE.md) in-scope #1
 
 ## Why

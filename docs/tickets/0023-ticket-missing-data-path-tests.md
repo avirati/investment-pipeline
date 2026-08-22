@@ -1,6 +1,6 @@
 # TICKET-0023 — Missing-data path tests
 
-Status: Open · Depends on: 0022, 0026 · Blocks: 0028
+Status: Blocked · 0022, 0026 · Depends on: 0022, 0026 · Blocks: 0028
 Reads: [TESTING §6](../TESTING.md), [SPEC §3](../SPEC.md), [CLAUDE.md](../../CLAUDE.md) invariant 4
 
 ## Why

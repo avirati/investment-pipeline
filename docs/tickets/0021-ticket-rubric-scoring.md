@@ -1,6 +1,6 @@
 # TICKET-0021 — The rubric (`src/analyse/score.ts`)
 
-Status: Open · Depends on: 0005, 0020 · Blocks: 0022
+Status: Blocked · 0020 · Depends on: 0005, 0020 · Blocks: 0022
 Reads: [SPEC §1, §2, §3](../SPEC.md), [ADR-0002](../adr/0002-deterministic-scoring.md), [ADR-0007](../adr/0007-thesis-selection.md), [TESTING §1](../TESTING.md)
 
 ## Why

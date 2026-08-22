@@ -104,14 +104,66 @@ The ticket's four owed items are one-and-a-half done:
 
 `./pipeline source` still exits 70, and the manifest does not exist.
 
+## The first live run
+
+Asked for mid-session, before the command exists: the modules driven in the
+order `./pipeline source` will call them, from a scratch script, against live HN
+Algolia. `"LLM observability"`, `--limit 10 --since 180`, 15 requests, 13.5s.
+Nothing was committed and nothing was written inside the repo — the HTTP cache
+and the run directory both went to a scratch path.
+
+```
+PROBE       hits 50  usable 35   (--min-hits 8)  → chosen_by=probe, zero LLM calls
+ARMS        raw      2 pages  70 hits  70 new
+            show_hn  1 page   42 hits   0 new
+            launch   1 page    4 hits   0 new
+            funding  1 page    0 hits   0 new
+CLASSIFIER  47 usable / 70 posts   rejected: {no_url: 18, content: 5}
+DEDUP       47 sites, 0 collapses
+RESOLVE     10 requests, 0 redirects, 1 dead (github.com/anilatambharii/argus-ai → 404)
+CANDIDATES  10, 0 dropped
+```
+
+It worked, and it found six things arguing about the code could not have.
+
+**The one that changes the wiring: `--limit` in discovery order cuts the best
+companies.** Discovery order is arm order then page order — a relevance ranking
+from four concatenated queries, which is not a ranking of companies. The first
+ten sites carried points `74, 3, 2, 2, 2, 2, 2, 1, 1, 31`; the top ten by points
+were `105, 85, 74, 74, 59, 32, 31, 13, 12, 10`. `minicor.com` (105),
+`agnost.ai` (85), `superlog.sh` (74) and `voker.ai` (59) all fell off the end of
+a `--limit 10`. The fix is to rank sites by their primary post before `--limit`
+cuts, with the same rule `resolve.ts` already applies *within* a group — highest
+points, earliest post breaking the tie. It costs nothing and it is TICKET-0012's
+own ordering question, so it goes into the wiring rather than into a Done module.
+
+**A real bug in a Done module, deliberately not fixed here.**
+`pypi.org/project/logmera` became a candidate keyed on `pypi.org`, so two PyPI
+launches in one run would silently become one candidate — the wrong-collapse
+direction `resolve.ts` itself calls the dangerous one. Recorded as inconsistency
+36. It is one list plus tests, and it lands on its own rather than inside a
+wiring commit.
+
+**Four more, all recorded rather than acted on** (inconsistencies 37–40): the
+classifier's two predicted false-positive classes both appeared in the first ten
+candidates (a trade-press article on its own domain, a personal blog on its
+own domain) — two junk in ten, which is the first number the gate at
+TICKET-0013 has; the three expansion arms contributed zero new posts on this
+topic; a 404'd repo stayed a candidate; and a generic repository name
+(`torrix-ai/install`, where the post title says "Torrix") makes a poor name.
+
+The author's call on all of these was: take the ranking fix, record the rest for
+the gate. Which is what happened.
+
 ## Verification
 
 - `pnpm test` — **320 passed** (258 at the start of the session: +4 contract
   tests for the plural provenance, +24 for run identity, +34 for candidate
   derivation). Offline, no key, no network in any of them.
 - `pnpm typecheck` and `pnpm lint` clean.
-- Nothing in this session touches the network or an API key, so none of the
-  ticket's acceptance rows — all of which need a live run — are covered yet.
+- The live smoke run above is the first time this repo has touched a real API.
+  It is not the ticket's acceptance — that needs the command, which does not
+  exist — and it is not the committed sample run (D-5) or the gate (0013).
 
 ## What went wrong
 

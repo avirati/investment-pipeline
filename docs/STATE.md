@@ -125,6 +125,15 @@ Slugs are derived once, deduplicated within the run, and reserved only after the
 candidate parses. **TICKET-0012 is In progress**; `./pipeline source` still
 exits 70 and the manifest does not exist.
 
+**The first live run happened** — not through `./pipeline source`, which still
+exits 70, but by driving the modules in the order the command will call them
+against live HN Algolia (`"LLM observability"`, `--limit 10 --since 180`, 15
+requests, 13.5s, scratch directory, nothing committed). It is not the sample run
+(D-5) and it is not the gate (TICKET-0013). What it measured is recorded in
+inconsistencies 36–40 below, and one number belongs here: **the probe returned
+50 hits, 35 of them usable**, against a `--min-hits` default of 8. On a query at
+the centre of the thesis the threshold is nowhere near binding.
+
 `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` exist and nothing reads
 them: the prompt waits on 0018 for a provider and on 0020/0021 for the rubric
 that fills its `{{thesis}}` placeholder.
@@ -170,7 +179,7 @@ default, state that you took it, and record it in that session's worklog.
 | **D-2** | Memo rendering: `eta` templates vs typed TS render functions | Author preference | `eta` — a partner can edit a memo template without reading TypeScript |
 | **D-4** | Reflection sections in worklogs 0001 and 0002 | Author. Must not be AI-written — see CLAUDE.md | Leave as `TODO(author)`. Do not fill in |
 | **D-5** | Which topic becomes the committed sample run | First real stage-1 output | Pick whichever topic yields the cleanest 10–15 candidates and say why in the worklog |
-| **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one. Now *measured*: `probeSeed` computes `probe.usable` and `planQuery` compares it, so every run writes the number into `query_plan.json`. Both halves of the comparison lean generous — the classifier errs towards accepting (inconsistency 21) — so a thin probe is thinner than it looks |
+| **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one. Now *measured*: `probeSeed` computes `probe.usable` and `planQuery` compares it, so every run writes the number into `query_plan.json`. Both halves of the comparison lean generous — the classifier errs towards accepting (inconsistency 21) — so a thin probe is thinner than it looks. **First live measurement (2026-08-22, `"LLM observability"`): 35 usable of 50 hits.** Four times the threshold on a centre-of-thesis query, which says nothing yet about an awkward one |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
 
 ### Recently closed
@@ -484,6 +493,56 @@ Real defects, listed rather than silently patched.
     Whether a replay should instead read the committed candidates back is
     TICKET-0027's replay semantics; the flag's own help text says "reuse cached
     LLM responses", which is narrower than what it now also permits.
+
+36. **Package-registry hosts collapse every package into one candidate.**
+    Found by the first live run: `pypi.org/project/logmera` became a candidate
+    keyed on `pypi.org`, so a second PyPI launch in the same run would be merged
+    into it and lost. `siteKey` keys code hosts on `host/owner/repo` and
+    everything else on the registrable domain, and a registry is a code host
+    that is not in `CODE_HOSTS` — `pypi.org`, `npmjs.com`, `crates.io`,
+    `hub.docker.com`, `huggingface.co`. This is the wrong-collapse direction
+    `resolve.ts` argues is the dangerous one: a wrong split costs a visible
+    duplicate, a wrong collapse deletes a company with no trace. The fix is one
+    list in `resolve.ts` plus tests; it was deliberately **not** taken while
+    wiring stage 1, so that the change lands on its own and is reviewed against
+    TICKET-0013's hand-checked list rather than against one example.
+
+37. **The classifier's known false positives are now confirmed, not argued.**
+    Inconsistency 21 predicted two classes the url alone cannot see. Both
+    appeared in the first ten candidates of the first live run:
+    `machinelearningmastery.com/llm-observability-tools-…` (trade press on its
+    own domain, no `/blog/` in the path, so `ARTICLE_PATH` misses it) and
+    `glukhov.org` (a personal blog that is not in `PERSONAL_HOSTS`). Two junk in
+    ten. Left alone on purpose: TICKET-0013 is the gate that is supposed to make
+    this call against a hand-checked list, and tightening a classifier on two
+    examples is how it starts rejecting real companies.
+
+38. **On one topic the three expansion arms contributed nothing.** `show_hn`
+    returned 42 hits and 0 new, `launch` 4 and 0, `funding` 0 and 0 — the `raw`
+    arm's two pages already contained all 70 posts. Three of five pages bought
+    nothing on this query. One topic is not a measurement, and the arms exist
+    for the topics where the raw seed is thin, which is exactly not this one.
+    Recorded because it is the first evidence bearing on inconsistencies 23
+    (`HN_MAX_PAGES_PER_ARM`) and 31 (`--no-expand`), and because the fixture
+    capture at TICKET-0014 should include a topic where the arms do earn their
+    requests — otherwise the suite only ever tests the case where they do not.
+
+39. **A 404 stays a candidate.** `github.com/anilatambharii/argus-ai` returned
+    404 during redirect resolution and became candidate 9 of 10. `resolveSites`
+    keeps a site whose request failed on purpose (a company that 403s a bot is
+    still a company), and ARCHITECTURE §5 says a candidate's unreachable site is
+    a `fetch_failed` record and a coverage drop, not a rejection. The cost is
+    real anyway: a deleted repo will spend a stage-2 analysis to produce a memo
+    that says nothing. Whether a hard 404 on the *only* url a candidate has
+    should drop it is a TICKET-0013 question with real numbers behind it.
+
+40. **A generic repository name makes a poor candidate name.**
+    `github.com/torrix-ai/install` is named `torrix-ai/install` while its own
+    post title says "Torrix" — the title uses a comma where the naming rule
+    wants a separator. `betterdb-inc/monitor` and `lunargate-ai/gateway` have
+    the same shape. Two directions exist (accept `, ` as a separator when the
+    head is short; or prefer the owner over a generic repo name) and both are
+    guesses until the hand-check at TICKET-0013 says how often this happens.
 
 ---
 

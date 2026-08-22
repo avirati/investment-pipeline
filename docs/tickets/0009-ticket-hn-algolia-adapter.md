@@ -1,6 +1,6 @@
 # TICKET-0009 — HN Algolia adapter (`src/source/hn.ts`)
 
-Status: **Done** — query building and hit parsing in [worklog 0014](../worklog/0014-hn-query-and-parse.md), the usable-vs-unusable classifier in [worklog 0015](../worklog/0015-hn-usable-classifier.md), the paginated `searchHn` over `httpGet` in [worklog 0016](../worklog/0016-hn-paginated-search.md) · Depends on: 0008 (Done) · Blocks: 0011, 0012
+Status: **Reopened** — the original scope is Done; the 0013 gate returned two scoped fixes, see *Reopened* below. Query building and hit parsing in [worklog 0014](../worklog/0014-hn-query-and-parse.md), the usable-vs-unusable classifier in [worklog 0015](../worklog/0015-hn-usable-classifier.md), the paginated `searchHn` over `httpGet` in [worklog 0016](../worklog/0016-hn-paginated-search.md) · Depends on: 0008 (Done) · Blocks: 0011, 0012
 Reads: [ADR-0004](../adr/0004-source-selection.md), [TESTING §4](../TESTING.md), [SCOPE](../SCOPE.md) in-scope #1
 
 ## Why
@@ -34,3 +34,46 @@ Per TESTING §4, offline against committed fixtures:
 - Classifier tests cover at least one each of: company site, personal blog,
   paper/PDF, GitHub-only project.
 - `pnpm test` passes with no network and no key.
+
+---
+
+## Reopened — 2026-08-22, by the TICKET-0013 gate
+
+Two defects found by hand-reading 48 real candidates
+([worklog 0022](../worklog/0022-gate-hand-check.md)). Both are fixed here rather
+than downstream, per that ticket's instruction. Neither is "make the classifier
+smarter" — each is a named rule with real urls behind it.
+
+**F1 — prefer the repo owner over a generic repo name.** `deriveName` produced
+`torrix-ai/install`, `betterdb-inc/monitor`, `rocketgraph/rocketgraph`,
+`liquidos-ai/autoagents`, `nullswan/bpfsnitch`, `yantrikos/yantrikdb-server` and
+`xqlsystems/xarray-sql` — 7 of 48 candidates, and in every one the **owner is the
+company name**. Torrix's own post title says "Torrix"; its repo is called
+`install`. Two of the seven are actively misleading: `install` and `monitor`
+read as the product.
+
+Fix: when a code-host url is the naming source and the repo slug is a common
+English noun (`install`, `monitor`, `server`, `docs`, `cli`, `sdk`, `demo`,
+`app`, `core`, `api`), name the candidate from the **owner** instead. Keep
+`owner/repo` when the slug is distinctive (`bpfsnitch`, `helix-db`) — a
+distinctive slug is a name. The word list is a guess and gets labelled as one.
+
+**F2 — ACM proceedings hosts are papers.**
+`camps.aptaracorp.com/ACM_PMS/PMS/ACM/HCDS25/…` reached a candidate list.
+`PAPER_HOSTS` knows `arxiv.org` and the path carried no `.pdf`. Add ACM's
+typesetting host. One host, not a general rule — "is this a paper" is not
+learnable from one example, and a general rule would start rejecting companies.
+
+**Not fixed here, deliberately:** the `funding` expansion arm returned **0 hits
+on all four gate topics** (`"<seed> raises seed funding"` matches almost nothing
+in HN titles). Four topics is not enough to cut an arm that exists for the case
+none of them contained. Recorded as STATE inconsistency 46; revisit at
+TICKET-0028.
+
+### Acceptance (reopened scope)
+
+- A test per fix, written from the real urls above, offline.
+- `deriveName` tests pin both directions: `torrix-ai/install` → `Torrix`, and
+  `nullswan/bpfsnitch` → unchanged.
+- The generic-slug word list is labelled a guess in the code, like the other
+  five unmeasured constants.

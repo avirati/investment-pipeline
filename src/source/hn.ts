@@ -256,3 +256,229 @@ export function parseSearchResponse(payload: unknown): HnPage {
     dropped,
   };
 }
+
+// ---------------------------------------------------------------------------
+// The usable-vs-unusable classifier.
+//
+// ADR-0004 states the cost of choosing HN plainly: *"HN returns projects and
+// blog posts alongside companies. Filtering is heuristic and will have both
+// false positives and false negatives. Rejections are recorded with a reason so
+// the filter is auditable."* This is that filter, and three things about it are
+// deliberate:
+//
+// 1. **It reads the url, not the page.** TICKET-0011's probe counts usable hits
+//    before a run is allowed to start, so classification must cost nothing. The
+//    ticket's phrase is "resolves to a company site" — actually following the
+//    link, canonicalising it and deduping is TICKET-0010's job, and it can
+//    overturn a verdict made here with better information.
+//
+// 2. **It errs towards accepting.** A wrong reject is invisible — the company
+//    is never looked at again and nothing in the output says it existed. A wrong
+//    accept costs one analysis and shows up in a memo a human reads. So the
+//    unusable side is a set of narrow, nameable rules and everything else is
+//    usable, rather than the reverse.
+//
+// 3. **Every verdict carries a `kind` and a prose `reason`.** The kind is what
+//    the manifest counts and what TICKET-0013 hand-checks; the reason is what a
+//    human reads when they disagree with a rejection.
+// ---------------------------------------------------------------------------
+
+/**
+ * What the link points at, as far as a url can say. Only `company_site` and
+ * `code_repo` are usable — see `classifyHit` for why a repo counts.
+ */
+export type HitKind =
+  | "company_site"
+  | "code_repo"
+  | "content"
+  | "paper"
+  | "aggregator"
+  | "no_url"
+  | "bad_url";
+
+export interface HitClassification {
+  usable: boolean;
+  kind: HitKind;
+  /** One line, written into the run's audit trail beside the rejection. */
+  reason: string;
+  /** Lowercased, `www.` stripped. Null when there was no usable url. */
+  host: string | null;
+}
+
+/**
+ * Publishing platforms and trade press. A post pointing here is *about* a
+ * company at best; it is never the company's own surface. Hand-written, seeded
+ * from what actually appears in the fixtures, and expected to grow at
+ * TICKET-0013 when a real result set is hand-checked.
+ */
+export const CONTENT_HOSTS = [
+  "medium.com",
+  "substack.com",
+  "dev.to",
+  "hashnode.dev",
+  "blogspot.com",
+  "wordpress.com",
+  "ghost.io",
+  "bearblog.dev",
+  "tumblr.com",
+  "infoq.com",
+  "techcrunch.com",
+  "venturebeat.com",
+  "thenewstack.io",
+  "theverge.com",
+  "wired.com",
+  "arstechnica.com",
+  "zdnet.com",
+];
+
+/** Preprints, journals and anything served as a PDF. Research, not a company. */
+export const PAPER_HOSTS = [
+  "arxiv.org",
+  "doi.org",
+  "biorxiv.org",
+  "ssrn.com",
+  "openreview.net",
+  "researchgate.net",
+  "semanticscholar.org",
+  "acm.org",
+  "ieee.org",
+];
+
+/** Someone else's discussion of a thing, including HN's own threads. */
+export const AGGREGATOR_HOSTS = [
+  "news.ycombinator.com",
+  "reddit.com",
+  "lobste.rs",
+  "twitter.com",
+  "x.com",
+  "linkedin.com",
+  "facebook.com",
+  "youtube.com",
+  "youtu.be",
+  "wikipedia.org",
+  "docs.google.com",
+];
+
+/**
+ * Where a dev-tools launch actually lands. Kept **usable**: for this thesis —
+ * "adopted before it is sold" — a repo is the product surface, not a consolation
+ * prize, and GitHub is already the secondary enrichment source (ADR-0004). What
+ * the company site is, if there is one, is TICKET-0010's problem.
+ */
+export const CODE_HOSTS = ["github.com", "gitlab.com", "bitbucket.org", "codeberg.org"];
+
+/** Project pages: a repo with a domain, so classified as one. */
+export const PROJECT_PAGE_SUFFIXES = [".github.io", ".gitlab.io"];
+
+/**
+ * Path prefixes that mean "an article on someone's site". This is what catches
+ * a company blogging about the topic — `signoz.io/blog/...` is a real company
+ * and still the wrong url for a candidate, because the post is content
+ * marketing rather than a launch.
+ */
+export const ARTICLE_PATH = /^\/(blog|blogs|post|posts|article|articles|news|story|stories)(\/|$)/;
+
+/** `/2026/08/some-title` — the other common shape of the same thing. */
+export const DATED_PATH = /^\/(19|20)\d{2}\/\d{1,2}\//;
+
+function hostMatches(host: string, domains: readonly string[]): boolean {
+  return domains.some((domain) => host === domain || host.endsWith(`.${domain}`));
+}
+
+/**
+ * Classify one hit from its url alone. The order of the rules is the point: a
+ * PDF hosted on a company domain is still a paper, and an article path on a
+ * code host is still a repo, so the narrow rules run before the broad ones.
+ */
+export function classifyHit(hit: HnHit): HitClassification {
+  if (hit.url === null) {
+    return {
+      usable: false,
+      kind: "no_url",
+      // Ask HN and text posts. They are not candidates, but the thread itself
+      // may still be worth reading as evidence about a company found elsewhere.
+      reason: "text post with no link — nothing to resolve to a company",
+      host: null,
+    };
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(hit.url);
+  } catch {
+    return { usable: false, kind: "bad_url", reason: `unparseable url: ${hit.url}`, host: null };
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return {
+      usable: false,
+      kind: "bad_url",
+      reason: `not an http url: ${parsed.protocol.replace(":", "")}`,
+      host: null,
+    };
+  }
+
+  const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+  const path = parsed.pathname;
+
+  if (path.toLowerCase().endsWith(".pdf")) {
+    return { usable: false, kind: "paper", reason: "links to a PDF, not a product", host };
+  }
+  if (hostMatches(host, PAPER_HOSTS)) {
+    return { usable: false, kind: "paper", reason: `${host} is a paper or preprint host`, host };
+  }
+  if (hostMatches(host, AGGREGATOR_HOSTS)) {
+    return {
+      usable: false,
+      kind: "aggregator",
+      reason: `${host} is a discussion or social platform, not a company site`,
+      host,
+    };
+  }
+  if (hostMatches(host, CODE_HOSTS)) {
+    return { usable: true, kind: "code_repo", reason: `repository on ${host}`, host };
+  }
+  if (PROJECT_PAGE_SUFFIXES.some((suffix) => host.endsWith(suffix))) {
+    return { usable: true, kind: "code_repo", reason: `project page on ${host}`, host };
+  }
+  if (hostMatches(host, CONTENT_HOSTS)) {
+    return {
+      usable: false,
+      kind: "content",
+      reason: `${host} is a publishing platform or trade publication`,
+      host,
+    };
+  }
+  if (ARTICLE_PATH.test(path) || DATED_PATH.test(path)) {
+    return {
+      usable: false,
+      kind: "content",
+      reason: `${host}${path} is an article, not the company's own surface`,
+      host,
+    };
+  }
+
+  return { usable: true, kind: "company_site", reason: `${host} looks like a company site`, host };
+}
+
+export interface ClassifiedHit {
+  hit: HnHit;
+  classification: HitClassification;
+}
+
+/**
+ * Split a result set the way TICKET-0011's probe needs it: `usable.length` is
+ * what `--min-hits` is compared against (D-6), and `rejected` is kept rather
+ * than discarded so the run can record *why* a thin probe was thin.
+ */
+export function classifyHits(hits: readonly HnHit[]): {
+  usable: ClassifiedHit[];
+  rejected: ClassifiedHit[];
+} {
+  const usable: ClassifiedHit[] = [];
+  const rejected: ClassifiedHit[] = [];
+  for (const hit of hits) {
+    const classification = classifyHit(hit);
+    (classification.usable ? usable : rejected).push({ hit, classification });
+  }
+  return { usable, rejected };
+}

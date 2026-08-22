@@ -2,10 +2,13 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  classifyHit,
+  classifyHits,
   expandQuery,
   HN_HITS_PER_PAGE,
   HN_SEARCH_BY_DATE_ENDPOINT,
   HN_SEARCH_ENDPOINT,
+  type HnHit,
   hitTimestamp,
   hnItemUrl,
   hnSearchUrl,
@@ -176,5 +179,147 @@ describe("parseSearchResponse", () => {
     expect(() => parseSearchResponse(null)).toThrow(/not an HN Algolia search response/);
     // A response with no `hits` key is empty, not broken.
     expect(parseSearchResponse({ nbHits: 0 }).hits).toEqual([]);
+  });
+});
+
+/** A hit is a shape, not a fixture, when the test is about one field of it. */
+function hit(url: string | null, over: Partial<HnHit> = {}): HnHit {
+  return {
+    object_id: "1",
+    hn_url: hnItemUrl("1"),
+    title: "Show HN: a thing",
+    url,
+    author: "someone",
+    points: 10,
+    num_comments: 2,
+    created_at: "2026-08-01T00:00:00.000Z",
+    story_text: null,
+    tags: ["story", "show_hn"],
+    ...over,
+  };
+}
+
+describe("classifyHit", () => {
+  it("accepts a company site", () => {
+    const verdict = classifyHit(hit("https://getfluiq.com"));
+    expect(verdict).toMatchObject({ usable: true, kind: "company_site", host: "getfluiq.com" });
+  });
+
+  it("accepts a repo — for this thesis the repo is the product surface", () => {
+    expect(classifyHit(hit("https://github.com/sublingual-ai/sublingual"))).toMatchObject({
+      usable: true,
+      kind: "code_repo",
+    });
+    expect(classifyHit(hit("https://someproject.github.io/docs"))).toMatchObject({
+      usable: true,
+      kind: "code_repo",
+    });
+  });
+
+  it("rejects a personal blog, wherever it is hosted", () => {
+    expect(classifyHit(hit("https://alice.substack.com/p/why-agents"))).toMatchObject({
+      usable: false,
+      kind: "content",
+    });
+    expect(classifyHit(hit("https://medium.com/@alice/why-agents-fail-1a2b"))).toMatchObject({
+      usable: false,
+      kind: "content",
+    });
+    expect(classifyHit(hit("https://alice.dev/2026/08/why-agents-fail"))).toMatchObject({
+      usable: false,
+      kind: "content",
+    });
+  });
+
+  it("rejects a paper, by host or by extension", () => {
+    expect(classifyHit(hit("https://arxiv.org/abs/2408.01234"))).toMatchObject({
+      usable: false,
+      kind: "paper",
+    });
+    // Extension beats host: a PDF on a company domain is still a paper.
+    expect(classifyHit(hit("https://acme.ai/research/scaling.pdf"))).toMatchObject({
+      usable: false,
+      kind: "paper",
+    });
+  });
+
+  it("rejects a discussion thread and HN's own urls", () => {
+    expect(classifyHit(hit("https://news.ycombinator.com/item?id=1"))).toMatchObject({
+      usable: false,
+      kind: "aggregator",
+    });
+    expect(classifyHit(hit("https://www.reddit.com/r/LocalLLaMA/comments/abc/"))).toMatchObject({
+      usable: false,
+      kind: "aggregator",
+    });
+  });
+
+  it("rejects a real company's blog post — the post is not the candidate", () => {
+    const verdict = classifyHit(hit("https://signoz.io/blog/llm-observability-opentelemetry/"));
+    expect(verdict.usable).toBe(false);
+    expect(verdict.kind).toBe("content");
+    expect(verdict.host).toBe("signoz.io");
+  });
+
+  it("rejects a text post with no link, and says so", () => {
+    const verdict = classifyHit(hit(null));
+    expect(verdict).toMatchObject({ usable: false, kind: "no_url", host: null });
+    expect(verdict.reason).toMatch(/no link/);
+  });
+
+  it("rejects what it cannot parse instead of throwing", () => {
+    expect(classifyHit(hit("not a url"))).toMatchObject({ usable: false, kind: "bad_url" });
+    expect(classifyHit(hit("ftp://files.example.com/x"))).toMatchObject({
+      usable: false,
+      kind: "bad_url",
+    });
+  });
+
+  it("strips www and matches subdomains, so one host is one verdict", () => {
+    expect(classifyHit(hit("https://www.acme.ai/")).host).toBe("acme.ai");
+    expect(classifyHit(hit("https://blog.medium.com/x")).kind).toBe("content");
+  });
+
+  it("carries a reason on every rejection — the filter is auditable (ADR-0004)", () => {
+    const urls = [null, "not a url", "https://arxiv.org/abs/1", "https://medium.com/@a/b"];
+    for (const url of urls) {
+      const verdict = classifyHit(hit(url));
+      expect(verdict.usable).toBe(false);
+      expect(verdict.reason.length).toBeGreaterThan(10);
+    }
+  });
+
+  it("has a known false positive class, pinned here rather than hidden", () => {
+    // A trade blog on its own domain with no article path. The url cannot tell
+    // this from a company site, and the classifier errs towards accepting. It
+    // is a fixture hit, so TICKET-0013's hand-check will meet it.
+    const verdict = classifyHit(
+      hit(
+        "https://machinelearningmastery.com/llm-observability-tools-for-reliable-ai-applications/",
+      ),
+    );
+    expect(verdict).toMatchObject({ usable: true, kind: "company_site" });
+  });
+});
+
+describe("classifyHits", () => {
+  it("splits a captured result page into the counts the probe threshold reads", () => {
+    const page = parseSearchResponse(fixture("search-page-0"));
+    const { usable, rejected } = classifyHits(page.hits);
+
+    expect(usable.map((c) => c.hit.url)).toEqual([
+      "https://github.com/torrix-ai/install",
+      "https://github.com/sublingual-ai/sublingual",
+    ]);
+    expect(rejected.map((c) => c.classification.kind)).toEqual(["content", "no_url", "content"]);
+    expect(usable.length + rejected.length).toBe(page.hits.length);
+  });
+
+  it("counts an Ask HN page as zero usable, with a reason on every hit", () => {
+    const page = parseSearchResponse(fixture("search-ask-hn"));
+    const { usable, rejected } = classifyHits(page.hits);
+    expect(usable).toEqual([]);
+    expect(rejected).toHaveLength(5);
+    expect(rejected.every((c) => c.classification.kind === "no_url")).toBe(true);
   });
 });

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { type Dropped, parseOrDrop } from "../contracts/index.js";
+import { type HttpOptions, httpGet } from "../evidence/fetch.js";
 
 /**
  * The HN Algolia adapter (TICKET-0009). ADR-0004 makes HN the primary source
@@ -481,4 +482,194 @@ export function classifyHits(hits: readonly HnHit[]): {
     (classification.usable ? usable : rejected).push({ hit, classification });
   }
   return { usable, rejected };
+}
+
+// ---------------------------------------------------------------------------
+// The fetch half.
+//
+// Everything above is pure. This is the part that reaches the network, and it
+// does so through `httpGet` and nothing else (CLAUDE.md: "Never call `fetch`
+// directly from a stage") — which is why the injection point below is
+// `HttpOptions` rather than a function that could replace the choke point. A
+// test drives a stub transport, exactly as `fetch.ts`'s own suite does, and the
+// url building and pagination under test are the real ones.
+//
+// ARCHITECTURE §5 says a source API failure fails the *run*. It does not say
+// the adapter throws, and it must not: four expansion arms over several pages
+// is up to a dozen requests, and one 500 on the funding arm's second page is
+// not a reason to lose the three arms that worked. So a failure is returned as
+// data — `failures[]`, one entry per page that did not come back — and
+// TICKET-0012 decides whether what survived is enough to keep going. An adapter
+// that throws takes that decision away from the layer that can make it.
+// ---------------------------------------------------------------------------
+
+/** One page that did not come back, kept so a thin result set can explain itself. */
+export interface HnSearchFailure {
+  /** Which expansion arm was being fetched. */
+  label: string;
+  /** Zero-based page, as requested. */
+  page: number;
+  url: string;
+  /** HTTP status, or 0 when the request never got one. */
+  status: number;
+  reason: string;
+}
+
+/**
+ * A hit and the arms that found it. Plural because dedup is across arms: a
+ * Show HN about a funding round appears on three of the four, and crediting
+ * only the first would make the other two look like they earned nothing.
+ * TICKET-0013 reads this to decide whether an arm is worth keeping.
+ */
+export interface SourcedHit {
+  hit: HnHit;
+  found_by: string[];
+}
+
+/** Per-arm accounting, for the run manifest and for the gate at TICKET-0013. */
+export interface HnArmSummary {
+  label: string;
+  query: string;
+  tags: string;
+  pages_fetched: number;
+  /** Hits this arm returned, including ones another arm had already found. */
+  hits: number;
+  /** Of those, the ones no earlier arm had seen. An arm's actual contribution. */
+  new_hits: number;
+}
+
+export interface HnSearchResult {
+  /** Deduped by `object_id`, in discovery order: arm order, then page order. */
+  hits: SourcedHit[];
+  arms: HnArmSummary[];
+  /** Pages that failed. Empty on a clean run; never a thrown error. */
+  failures: HnSearchFailure[];
+  /** Hits that failed the parse across every page, with reasons. */
+  dropped: Dropped[];
+  pages_fetched: number;
+}
+
+/**
+ * Two pages an arm, which with four arms is at most eight requests and 400
+ * hits for one seed. It is a budget, not a measurement: page 2 of a relevance
+ * ranking is already well past the posts a human would have read, and the run
+ * limit (`--limit`) cuts far below this anyway. TICKET-0012 may lower it from
+ * the CLI; nothing yet raises it.
+ */
+export const HN_MAX_PAGES_PER_ARM = 2;
+
+export interface SearchHnOptions {
+  sinceDays?: number;
+  sort?: HnSort;
+  hitsPerPage?: number;
+  maxPagesPerArm?: number;
+  /** Defaults to `expandQuery(seed)`. Overridden in tests and by nothing else. */
+  expansions?: QueryExpansion[];
+  /** Passed through to `httpGet` — transport, cache dir, clock, retry policy. */
+  http?: HttpOptions;
+  /** The clock the `--since` window is floored against. */
+  now?: () => Date;
+}
+
+/**
+ * Run the expansion over HN Algolia and return every distinct post it found.
+ *
+ * Pagination stops on the first of: the page count Algolia reported, the
+ * per-arm cap, a short page (fewer hits than asked for, which is the last page
+ * whatever `nbPages` claimed), or a failure. Stopping an arm on its first
+ * failure is deliberate — a 500 on page 1 usually means page 2 is a 500 too,
+ * and spending the retry budget to learn that costs the arms that still work.
+ */
+export async function searchHn(
+  seed: string,
+  options: SearchHnOptions = {},
+): Promise<HnSearchResult> {
+  const {
+    sinceDays,
+    sort,
+    hitsPerPage = HN_HITS_PER_PAGE,
+    maxPagesPerArm = HN_MAX_PAGES_PER_ARM,
+    expansions = expandQuery(seed),
+    http = {},
+    now = () => new Date(),
+  } = options;
+
+  const byId = new Map<string, SourcedHit>();
+  const arms: HnArmSummary[] = [];
+  const failures: HnSearchFailure[] = [];
+  const dropped: Dropped[] = [];
+  let pagesFetched = 0;
+
+  for (const expansion of expansions) {
+    const summary: HnArmSummary = {
+      label: expansion.label,
+      query: expansion.query,
+      tags: expansion.tags,
+      pages_fetched: 0,
+      hits: 0,
+      new_hits: 0,
+    };
+    arms.push(summary);
+
+    for (let page = 0; page < maxPagesPerArm; page += 1) {
+      const query: HnQueryOptions = {
+        query: expansion.query,
+        tags: expansion.tags,
+        page,
+        hitsPerPage,
+        ...(sinceDays === undefined ? {} : { sinceDays }),
+        ...(sort === undefined ? {} : { sort }),
+      };
+      const url = hnSearchUrl(query, now());
+      const result = await httpGet(url, http);
+      if (!result.ok) {
+        failures.push({
+          label: expansion.label,
+          page,
+          url,
+          status: result.status,
+          reason: result.reason,
+        });
+        break;
+      }
+
+      pagesFetched += 1;
+      summary.pages_fetched += 1;
+
+      let parsed: HnPage;
+      try {
+        parsed = parseSearchResponse(JSON.parse(result.body));
+      } catch (error) {
+        // A 200 that is not a search response: an error page, a proxy's HTML,
+        // a truncated body. Same class of problem as a 500, recorded the same
+        // way — the status says 200 because that is what the server said.
+        failures.push({
+          label: expansion.label,
+          page,
+          url,
+          status: result.status,
+          reason: `unreadable response: ${error instanceof Error ? error.message : String(error)}`,
+        });
+        break;
+      }
+
+      dropped.push(...parsed.dropped);
+      summary.hits += parsed.hits.length;
+      for (const hit of parsed.hits) {
+        const seen = byId.get(hit.object_id);
+        if (seen) {
+          if (!seen.found_by.includes(expansion.label)) seen.found_by.push(expansion.label);
+          continue;
+        }
+        byId.set(hit.object_id, { hit, found_by: [expansion.label] });
+        summary.new_hits += 1;
+      }
+
+      // `nb_pages` is the authority; a short page is the belt-and-braces case
+      // for a payload that under-reports it.
+      if (page + 1 >= parsed.nb_pages || parsed.hits.length < hitsPerPage) break;
+    }
+  }
+
+  return { hits: [...byId.values()], arms, failures, dropped, pages_fetched: pagesFetched };
 }

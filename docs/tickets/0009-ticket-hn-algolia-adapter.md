@@ -1,6 +1,6 @@
 # TICKET-0009 — HN Algolia adapter (`src/source/hn.ts`)
 
-Status: **Ready** — query building and hit parsing in [worklog 0014](../worklog/0014-hn-query-and-parse.md), the usable-vs-unusable classifier in [worklog 0015](../worklog/0015-hn-usable-classifier.md); the paginated fetch over `httpGet` is all that is left · Depends on: 0008 (Done) · Blocks: 0011, 0012
+Status: **Done** — query building and hit parsing in [worklog 0014](../worklog/0014-hn-query-and-parse.md), the usable-vs-unusable classifier in [worklog 0015](../worklog/0015-hn-usable-classifier.md), the paginated `searchHn` over `httpGet` in [worklog 0016](../worklog/0016-hn-paginated-search.md) · Depends on: 0008 (Done) · Blocks: 0011, 0012
 Reads: [ADR-0004](../adr/0004-source-selection.md), [TESTING §4](../TESTING.md), [SCOPE](../SCOPE.md) in-scope #1
 
 ## Why

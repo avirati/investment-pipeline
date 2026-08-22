@@ -1,6 +1,6 @@
 # TICKET-0011 — Query planning: probe, then clarify (`src/source/plan.ts`)
 
-Status: Blocked · 0009, 0018 · Depends on: 0009; 0018 for the clarifier call · Blocks: 0012
+Status: **Ready** — 0009 is Done, so the probe half can ship now. 0018 is still open and gates only the clarifier call, which this ticket is designed to ship without · Depends on: 0009 (Done); 0018 for the clarifier call · Blocks: 0012
 Reads: [ADR-0008](../adr/0008-query-planning.md) in full, [SPEC §3.1](../SPEC.md), [TESTING §5](../TESTING.md)
 
 ## Why

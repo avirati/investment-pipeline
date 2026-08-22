@@ -1,6 +1,8 @@
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { Evidence } from "../src/contracts/index.js";
 import { extractHtml } from "../src/evidence/fetch.js";
 import {
   absoluteLink,
@@ -11,15 +13,19 @@ import {
   englishRatio,
   extractPeople,
   FETCHED_ROLES,
+  type GatherSiteOptions,
+  gatherSite,
   LINK_RULES,
   looksLikeName,
   MAX_PEOPLE,
   pickPages,
   SHELL_MAX_CHARS,
   SITE_PAGE_BUDGET,
+  type SiteResult,
   sameSite,
   siteHost,
 } from "../src/evidence/site.js";
+import { EVIDENCE_TEXT_LIMIT, evidenceId } from "../src/evidence/store.js";
 
 const fixture = (name: string): string =>
   readFileSync(join(import.meta.dirname, "fixtures", name), "utf8");
@@ -466,5 +472,291 @@ describe("extractPeople", () => {
     const { people } = extractPeople(html, "home");
     expect(people.map((person) => person.name)).toEqual(["Dana Whitfield"]);
     expect(people[0]?.role).toContain("Northwind Freight");
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* gatherSite                                                                  */
+/* -------------------------------------------------------------------------- */
+
+interface Route {
+  status?: number;
+  body?: string;
+  contentType?: string;
+}
+
+/** Replies from a url → page table; anything not in it is a 404. */
+function web(routes: Record<string, Route>) {
+  const calls: string[] = [];
+  const transport = async (url: string): Promise<Response> => {
+    calls.push(url);
+    const route = routes[url];
+    if (route === undefined) {
+      return new Response("<html><body>Not found</body></html>", {
+        status: 404,
+        headers: { "content-type": "text/html" },
+      });
+    }
+    return new Response(route.body ?? "", {
+      status: route.status ?? 200,
+      headers: { "content-type": route.contentType ?? "text/html; charset=utf-8" },
+    });
+  };
+  return { transport, calls };
+}
+
+const dirs: string[] = [];
+
+function scratch(): string {
+  const dir = mkdtempSync(join(tmpdir(), "site-cache-"));
+  dirs.push(dir);
+  return dir;
+}
+
+afterEach(() => {
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+});
+
+const AT = new Date("2026-08-22T10:00:00.000Z");
+
+function gather(routes: Record<string, Route>, over: Partial<GatherSiteOptions> = {}) {
+  const stub = web(routes);
+  return {
+    stub,
+    run: (url = "https://coroot.com/") =>
+      gatherSite(url, {
+        http: {
+          transport: stub.transport,
+          cacheDir: scratch(),
+          now: () => AT,
+          sleep: async () => {},
+          retry: { retries: 0 },
+        },
+        ...over,
+      }),
+  };
+}
+
+const COROOT_ROUTES: Record<string, Route> = {
+  "https://coroot.com/": { body: corootHome },
+  "https://coroot.com/about": { body: corootAbout },
+  "https://coroot.com/editions": {
+    body:
+      "<html><body><main><h1>Editions</h1>" +
+      "Community and Enterprise editions, priced per node. ".repeat(10) +
+      "</main></body></html>",
+  },
+  "https://docs.coroot.com/": {
+    body:
+      "<html><body><main><h1>Docs</h1>" +
+      "Install Coroot with Helm in one command. ".repeat(10) +
+      "</main></body></html>",
+  },
+};
+
+const signalFor = (result: SiteResult, key: string) =>
+  result.signals.find((signal) => signal.key === key);
+const unknownFor = (result: SiteResult, key: string) =>
+  result.unknowns.find((unknown) => unknown.key === key);
+
+describe("gatherSite", () => {
+  it("reads the home page and the three pages it links to, and no more", async () => {
+    const { stub, run } = gather(COROOT_ROUTES);
+    const result = await run();
+    expect(stub.calls).toEqual([
+      "https://coroot.com/",
+      "https://coroot.com/about",
+      "https://coroot.com/editions",
+      "https://docs.coroot.com/",
+    ]);
+    expect(result.pages.map((page) => page.role)).toEqual(["home", "team", "pricing", "docs"]);
+    expect(result.requests).toBe(4);
+  });
+
+  it("writes one evidence record per page, every one citable", async () => {
+    const result = await gather(COROOT_ROUTES).run();
+    expect(result.evidence).toHaveLength(4);
+    for (const record of result.evidence) {
+      expect(() => Evidence.parse(record)).not.toThrow();
+      expect(record.type).toBe("company_site");
+      expect(record.id).toBe(evidenceId(record.url, record.retrieved_at));
+    }
+    for (const page of result.pages) {
+      expect(result.evidence.some((record) => record.id === page.evidence_id)).toBe(true);
+    }
+  });
+
+  it("records the D-4 surfaces as links, and never as a conclusion", async () => {
+    const result = await gather(COROOT_ROUTES).run();
+    expect(signalFor(result, "site.pricing_url")?.value).toBe("https://coroot.com/editions");
+    expect(signalFor(result, "site.docs_url")?.value).toBe("https://docs.coroot.com/");
+    expect(signalFor(result, "site.signup_url")?.value).toBe("https://coroot.com/account/signup");
+    expect(signalFor(result, "site.repo_url")?.value).toBe("https://github.com/coroot/coroot");
+    // Nothing here says "self-serve": that word belongs to the rubric.
+    expect(result.signals.map((signal) => signal.key)).not.toContain("site.self_serve");
+  });
+
+  it("names the people from the team page it followed", async () => {
+    const result = await gather(COROOT_ROUTES).run();
+    expect(result.people.map((person) => person.name)).toEqual([
+      "Nikolay Sivko",
+      "Peter Zaitsev",
+      "Alexander Lamberton",
+    ]);
+    expect(signalFor(result, "site.people_named")?.value).toBe(3);
+  });
+
+  it("cites the page a signal was read off", async () => {
+    const result = await gather(COROOT_ROUTES).run();
+    const home = result.pages.find((page) => page.role === "home");
+    const team = result.pages.find((page) => page.role === "team");
+    expect(signalFor(result, "site.title")?.evidence_id).toBe(home?.evidence_id);
+    expect(signalFor(result, "site.people_named")?.evidence_id).toBe(team?.evidence_id);
+  });
+
+  it("dates every signal it emits (SPEC D3)", async () => {
+    const result = await gather(COROOT_ROUTES).run();
+    expect(result.signals.length).toBeGreaterThan(0);
+    for (const signal of result.signals) {
+      expect(signal.as_of).toBe(AT.toISOString());
+    }
+  });
+
+  it("records a missing link as an unknown, never as a false", async () => {
+    const html = `<html><body><main><h1>Acme</h1><p>${"We build things for developers. ".repeat(12)}</p></main></body></html>`;
+    const result = await gather({ "https://acme.dev/": { body: html } }).run("https://acme.dev/");
+    expect(signalFor(result, "site.pricing_url")).toBeUndefined();
+    expect(unknownFor(result, "site.pricing_url")?.reason).toContain("links to no pricing page");
+    for (const signal of result.signals) {
+      expect(signal.value).not.toBe(false);
+    }
+  });
+
+  it("turns a dead site into a record and an unknown, not an exception", async () => {
+    const result = await gather({}).run("https://gone.example/");
+    expect(result.evidence).toHaveLength(1);
+    expect(result.evidence[0]?.type).toBe("fetch_failed");
+    expect(result.failures[0]?.status).toBe(404);
+    expect(unknownFor(result, "site.title")?.reason).toContain("could not be retrieved");
+    expect(result.people).toEqual([]);
+  });
+
+  it("turns a timeout into a fetch_failed record with status 0", async () => {
+    const stub = {
+      transport: async () => {
+        throw Object.assign(new Error("The operation was aborted due to timeout"), {
+          name: "TimeoutError",
+        });
+      },
+    };
+    const result = await gatherSite("https://slow.example/", {
+      http: {
+        transport: stub.transport,
+        cacheDir: scratch(),
+        now: () => AT,
+        retry: { retries: 0 },
+      },
+    });
+    expect(result.evidence[0]?.type).toBe("fetch_failed");
+    expect(result.evidence[0]?.status).toBe(0);
+    expect(result.evidence[0]?.text).toContain("TimeoutError");
+  });
+
+  it("marks an empty JS shell as empty and keeps it as evidence", async () => {
+    const shell =
+      `<html lang="en"><head><title>Acme</title></head><body><div id="root"></div>` +
+      `<script src="/app.js"></script></body></html>`;
+    const result = await gather({ "https://acme.dev/": { body: shell } }).run("https://acme.dev/");
+    expect(result.evidence).toHaveLength(1);
+    expect(result.evidence[0]?.status).toBe(200);
+    expect(result.evidence[0]?.meta.empty_shell).toBe(true);
+    // The record's text is the reason, because there is no prose to carry.
+    expect(result.evidence[0]?.text).toContain("renders client-side");
+    expect(result.failures[0]?.reason).toContain("client-side");
+    expect(unknownFor(result, "site.title")?.reason).toContain("no title");
+  });
+
+  it("keeps a non-English page as evidence and does not read it for names", async () => {
+    const html =
+      `<html lang="ja"><head><title>アクメ</title></head><body><main>` +
+      `<h2>Team</h2><h3>Alice Marchetti</h3><p>Co-founder, CEO</p>` +
+      `<p>${"私たちは開発者のためのインフラを構築しています。".repeat(12)}</p>` +
+      `</main></body></html>`;
+    const result = await gather({ "https://acme.jp/": { body: html } }).run("https://acme.jp/");
+    expect(result.evidence).toHaveLength(1);
+    expect(result.evidence[0]?.meta.language).toBe("not_english");
+    expect(result.people).toEqual([]);
+    expect(unknownFor(result, "site.people")?.reason).toContain("not read for names");
+  });
+
+  it("resolves links against where the home page landed, not where it was asked for", async () => {
+    const home = `<html><body><main><h1>Acme</h1><p>${"Developer infrastructure. ".repeat(12)}</p><a href="/about">About</a></main></body></html>`;
+    const stub = {
+      transport: async (url: string): Promise<Response> => {
+        const body = url.includes("/about")
+          ? `<html><body><main><h3>Ada Lovelace</h3><p>Co-founder, CTO</p></main></body></html>`
+          : home;
+        // A redirect `http://acme.dev/` → `https://www.acme.dev/`, as a real
+        // apex domain does. `Response.url` is what `httpGet` records.
+        return Object.defineProperty(
+          new Response(body, { status: 200, headers: { "content-type": "text/html" } }),
+          "url",
+          { value: url.replace("http://acme.dev/", "https://www.acme.dev/") },
+        );
+      },
+    };
+    const result = await gatherSite("http://acme.dev/", {
+      http: {
+        transport: stub.transport,
+        cacheDir: scratch(),
+        now: () => AT,
+        retry: { retries: 0 },
+      },
+    });
+    expect(result.final_url).toBe("https://www.acme.dev/");
+    expect(signalFor(result, "site.url")?.value).toBe("https://www.acme.dev/");
+    expect(signalFor(result, "site.team_url")?.value).toBe("https://www.acme.dev/about");
+  });
+
+  it("spends no more than the budget it was given", async () => {
+    const { stub, run } = gather(COROOT_ROUTES, { budget: 1 });
+    const result = await run();
+    expect(stub.calls).toHaveLength(2);
+    expect(result.pages.map((page) => page.role)).toEqual(["home", "team"]);
+    expect(unknownFor(result, "site.pricing_page")?.reason).toContain("no pricing page");
+  });
+
+  it("treats a url it cannot fetch as an unknown about the company, not a bug", async () => {
+    const { stub, run } = gather({});
+    const result = await run("not-a-url");
+    expect(stub.calls).toEqual([]);
+    expect(result.unknowns).toEqual([{ key: "site", reason: "'not-a-url' is not an http(s) url" }]);
+  });
+
+  it("truncates a very long page per the evidence store's one constant", async () => {
+    const long = `<html><body><main><p>${"observability ".repeat(3000)}</p></main></body></html>`;
+    const result = await gather({ "https://acme.dev/": { body: long } }).run("https://acme.dev/");
+    expect(result.evidence[0]?.text.length).toBeLessThanOrEqual(EVIDENCE_TEXT_LIMIT);
+    expect(result.evidence[0]?.meta.text_truncated).toBe(true);
+  });
+
+  it("does not fetch a page twice when a run is repeated over a warm cache", async () => {
+    const dir = scratch();
+    const stub = web(COROOT_ROUTES);
+    const http = {
+      transport: stub.transport,
+      cacheDir: dir,
+      now: () => AT,
+      retry: { retries: 0 },
+    };
+    const first = await gatherSite("https://coroot.com/", { http });
+    const second = await gatherSite("https://coroot.com/", { http });
+    expect(stub.calls).toHaveLength(4);
+    expect(second.requests).toBe(0);
+    // Rule 2 of the fetch layer: a cache hit replays `retrieved_at`, so the
+    // evidence ids are the same and a re-run cites the same records.
+    expect(second.evidence.map((record) => record.id)).toEqual(
+      first.evidence.map((record) => record.id),
+    );
   });
 });

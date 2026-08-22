@@ -1,5 +1,15 @@
 import { load } from "cheerio";
-import type { ExtractedHtml } from "./fetch.js";
+import type { Evidence } from "../contracts/index.js";
+import {
+  type ExtractedHtml,
+  extractHtml,
+  fetchFailedEvidence,
+  type HttpOptions,
+  httpGet,
+  isFetchableUrl,
+} from "./fetch.js";
+import { collector, type Signal, type UnknownSignal } from "./signal.js";
+import { makeEvidence } from "./store.js";
 
 /**
  * The company-site adapter (TICKET-0016). SCOPE in-scope #2 puts team/about
@@ -721,4 +731,309 @@ export function extractPeople(html: string, pageRole: "home" | "team"): PeopleRe
   });
 
   return { people, rejected, skipped: null };
+}
+
+/* -------------------------------------------------------------------------- */
+/* The pages                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/** A page this adapter actually retrieves. `home` is always the first. */
+export type SitePageRole = "home" | "team" | "pricing" | "docs";
+
+/** One page read, whether or not it had anything in it. */
+export interface SitePage {
+  role: SitePageRole;
+  /** As requested. The evidence record is addressed by this, not by the redirect. */
+  url: string;
+  /** Always set: a failed fetch is a record too (ARCHITECTURE §5). */
+  evidence_id: string;
+  status: number;
+  /** True for a 200 with nothing server-rendered in it. */
+  empty: boolean;
+  language: LanguageVerdict;
+}
+
+/** A page that produced no prose, and why. Data, never a throw (rule 3). */
+export interface SiteFailure {
+  role: SitePageRole;
+  url: string;
+  /** HTTP status, or 0 when the request never got one. */
+  status: number;
+  reason: string;
+}
+
+export interface SiteResult {
+  /** The url this adapter was pointed at. */
+  url: string;
+  /** Where the home page actually landed, when a redirect moved it. */
+  final_url: string | null;
+  pages: SitePage[];
+  evidence: Evidence[];
+  signals: Signal[];
+  unknowns: UnknownSignal[];
+  /**
+   * Named people, in page order. A separate field rather than signals because
+   * a person is a name *and* the words beside it *and* the block it came from,
+   * and flattening that into a `SignalValue` would throw away the two parts a
+   * reviewer needs to check it. TICKET-0020's extractor reads the same pages.
+   */
+  people: Person[];
+  /** Names seen and not emitted, with reasons. Rule 1's "fail loudly" half. */
+  rejected_people: RejectedPerson[];
+  /** Every role-carrying link on the home page, including the ones not fetched. */
+  links: DiscoveredLink[];
+  /** Requests actually issued. A cache hit is a page read with no request. */
+  requests: number;
+  failures: SiteFailure[];
+}
+
+export interface GatherSiteOptions {
+  /** Passed through to `httpGet` — transport, cache dir, clock, retry policy. */
+  http?: HttpOptions;
+  /** Overrides `SITE_PAGE_BUDGET`. TICKET-0017 may trim this per run. */
+  budget?: number;
+}
+
+/**
+ * Whether a page's text is worth reading as prose, or is a 200 that says
+ * nothing. Split out so `gatherSite` reads as a list of outcomes.
+ */
+interface PageRead {
+  page: SitePage;
+  evidence: Evidence;
+  html: string;
+  extracted: ExtractedHtml;
+  language: LanguageCheck;
+  shell: ShellVerdict;
+}
+
+/**
+ * Read one company site: the home page, then up to `SITE_PAGE_BUDGET` of the
+ * pages it links to that the rubric has a use for.
+ *
+ * Best-effort throughout and the same shape whatever happened, which is the
+ * contract `gatherGithub` already keeps: a dead site, an empty shell and a
+ * fully-read four-page site all return a `SiteResult`, and the difference
+ * shows up as unknowns and failures rather than as a thrown error. Most
+ * candidates' sites are somewhere in between.
+ *
+ * `httpGet` rather than `fetchEvidence`, because this module needs the markup
+ * as well as the extracted text — links are read off the source, not off the
+ * prose — and CLAUDE.md's choke point is `fetch.ts`, which `httpGet` is.
+ */
+export async function gatherSite(
+  url: string,
+  options: GatherSiteOptions = {},
+): Promise<SiteResult> {
+  const budget = options.budget ?? SITE_PAGE_BUDGET;
+  const result: SiteResult = {
+    url,
+    final_url: null,
+    pages: [],
+    evidence: [],
+    signals: [],
+    unknowns: [],
+    people: [],
+    rejected_people: [],
+    links: [],
+    requests: 0,
+    failures: [],
+  };
+
+  if (!isFetchableUrl(url)) {
+    // A candidate url is *data* — it came off an HN post or a `homepage`
+    // field — so a url this adapter cannot fetch is an unknown about the
+    // company, not a bug to throw on.
+    result.unknowns.push({ key: "site", reason: `'${url}' is not an http(s) url` });
+    return result;
+  }
+
+  /** One page, with every outcome recorded and none of them thrown. */
+  const read = async (role: SitePageRole, pageUrl: string): Promise<PageRead | null> => {
+    const response = await httpGet(pageUrl, options.http);
+    result.requests += response.attempts;
+
+    if (!response.ok) {
+      const evidence = fetchFailedEvidence(response);
+      result.evidence.push(evidence);
+      result.failures.push({
+        role,
+        url: pageUrl,
+        status: response.status,
+        reason: response.reason,
+      });
+      result.pages.push({
+        role,
+        url: pageUrl,
+        evidence_id: evidence.id,
+        status: response.status,
+        empty: true,
+        language: "unknown",
+      });
+      return null;
+    }
+
+    const html = response.body;
+    const extracted = extractHtml(html);
+    const shell = detectEmptyShell(extracted, html);
+    const language = detectLanguage(html, extracted.text);
+    const base = {
+      ...extracted.meta,
+      from_cache: response.from_cache,
+      attempts: response.attempts,
+    };
+
+    // An empty shell's record carries the *reason* as its text. There is no
+    // prose to carry instead, and a record whose text is a cookie banner would
+    // read downstream as a company that says nothing about itself rather than
+    // as a page this pipeline cannot render.
+    const evidence = makeEvidence({
+      url: pageUrl,
+      type: "company_site",
+      retrieved_at: response.retrieved_at,
+      status: response.status,
+      title: extracted.title,
+      text: shell.empty ? (shell.reason ?? "") : extracted.text,
+      meta: {
+        ...base,
+        page_role: role,
+        ...(response.final_url ? { final_url: response.final_url } : {}),
+        empty_shell: shell.empty,
+        text_chars: shell.chars,
+        language: language.verdict,
+        language_reason: language.reason,
+        ...(language.declared ? { language_declared: language.declared } : {}),
+      },
+    });
+    result.evidence.push(evidence);
+    result.pages.push({
+      role,
+      url: pageUrl,
+      evidence_id: evidence.id,
+      status: response.status,
+      empty: shell.empty,
+      language: language.verdict,
+    });
+    if (shell.empty) {
+      result.failures.push({
+        role,
+        url: pageUrl,
+        status: response.status,
+        reason: shell.reason ?? "the page had nothing to extract",
+      });
+    }
+    // Only the home page's redirect is the *site's* address; a `/about` that
+    // redirects says nothing about where the company lives.
+    if (role === "home" && response.final_url && response.final_url !== pageUrl) {
+      result.final_url = response.final_url;
+    }
+
+    return {
+      page: result.pages[result.pages.length - 1] as SitePage,
+      evidence,
+      html,
+      extracted,
+      language,
+      shell,
+    };
+  };
+
+  /* -- the home page ------------------------------------------------------ */
+
+  const home = await read("home", url);
+  if (home === null) {
+    for (const key of ["site.title", "site.description", "site.language"]) {
+      result.unknowns.push({ key, reason: `${url} could not be retrieved` });
+    }
+    return result;
+  }
+
+  const at = home.evidence.retrieved_at;
+  const { signals, unknowns, add } = collector(home.evidence.id, at);
+  const base = home.evidence.meta.final_url as string | undefined;
+  const pageBase = base ?? url;
+
+  // The url *after* redirects, which is the one the GitHub `homepage` join and
+  // any later run should agree on. The evidence record stays addressed by the
+  // url as requested, so an id cannot move when a redirect changes.
+  add("site.url", pageBase, "the request produced no address");
+  add("site.title", home.shell.empty ? null : home.extracted.title, "the page carries no title");
+  add(
+    "site.description",
+    home.shell.empty
+      ? null
+      : (home.extracted.meta.og_description ?? home.extracted.meta.description) || null,
+    "the page carries no description or og:description",
+  );
+  add("site.language", home.language.verdict, "the page's language could not be judged");
+
+  /* -- the links the rubric reads ----------------------------------------- */
+
+  result.links = discoverLinks(home.html, pageBase);
+  // Every one of these is a fact about a link, never a conclusion about a
+  // go-to-market motion. SPEC D-4 — "no self-serve or open-source path" — is
+  // decided in `src/analyse/score.ts` over these five, and an absent link
+  // becomes an unknown here rather than a false (rule 2, invariant 4).
+  for (const role of ["team", "pricing", "docs", "signup", "contact", "repo"] as const) {
+    const link = result.links.find((candidate) => candidate.role === role);
+    add(`site.${role}_url`, link?.url ?? null, `the home page links to no ${role} page`);
+  }
+
+  /* -- the pages behind them ---------------------------------------------- */
+
+  const picked = pickPages(result.links, budget);
+  const fetched: PageRead[] = [];
+  for (const link of picked) {
+    // `pickPages` only ever returns a fetched role, which is a `SitePageRole`.
+    const page = await read(link.role as SitePageRole, link.url);
+    if (page !== null) fetched.push(page);
+  }
+  for (const role of FETCHED_ROLES) {
+    if (!picked.some((link) => link.role === role)) {
+      unknowns.push({ key: `site.${role}_page`, reason: `no ${role} page was linked or fetched` });
+    }
+  }
+
+  /* -- who is named ------------------------------------------------------- */
+
+  // The team page first, then the home page, so a company that names its
+  // founders in both is read off the page that exists to name them. Rule 4: a
+  // page that is not English is kept as evidence and not read for names.
+  const scanned: { role: "home" | "team"; read: PageRead }[] = [];
+  const team = fetched.find((page) => page.page.role === "team" && !page.shell.empty);
+  if (team) scanned.push({ role: "team", read: team });
+  if (!home.shell.empty) scanned.push({ role: "home", read: home });
+
+  for (const entry of scanned) {
+    if (entry.read.language.verdict === "not_english") {
+      unknowns.push({
+        key: "site.people",
+        reason: `${entry.read.page.url} was not read for names: ${entry.read.language.reason}`,
+      });
+      continue;
+    }
+    const found = extractPeople(entry.read.html, entry.role);
+    result.rejected_people.push(...found.rejected);
+    for (const person of found.people) {
+      if (!result.people.some((known) => known.name.toLowerCase() === person.name.toLowerCase())) {
+        result.people.push(person);
+      }
+    }
+  }
+
+  // The count cites the page the names were read off, not the home page, so
+  // the citation resolves to the record a reviewer would want to open.
+  const namedOn = scanned[0]?.read.evidence.id ?? home.evidence.id;
+  const counted = collector(namedOn, at);
+  counted.add(
+    "site.people_named",
+    result.people.length > 0 ? result.people.length : null,
+    "no person was named with a role beside them on any page read",
+  );
+  signals.push(...counted.signals);
+  unknowns.push(...counted.unknowns);
+
+  result.signals.push(...signals);
+  result.unknowns.push(...unknowns);
+  return result;
 }

@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `d08783b` · **Phase: stage 2's evidence layer is complete. Both adapters (0015, 0016) are in and both have run against live sources; the repo ↔ site join is made and the company's own pages are read. Nothing calls the model yet. Next: TICKET-0017, which owns the run-level request budget**
+Last updated: 2026-08-22 · at commit `b6a5941` · **Phase: stage 2a is complete. The two adapters are wired into one candidate loop with one run-level request budget, the repo ↔ site join runs in both directions, and a bundle of evidence ids-with-text now exists for extraction to read. Nothing calls the model yet. Next: TICKET-0019, the extraction prompt**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -27,7 +27,15 @@ throwing, a cache hit replays the original `retrieved_at` so a re-run produces
 the same evidence ids, and a dead site becomes a `fetch_failed` record. Its
 HTML→text half now exists too — `cheerio` only, per D-8 — so `fetchEvidence(url,
 type)` takes a url and returns an `Evidence` whatever happened, and the adapters
-in 0009/0015/0016 have one function to call. **Tickets 0001–0008 are Done.**
+in 0009/0015/0016 have one function to call. **Stage 2a is now a loop rather
+than two adapters**: `src/analyse/gather.ts` reads one candidate's HN thread,
+company site and GitHub account into a bundle whose ids are the closed world
+extraction may cite from, joins the repo to the site in *both* directions
+(`repo.homepage` one way, the site's own code-host link the other), and
+continues on a candidate that has nothing behind it rather than failing it.
+`src/analyse/budget.ts` settles what neither adapter could: the run-level
+request budget is planned uniformly before the loop starts, so coverage no
+longer depends on where in the candidate list a company sat. **Tickets 0001–0008 are Done.**
 
 Stage 1 has now started. `src/source/hn.ts` holds the pure half of the HN
 adapter: `hnSearchUrl` turns flags into one deterministic url — tags, page, and
@@ -366,6 +374,8 @@ element. **TICKET-0016 is Done.**
 | LLM response cache | `src/llm/cache.ts` — committed and content-addressed on the whole call (provider, model, prompt id, prompt version, output schema version, rendered input); a hit is verified against the fields it was keyed on; the first answer wins; a miss says why (0018, Done). **No entry is committed yet** |
 | GitHub adapter | `src/evidence/github.ts` — `parseGithubRef`, five API calls, tolerant schemas, evidence projections, dated `Signal`s, `defaultCalls(mode)` as the degraded-mode budget (0015, Done). Verified against the live API on three of the gate's own candidates |
 | Company-site adapter | `src/evidence/site.ts` — `discoverLinks` and the six link roles, `pickPages` against `SITE_PAGE_BUDGET`, `detectEmptyShell`, `detectLanguage`, `extractPeople` (a role beside every name, rejections with reasons), `gatherSite` (0016, Done). Verified live against seven of the gate's own candidates; two defects found and fixed |
+| Evidence gather (2a) | `src/analyse/gather.ts` — `gatherCandidate` (HN thread + site + GitHub → one bundle), the repo ↔ site join in both directions with `join.*.from` recording which, `bundleItems`/`bundleIds` as the closed world handed to extraction, `gatherRun` over a shared meter (0017, Done). No LLM, asserted against the transitive import graph. **Nothing calls it yet** |
+| Run request budget | `src/analyse/budget.ts` — `planRun(count, mode)` (uniform per-candidate allowance, planned before the loop), `requestMeter` (the wall, metered against GitHub's documented limit), `mapWithConcurrency` (0017, Done). Closes inconsistencies 60 and 66 |
 | Signal shape | `src/evidence/signal.ts` — `Signal`, `UnknownSignal`, `SignalSet` and the `collector` that makes invariant 4 structural. Shared by both stage-2 adapters, re-exported from `github.ts` (0016) |
 | LLM provider seam | `src/llm/provider.ts` — `createModel(role)` behind `await import`, `callModel` through the cache, `--replay` fails loudly on a cold cache, tokens recorded per call, `PRICES` ships empty so `cost_usd` is `null` (0018, Done). **Never run against a live provider** |
 | Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
@@ -906,11 +916,14 @@ Real defects, listed rather than silently patched.
     0027](./worklog/0027-github-adapter.md)): `gatherGithub` reads
     `repo.homepage`, and `coroot/coroot` returns `https://coroot.com` on a live
     call. The join now exists at the one layer that can make it. Two caveats a
-    reviewer should keep. It is **not yet applied** — nothing merges two
-    candidates on it, because merging is a stage-1 shape and this fact arrives
-    in stage 2; TICKET-0017 is where a bundle can carry both urls, and whether
-    the memo set ever collapses two candidates into one is a real open question
-    rather than a mechanical follow-on. And the third of Coroot's three slots,
+    reviewer should keep. **TICKET-0017 now applies it in both
+    directions** — a repository candidate reaches its site through
+    `repo.homepage`, and a site candidate reaches its repository through the
+    code-host link `discoverLinks` already found — so a bundle carries both
+    urls and `join.*.from` records which direction was used. Still **nothing
+    merges two candidates**: merging is a stage-1 shape and this fact arrives
+    in stage 2, and whether the memo set should ever collapse two candidates
+    into one is a real open question rather than a mechanical follow-on. And the third of Coroot's three slots,
     `demo.coroot.com`, is a demo instance with no repo behind it, so
     `repo.homepage` does not reach it. Original entry below.
     **One company took three of twelve slots, and no url said they were one
@@ -1059,7 +1072,17 @@ Real defects, listed rather than silently patched.
     costs — and the number of these lists is now itself worth noticing: ten
     hand-written stand-ins is a shape a reviewer is entitled to call out.
 
-60. **The GitHub request budget is decided per candidate and spent per run.**
+60. ~~**The GitHub request budget is decided per candidate and spent per
+    run.**~~ **Fixed** in TICKET-0017 ([worklog
+    0029](./worklog/0029-evidence-gather.md)): `planRun(count, mode)` divides
+    the hourly ceiling by the candidate count before the loop starts, so every
+    candidate gets the same allowance and a `--limit 40` unauthenticated run
+    plans 40 requests rather than 80. At twelve candidates the plan reproduces
+    `defaultCalls` exactly, which a test pins. The meter is separate and is the
+    wall: actual spend is counted against GitHub's whole documented limit, and
+    a pool that reaches it is skipped with an unknown rather than called and
+    rate-limited. Original entry below.
+    **The GitHub request budget is decided per candidate and spent per run.**
     `defaultCalls(mode)` reads two endpoints unauthenticated and five with a
     token, which is the right answer for one candidate and only an *assumption*
     about the run — it assumes roughly a dozen candidates. A `--limit 40` run
@@ -1118,12 +1141,60 @@ Real defects, listed rather than silently patched.
     section, which is a false negative a reader of the manifest would not
     expect. Seen live on `zatanna.ai` and `splabs.io`.
 
-66. **The site request budget is decided per candidate and spent per run** —
+66. ~~**The site request budget is decided per candidate and spent per
+    run.**~~ **Fixed** in TICKET-0017, alongside 60 and by the same mechanism.
+    `SITE_RUN_CEILING` is 240 requests for the whole run and `planRun` divides
+    it; below about sixty candidates it does not bind and `SITE_PAGE_BUDGET`
+    still stands, which is the intended shape — the ceiling is a bound on a
+    pathological run, not a shaper of an ordinary one. See inconsistency 68 for
+    what is unsatisfying about the number itself. Original entry below.
+    **The site request budget is decided per candidate and spent per run** —
     the same shape as inconsistency 60, one module along. `SITE_PAGE_BUDGET` is
     3, so a company costs up to 4 requests and the live runs averaged about 6
     requests and 3 seconds a company across both adapters. Nothing yet counts
     requests across candidates. That loop is TICKET-0017 and both budgets
     belong to it.
+
+67. **No HN metric reaches the rubric, only HN prose.** TICKET-0017 fetches the
+    canonical `news.ycombinator.com/item?id=` page as an `hn_item` record, so
+    the thread's title and comments are text the extractor can read and cite.
+    Its **points and comment count are not signals**: they were on the Algolia
+    hit in stage 1, the `Candidate` contract does not keep them (only
+    `objectID`, title, url and post date), and reading them back off the thread
+    page means writing a scraper. So SPEC D3 — pull — currently has GitHub
+    stars and nothing else quantitative, and the one source that is actually
+    about *attention* contributes prose only. Two cheap fixes exist and neither
+    was taken here: carry `points`/`num_comments` on `Provenance` (a schema v3
+    bump), or read `https://hn.algolia.com/api/v1/items/<id>` as a second
+    record. TICKET-0021 is where this bites.
+
+68. **The site pool's ceiling is a number we invented.** `SITE_RUN_CEILING` is
+    240 requests, chosen as "sixty companies read in full, well past the
+    `--limit 15` this tool is for". Unlike GitHub's 60/hour it is nobody's
+    published limit, so nothing external will ever tell us it is wrong. It is
+    defensible and it is not measured — the same class of number as
+    `SITE_PAGE_BUDGET` itself, one level up.
+
+69. **TICKET-0017 was not run against live sources, and every stage-2 ticket
+    before it was.** 0015 and 0016 both found defects that way — four of them —
+    and worklog 0028 recommended budgeting a live pass at the end of every
+    adapter ticket. There is no committed `candidates.jsonl` to run a loop
+    against, so the pass was deferred to TICKET-0022's wiring, where one
+    exists. Recorded as a decision rather than an omission, and as the first
+    time this project skipped the step that has paid off four times.
+
+70. **The bundle is in-memory and is not an artifact.** Evidence records are on
+    disk and committed; the `Bundle` that carries their ids to extraction is a
+    handoff inside stage 2 and is never written. A reviewer can reconstruct
+    what the model was shown from the analysis's `evidence_ids` plus the store,
+    but cannot open one file and see it. Writing `bundles/<slug>.json` is a
+    small addition to TICKET-0022 if that is wanted.
+
+71. **`defaultCalls(mode)` now has two callers with different opinions.**
+    `gatherGithub` still falls back to it when no `calls` are passed, which is
+    right for a direct caller and for its own tests; `gather.ts` always passes
+    the run plan. The number therefore lives in two places, and a change to one
+    would not move the other. Cheap to collapse later; not worth a seam today.
 
 ---
 
@@ -1194,10 +1265,11 @@ session should carry out of it:
    now. This is the third time a defect of this class has been found by running
    the thing rather than by reading it.
 2. **Reading the join is not applying it.** `repo.homepage` comes back and
-   nothing merges two candidates on it — see inconsistency 45.
+   nothing merges two candidates on it — see inconsistency 45. *TICKET-0017
+   applies the join in both directions; merging is still nobody's.*
 3. **Degraded mode is a request budget** (`defaultCalls`), and it is decided per
    candidate while it is spent per run. That is inconsistency 60 and it is
-   TICKET-0017's to settle.
+   TICKET-0017's to settle. *Settled — see 60 and the 0017 block below.*
 
 **TICKET-0016 is Done** ([worklog
 0028](./worklog/0028-company-site-adapter.md)) — `src/evidence/site.ts`, 75
@@ -1217,20 +1289,44 @@ things a new session should carry out of it:
    reflection and left for the author. It is cheap, auditable and cites a block
    a reviewer can check; it is also a second source of truth for one fact.
 
+**TICKET-0017 is Done** ([worklog
+0029](./worklog/0029-evidence-gather.md)) — `src/analyse/gather.ts` and
+`src/analyse/budget.ts`, 46 tests. Four things a new session should carry out
+of it:
+
+1. **The run-level budget is settled and it is two numbers, not one.** A
+   *planning ceiling* (half of GitHub's hourly limit) shapes the uniform
+   per-candidate allowance; the *wall* (their whole limit) is metered against
+   actual spend, because retries are requests the plan cannot count. Do not
+   collapse them into one number without reading inconsistency 60 first.
+2. **The join now runs both ways, and still merges nothing.** Two candidates
+   that are one company are *visible* — same `join.site.url` — and nothing acts
+   on it. Whether the memo set should ever collapse them is open (45).
+3. **The HN thread arrives as prose and no HN number arrives at all**
+   (inconsistency 67). D3 has GitHub stars and nothing else quantitative. This
+   is TICKET-0021's problem and the fix is cheap in two different places, both
+   named in 67.
+4. **This is the first stage-2 ticket that did not run against live sources**
+   (inconsistency 69). Deferred to 0022's wiring, where a real
+   `candidates.jsonl` exists. Every previous deferral of this kind was later
+   paid for.
+
 **Nothing is blocking. One Ready ticket:**
 
-- [TICKET-0017](./tickets/0017-ticket-evidence-gather.md) — **Ready.** Evidence
-  gathering per candidate: both adapters exist, both return the same `Signal`
-  shape, and `GithubResult.homepage` joins one to the other. It owns the
-  run-level request budget for **both** adapters (inconsistencies 60 and 66),
-  which is the one decision it must not inherit from whichever behaviour falls
-  out of the wiring.
+- [TICKET-0019](./tickets/0019-ticket-extraction-prompt.md) — **Ready.** The
+  extraction prompt and its `prompts/CHANGELOG.md` entry. `bundleItems(bundle)`
+  is the exact shape it renders and `bundleIds(bundle)` is the closed world it
+  must cite from, so the prompt no longer has to invent a bundle format to
+  describe. Note inconsistency 52 on the way in: v1 of the clarify prompt asks
+  for a bare JSON array, which `withStructuredOutput` cannot express — do not
+  repeat that shape here.
 - [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
   does not, and `{{thesis}}` waits on 0021.
 
-Then the rest of stage 2: 0017 (evidence gather), 0019/0020 (extraction), 0021
-(the rubric), 0022 (wiring). Two things the gate hands forward into them:
+Then the rest of stage 2: 0019/0020 (extraction), 0021 (the rubric), 0022
+(wiring, and the live pass 0017 deferred). Two things the gate hands forward
+into them:
 
 1. **`GET /users/<owner>` → `type: User | Organization`** separated all ten
    hobby projects from every real company in the gate's 48 (inconsistency 22).
@@ -1258,9 +1354,10 @@ The shape of the whole thing, unchanged:
 6. **The provider seam and the committed response cache** — ticket 0018.
    **Done**, and outside the gate throughout: it encodes no thesis, no score
    and no prompt.
-7. **Stage 2's evidence layer** — tickets 0015 and 0016 **Done**; both adapters
-   have run against live sources and both live runs changed the code. 0017 is
-   next and is the only thing between here and extraction.
+7. **Stage 2's evidence layer** — tickets 0015, 0016 and 0017 **Done**. Both
+   adapters have run against live sources and both live runs changed the code;
+   the loop that drives them has not, which is inconsistency 69. Extraction is
+   next and nothing is between here and it.
 8. Then extraction and the rubric, stage 3, and the sample run on
    `AI agent infrastructure`.
 

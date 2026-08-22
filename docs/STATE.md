@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `eaeb3a3` · **Phase: stage 1 — the HN adapter and url resolution are complete; nothing has yet touched the live API**
+Last updated: 2026-08-22 · at commit `1654dd9` · **Phase: stage 1 — sourcing, url resolution and query planning are all complete; nothing has yet touched the live API**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -82,29 +82,57 @@ keeps its site (a company that 403s a bot is still a company); a landing on
 `medium.com` is rejected by the same rules that would have rejected it if posted
 directly. **TICKET-0010 is Done.**
 
+`src/source/plan.ts` is the last piece before wiring, and it is the shape
+[ADR-0008](./adr/0008-query-planning.md) decided: **probe, then clarify**.
+`probeSeed` runs the raw seed — one page, `story` tagged, deliberately *not* the
+four expansion arms — and counts the result through `classifyHits`, so the
+number `--min-hits` is compared against is a measurement of yield and not a
+model's opinion of the phrasing. At or above the threshold the seed passes
+through having spent one request and zero tokens. `planQuery` walks ADR-0008's
+context table top to bottom, and its first row is the replay guard: a
+`query_plan.json` already on disk *is* the answer, so a replay never re-prompts
+and never re-searches. Every failure path — dead probe, clarifier that throws,
+no TTY, no provider — ends with the raw seed and a `chosen_by` that says which
+one happened, because planning is an optimisation and never a gate.
+
+The clarifier itself is a **seam, not a call**: `Clarifier` and `Chooser` are
+injected function types, per the ticket's instruction not to stub an LLM call in
+this module. TICKET-0018 supplies the first and the interactive select supplies
+the second; until both land, a thin probe takes the no-TTY path. The branch is
+nonetheless real and fully tested through stubs. `sanitiseOptions` is where "the
+LLM chooses words, code chooses filters" stops being a convention — model output
+reaches `query=` and nothing else, one line, deduped, length-capped, at most
+four. **TICKET-0011 is Done.**
+
+`prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` exist and nothing reads
+them: the prompt waits on 0018 for a provider and on 0020/0021 for the rubric
+that fills its `{{thesis}}` placeholder.
+
 **Nothing in `src/source/` has touched the live API yet** — every test drives a
-stub transport over one topic's committed fixtures. 0011's probe half is now the
-only thing between here and stage 1 wiring.
+stub transport over one topic's committed fixtures. TICKET-0012 is the wiring,
+and it is the last ticket before the gate.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 221 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010). Offline, no key |
-| Worklogs 0001–0018 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 10 Done, 2 Ready (0011, 0018), 18 Blocked. Status is in each ticket header |
+| Test strategy | Written; 258 tests — 17 CLI (0003), 31 contracts (0005, 0011), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 40 HN parse, classifier and search (0009), 58 canonicalisation, dedup and redirect resolution (0010), 34 probe and query planning (0011). Offline, no key |
+| Worklogs 0001–0019 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 11 Done, 2 Ready (0012, 0018), 17 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
-| Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005) |
+| Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005). `QueryPlan` is at `schema_version` 2 — `probe` is nullable (0011) |
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
 | HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier, paginated `searchHn` with failures as data (0009, Done) |
 | URL resolution and dedup | `src/source/resolve.ts` — canonicalisation, site keys, `dedupeHits`, redirect-following `resolveSites` (0010, Done) |
+| Query planning | `src/source/plan.ts` — `probeSeed`, `planQuery`, the `query_plan.json` artifact, the clarifier seam and the model-output sanitiser (0011, Done) |
+| Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | Not wired — every command still exits 70. Stage 1's source adapter (0009) and its dedup layer (0010) are complete; query planning (0011) is the last piece before wiring |
+| Stages 1–3 | Not wired — every command still exits 70. Stage 1's source adapter (0009), dedup layer (0010) and query planner (0011) are all complete; TICKET-0012 is the wiring |
 | Sample run, walkthrough video | Not started |
 
 ---
@@ -119,7 +147,7 @@ default, state that you took it, and record it in that session's worklog.
 | **D-2** | Memo rendering: `eta` templates vs typed TS render functions | Author preference | `eta` — a partner can edit a memo template without reading TypeScript |
 | **D-4** | Reflection sections in worklogs 0001 and 0002 | Author. Must not be AI-written — see CLAUDE.md | Leave as `TODO(author)`. Do not fill in |
 | **D-5** | Which topic becomes the committed sample run | First real stage-1 output | Pick whichever topic yields the cleanest 10–15 candidates and say why in the worklog |
-| **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one. Now *measurable*: `classifyHits(...).usable.length` is the number it compares against, and that number is an upper bound (worklog 0015) |
+| **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one. Now *measured*: `probeSeed` computes `probe.usable` and `planQuery` compares it, so every run writes the number into `query_plan.json`. Both halves of the comparison lean generous — the classifier errs towards accepting (inconsistency 21) — so a thin probe is thinner than it looks |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
 
 ### Recently closed
@@ -371,42 +399,78 @@ Real defects, listed rather than silently patched.
     `github.com/acme/acme` — nothing in either url says they are the same thing.
     TICKET-0015 reads a repo's homepage field, which is where that belongs.
 
+29. **`chosen_by: "non-interactive"` does three jobs.** ADR-0008's table gives it
+    one meaning — no TTY — and `planQuery` reaches it from three places: no TTY,
+    no clarifier wired (TICKET-0018 has not landed), and a clarifier or chooser
+    that threw. All three are honestly described by "nobody was asked", and none
+    of them is distinguishable in the committed artifact. A reviewer who wants a
+    run to be able to say *the provider was down* rather than *nobody was there*
+    needs a fourth `ChosenBy` value and a `schema_version` bump. Flagged rather
+    than guessed at, because the third case does not exist until 0018 does.
+
+30. **The clarification prompt cannot state the thesis, and ADR-0008 says it
+    should have seen it.** CLAUDE.md invariant 7 puts the thesis in exactly one
+    place — the rubric in `src/analyse/score.ts` — and forbids restating it in a
+    prompt as free text. `prompts/clarify-query.v1.md` therefore carries a
+    `{{thesis}}` placeholder to be interpolated from the rubric at call time.
+    The rubric does not exist yet (TICKET-0020/0021), so the prompt is written
+    and unwired, and the interpolation has never been run. Recorded in
+    `prompts/CHANGELOG.md` as well. If the rubric turns out not to have a form
+    that reads as a paragraph to a model, this is where that surfaces.
+
+31. **`--no-expand` is honoured for planning and its effect on search is
+    undecided.** `planQuery` skips the probe and the clarifier on the flag,
+    which is ADR-0008's row. Whether it *also* cuts `expandQuery`'s four arms
+    from the search that follows is TICKET-0012's call — the flag's own help
+    text says "use the raw seed verbatim", which reads like it should, and the
+    ADR only speaks about planning. Named here so 0012 decides it deliberately
+    rather than inheriting whichever behaviour falls out of the wiring.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0010 are Done.**
-[TICKET-0011](./tickets/0011-ticket-query-planning.md) and
+repo runnable. **0001–0011 are Done.**
+[TICKET-0012](./tickets/0012-ticket-stage-1-wiring.md) and
 [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) are the two Ready
 ones.
 
-**0009 and 0010 are Done.** Two tickets are Ready and one of them is on the
-path to the gate:
+Every piece of stage 1 now exists as a module. Nothing calls any of them:
 
-- [TICKET-0011](./tickets/0011-ticket-query-planning.md) — the probe half, and
-  the last piece before stage 1 can be wired. `searchHn` plus `classifyHits` is
-  exactly the number `--min-hits` counts against (D-6). Ship it without the LLM
-  clarifier; 0018 gates only that call and the ticket is designed to work
-  without it.
+- [TICKET-0012](./tickets/0012-ticket-stage-1-wiring.md) — **the next ticket**,
+  and the last one before the gate. `./pipeline source` is `planQuery` →
+  `searchHn` → `dedupeHits` → `--limit` → `resolveSites` →
+  `candidates.jsonl` + `manifest.json`, and it is the first thing in this repo
+  to touch a live API. It owes four things beyond the wiring:
+  1. the run-level failure decision `searchHn` deliberately does not make
+     (inconsistency 24) — ARCHITECTURE §5 says something fails the run and
+     nothing currently does;
+  2. the `Candidate.provenance` plurality question (inconsistency 25), which is
+     a `schema_version` bump and is cheap now;
+  3. the `dedupeHits` → `--limit` → `resolveSites` ordering, which is what keeps
+     redirect resolution to one request per candidate rather than one per post;
+  4. whether `--no-expand` also cuts the four search arms (inconsistency 31).
+
+  Note that `planQuery` wants a `planPath` of `runs/<run_id>/query_plan.json`
+  and 0012 owns run-id derivation, so the run id has to be settled before the
+  plan is written — which also means the "refuse to overwrite an existing run
+  directory" guard and `writeQueryPlan`'s `wx` are two guards on the same thing.
 - [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md) — still Ready,
-  still off the critical path to the gate.
+  still off the critical path to the gate. It is what turns the `Clarifier` seam
+  in `plan.ts` into a real call, and what gives
+  `prompts/clarify-query.v1.md` somewhere to run.
 
-0012 is then unblocked. It owes three things beyond wiring: the run-level
-failure decision that `searchHn` deliberately does not make (inconsistency 24),
-the `Candidate.provenance` plurality question (inconsistency 25), and the
-`dedupeHits` → `--limit` → `resolveSites` ordering that keeps redirect
-resolution to one request per candidate rather than one per post. 0015 and 0016
-still wait on 0014, which waits on the gate.
+0015 and 0016 still wait on 0014, which waits on the gate.
 
 The shape is unchanged from what this section said before the backlog existed:
 
 1. **Scaffold** — tickets 0001–0004. **Done.** Resolved D-1 and D-3.
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
-3. **Stage 1 against live HN** — tickets 0006–0012. **0006–0010 Done.** 0011 is
-   the last piece before 0012 can wire the stage.
+3. **Stage 1 against live HN** — tickets 0006–0012. **0006–0011 Done.** 0012 is
+   the wiring, and the first ticket that spends a real request.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

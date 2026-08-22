@@ -4,7 +4,7 @@ import { z } from "zod";
  * The record of what was searched and who approved it, written once per run to
  * `runs/<run_id>/query_plan.json`. Shape from ADR-0008.
  */
-export const QUERY_PLAN_SCHEMA_VERSION = 1;
+export const QUERY_PLAN_SCHEMA_VERSION = 2;
 
 /**
  * Every row of ADR-0008's context table, so "how did this query get chosen" is
@@ -41,7 +41,15 @@ export type Probe = z.infer<typeof Probe>;
 export const QueryPlan = z.object({
   schema_version: z.literal(QUERY_PLAN_SCHEMA_VERSION),
   original_seed: z.string().min(1),
-  probe: Probe,
+  /**
+   * `null` when no probe ran at all — `--query-plan <file>`, `--no-expand`, or a
+   * probe request that failed. Writing `{ hits: 0, usable: 0 }` there would be a
+   * measurement of zero rather than an absence, which is exactly the
+   * substitution CLAUDE.md invariant 4 forbids: a seed nobody searched for is
+   * not a seed that returned nothing. Version 2 of this schema; version 1
+   * required the object (TICKET-0011).
+   */
+  probe: Probe.nullable(),
   clarified: z.boolean(),
   /** Empty when `clarified` is false. The LLM chooses words; code chooses filters. */
   options_offered: z.array(z.string().min(1)),

@@ -1,6 +1,6 @@
 # TICKET-0011 — Query planning: probe, then clarify (`src/source/plan.ts`)
 
-Status: **Ready** — 0009 is Done, so the probe half can ship now. 0018 is still open and gates only the clarifier call, which this ticket is designed to ship without · Depends on: 0009 (Done); 0018 for the clarifier call · Blocks: 0012
+Status: **Done** — [worklog 0019](../worklog/0019-query-planning.md). The probe half, the artifact and the whole of ADR-0008's context table shipped; the clarifier is an injected seam (`Clarifier`, `Chooser`) that TICKET-0018 fills, and the below-threshold branch is tested through stubs · Depends on: 0009 (Done); 0018 for the clarifier call · Blocks: 0012
 Reads: [ADR-0008](../adr/0008-query-planning.md) in full, [SPEC §3.1](../SPEC.md), [TESTING §5](../TESTING.md)
 
 ## Why

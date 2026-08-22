@@ -183,6 +183,29 @@ export function fixtureSpecs(now: Date): FixtureSpec[] {
       headers: GITHUB_HEADERS,
     },
     {
+      path: "github/readme-coroot.json",
+      kind: "json",
+      url: `${GITHUB_API}/repos/coroot/coroot/readme`,
+      note: "GET /repos/<owner>/<repo>/readme — base64 in a JSON envelope, so the adapter decodes rather than stores what the API returned.",
+      headers: GITHUB_HEADERS,
+    },
+    {
+      path: "github/contributors-coroot.json",
+      kind: "json",
+      url: `${GITHUB_API}/repos/coroot/coroot/contributors?per_page=100`,
+      note: "The contributor list, one page. Its length is the count when it is short of the page size and a floor when it is not.",
+      headers: GITHUB_HEADERS,
+    },
+    {
+      path: "github/commit-activity-coroot.json",
+      kind: "json",
+      url: `${GITHUB_API}/repos/coroot/coroot/stats/commit_activity`,
+      // The 202 is not capturable on demand — it depends on whether GitHub's
+      // cache is warm — so the adapter's 202 path is tested with a stub.
+      note: "52 weeks of commit counts, each carrying its own week boundary. The one dated cadence signal the API gives free; it answers 202 with an empty body while GitHub computes it.",
+      headers: GITHUB_HEADERS,
+    },
+    {
       path: "sites/coroot-home.html",
       kind: "html",
       url: "https://coroot.com",

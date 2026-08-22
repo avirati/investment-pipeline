@@ -3,6 +3,53 @@
   "generated_by": "pnpm capture-fixtures",
   "fixtures": [
     {
+      "path": "github/commit-activity-coroot.json",
+      "kind": "json",
+      "captured_by": "script",
+      "url": "https://api.github.com/repos/coroot/coroot/stats/commit_activity",
+      "note": "52 weeks of commit counts, each carrying its own week boundary. The one dated cadence signal the API gives free; it answers 202 with an empty body while GitHub computes it.",
+      "status": 200,
+      "captured_at": "2026-08-22T12:49:08.688Z",
+      "bytes": 6818,
+      "sha256": "2d7030c4799be513f0fc5f3df7776b22f853769fe386ccc9bffa071af61333fc",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "etag": "W/\"352fd2a97ffabcf4df6fd3215b7662b5cc39c7e53365977961b0dc874e19f6cb\""
+      }
+    },
+    {
+      "path": "github/contributors-coroot.json",
+      "kind": "json",
+      "captured_by": "script",
+      "url": "https://api.github.com/repos/coroot/coroot/contributors?per_page=100",
+      "note": "The contributor list, one page. Its length is the count when it is short of the page size and a floor when it is not.",
+      "status": 200,
+      "captured_at": "2026-08-22T12:49:08.273Z",
+      "bytes": 36024,
+      "sha256": "289fc379d8f8d33365cce96d09bd1ea69961dc0091a6f72fb4d2be432645f62b",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "etag": "W/\"800a6c9b42764d392f38475f6b1dc1827c2244f2e02929cb1af440c913eb6ae4\"",
+        "last-modified": "Sat, 22 Aug 2026 00:55:03 GMT"
+      }
+    },
+    {
+      "path": "github/readme-coroot.json",
+      "kind": "json",
+      "captured_by": "script",
+      "url": "https://api.github.com/repos/coroot/coroot/readme",
+      "note": "GET /repos/<owner>/<repo>/readme — base64 in a JSON envelope, so the adapter decodes rather than stores what the API returned.",
+      "status": 200,
+      "captured_at": "2026-08-22T12:49:07.793Z",
+      "bytes": 8002,
+      "sha256": "52b9bba62576a2f5e53d02d29a7f41d537554a393b3bdbd1212c272b81bbb926",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "etag": "W/\"0c375d5428e29e346103660ae35ff668e6692a66\"",
+        "last-modified": "Tue, 18 Aug 2026 17:21:56 GMT"
+      }
+    },
+    {
       "path": "github/repo-hobby.json",
       "kind": "json",
       "captured_by": "script",

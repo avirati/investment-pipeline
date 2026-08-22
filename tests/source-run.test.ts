@@ -1,6 +1,7 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Candidate } from "../src/contracts/index.js";
 import type { HttpOptions } from "../src/evidence/fetch.js";
@@ -390,5 +391,32 @@ describe("runSource — what the manifest counts", () => {
     const { http } = stub({ search: [searchPage(6)] });
     const outcome = await runSource({ seed: SEED, root, http, limit: 2 });
     expect(stage(root, outcome.run_id).dedup.sites).toBe(6);
+  });
+});
+
+// The tests above drive synthetic pages because the wiring's branches are about
+// *yield* — thin, rich, dead — and a captured page has the yield it has. This
+// one drives the real capture from `tests/fixtures/hn/`, so the parse the
+// pipeline does in production is exercised against a payload HN actually sent.
+describe("runSource — over the committed HN capture", () => {
+  const fixture = JSON.parse(
+    readFileSync(
+      fileURLToPath(new URL("./fixtures/hn/search-page-0.json", import.meta.url)),
+      "utf8",
+    ),
+  );
+
+  it("turns a real Algolia page into contract-valid candidates", async () => {
+    const { http } = stub({ search: [fixture] });
+    const outcome = await runSource({ seed: "LLM observability", root, http, limit: 5 });
+    expect(outcome.candidates.length).toBeGreaterThan(0);
+    for (const candidate of outcome.candidates) {
+      expect(Candidate.safeParse(candidate).success).toBe(true);
+      expect(candidate.provenance[0].ref).toMatch(/^\d+$/);
+    }
+    const source = stage(root, outcome.run_id);
+    expect(source.filter.usable_posts + source.filter.rejected_posts).toBe(
+      source.search?.distinct_posts,
+    );
   });
 });

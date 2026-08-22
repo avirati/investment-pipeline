@@ -202,48 +202,70 @@ docs/                    spec, architecture, ADRs, worklogs
 
 ## 7. CLI
 
-Written before the code, so the contract is pinned rather than discovered.
+Written before the code, so the contract was pinned rather than discovered. The
+blocks below are the real output of `src/cli.ts`, pasted verbatim — TICKET-0003
+replaced the hand-written sketch with what the program actually prints, so this
+section can no longer drift silently. `tests/cli.test.ts` asserts the parts that
+are contract rather than formatting.
 
 ```
 $ ./pipeline --help
 
-  investment-pipeline — startup triage
+investment-pipeline — startup triage
 
-  Usage: pipeline <command> [options]
+Usage: pipeline <command> [options]
 
-  Commands:
-    run       Source, analyse and write memos in one pass
-    source    Stage 1 only — plan the query and find candidates
-    analyse   Stage 2 only — gather evidence, extract facts, score
-    memo      Stage 3 only — render memos (no network, no API calls)
+Options:
+  -h, --help         show this
 
-  Seed forms:
-    --seed "AI agents for SMBs"     topic query
-    --seed ./urls.txt               one URL per line
+Commands:
+  run [options]      Source, analyse and write memos in one pass
+  source [options]   Stage 1 only — plan the query and find candidates
+  analyse [options]  Stage 2 only — gather evidence, extract facts, score
+  memo [options]     Stage 3 only — render memos (no network, no API calls)
 
-  Examples:
-    ./pipeline run  --seed "LLM observability" --limit 15
-    ./pipeline run  --seed "AI agents" --no-expand
-    ./pipeline memo --run 2026-08-22-llm-observability
+Seed forms:
+  --seed "AI agents for SMBs"     topic query
+  --seed ./urls.txt               one URL per line
 
-  Run 'pipeline <command> --help' for command options.
+Examples:
+  ./pipeline run  --seed "LLM observability" --limit 15
+  ./pipeline run  --seed "AI agents" --no-expand
+  ./pipeline memo --run 2026-08-22-llm-observability
+
+Exit codes:
+  0   success
+  1   usage or configuration error
+  2   data gap — the run completed but found too little to act on
+  3   invariant violation — a contract or citation check failed (ADR-0003)
+  70  not implemented yet — a stage this build does not have
+
+Run './pipeline <command> --help' for command options.
 ```
 
 ```
 $ ./pipeline run --help
 
-  Options:
-    --seed <input>       topic query or URL list path             [required]
-    --limit <n>          max candidates to carry forward          [default: 15]
-    --min-hits <n>       probe yield below which clarification
-                         is offered                               [default: 8]
-    --query-plan <file>  use a hand-written plan; skips planning
-    --no-expand          use the raw seed verbatim; skips planning
-    --since <days>       source window                            [default: 180]
-    --run <id>           explicit run id                    [default: date-slug]
-    --replay             reuse cached LLM responses; spends nothing
-    -h, --help           show this
+Usage: pipeline run [options]
+
+Source, analyse and write memos in one pass
+
+Options:
+  --seed <input>       topic query or URL list path — required
+  --limit <n>          max candidates to carry forward (default: 15)
+  --min-hits <n>       probe yield below which clarification is offered
+                       (default: 8)
+  --query-plan <file>  use a hand-written plan; skips planning
+  --no-expand          use the raw seed verbatim; skips planning
+  --since <days>       source window (default: 180)
+  --run <id>           explicit run id (default: date-slug)
+  --replay             reuse cached LLM responses; spends nothing
+  -h, --help           show this
 ```
+
+`source` takes the same sourcing options as `run`; `analyse` takes `--run` and
+`--replay`; `memo` takes `--run` alone, because stage 3 makes no LLM calls and
+so has nothing to replay.
 
 Sub-commands exist so the stage separation is visible from outside, not just in
 the source tree. `run` exists so a partner types one thing.

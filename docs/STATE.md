@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `6956b1f` · **Phase: the evidence layer is complete; no stage logic yet**
+Last updated: 2026-08-22 · at commit `ee9ad45` · **Phase: stage 1 has started — the HN adapter's pure half is in**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -27,17 +27,26 @@ throwing, a cache hit replays the original `retrieved_at` so a re-run produces
 the same evidence ids, and a dead site becomes a `fetch_failed` record. Its
 HTML→text half now exists too — `cheerio` only, per D-8 — so `fetchEvidence(url,
 type)` takes a url and returns an `Evidence` whatever happened, and the adapters
-in 0009/0015/0016 have one function to call. **Tickets 0001–0008 are Done.** The
-evidence layer is finished and nothing calls it yet: 0009 and 0010, the first
-real callers, are the Ready work.
+in 0009/0015/0016 have one function to call. **Tickets 0001–0008 are Done.**
+
+Stage 1 has now started. `src/source/hn.ts` holds the pure half of the HN
+adapter: `hnSearchUrl` turns flags into one deterministic url — tags, page, and
+a `--since` window floored to a UTC day so a same-day re-run builds the *same*
+url and can hit the fetch cache — `expandQuery` fixes the four expansion arms in
+code, and `parseSearchResponse` turns a captured Algolia payload into typed hits
+that carry `points`, `num_comments` and `created_at` through as nullable, never
+zeroed. Four fixtures are real captures from the live API, plus one hand-edited
+malformed page that says so. **Nothing in it fetches yet** — the paginated
+`searchHn` over `httpGet` and the usable-vs-unusable classifier are the rest of
+0009, which stays Ready. 0010 is Ready and independent.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 123 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008). Offline, no key |
-| Worklogs 0001–0013 | Factual sections written; reflections pending (see D-4) |
+| Test strategy | Written; 140 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 17 HN query and parse (0009). Offline, no key |
+| Worklogs 0001–0014 | Factual sections written; reflections pending (see D-4) |
 | Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 8 Done, 3 Ready (0009, 0010, 0018), 19 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
@@ -46,8 +55,9 @@ real callers, are the Ready work.
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
+| HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing; **no fetch and no classifier yet** (0009, half) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | Not started — every command exits 70 |
+| Stages 1–3 | Not wired — every command still exits 70. Stage 1's first module exists (0009, half) |
 | Sample run, walkthrough video | Not started |
 
 ---
@@ -215,6 +225,25 @@ Real defects, listed rather than silently patched.
     rather than assumed: if a reviewer wants extraction to transcribe only, both
     are a few lines to reverse.
 
+19. **`--since` is day-granular, and is up to 24 hours wider than it reads.**
+    `hnSearchUrl` floors the `created_at_i>` boundary to the start of a UTC day
+    rather than computing it from the clock, so `--since 180` means "180 days
+    before midnight today". The reason is cache identity, not convenience: a
+    boundary to the second makes every invocation a new url, which misses the
+    fetch cache, which re-fetches, which mints a new `retrieved_at` and therefore
+    new evidence ids for the same page. Flagged because the flag's help text
+    says `source window` and a reader would assume it means "from now". If exact
+    windows ever matter more than reproducible ids, the fix is to pass an
+    explicit window boundary in rather than to unfloor this.
+
+20. **The HN fixtures are one topic, captured by hand.** All five files under
+    `tests/fixtures/hn/` come from `llm observability` — a query close to the
+    thesis's centre, so the parser is being tested against a favourable result
+    set. Four are real captures; `search-malformed.json` is `search-page-0.json`
+    hand-edited with five defects, and its README says so. The `curl` commands
+    are recorded there so TICKET-0014's capture script can reproduce them, and
+    that ticket is where a second, deliberately awkward topic should be added.
+
 ---
 
 ## Next session — start here
@@ -226,10 +255,12 @@ repo runnable. **0001–0007 are Done.**
 half and is still Ready; [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md),
 the LLM seam and response cache, is the other Ready one.
 
-**0008 is Done and the evidence layer is finished.** Resume at
-[TICKET-0009](./tickets/0009-ticket-hn-algolia-adapter.md), the HN Algolia
-adapter — the first real caller of `httpGet`, and the one that decides the
-usable-vs-unusable classification the gate at 0013 is going to hand-check.
+**0008 is Done; 0009 is half in.** Resume in
+[TICKET-0009](./tickets/0009-ticket-hn-algolia-adapter.md) at its second half:
+`searchHn` over `httpGet` — pagination past page 1, the four expansion arms
+deduped by `objectID`, source failures returned as data rather than thrown — and
+then the usable-vs-unusable classifier, which is the piece 0011's probe threshold
+is defined in terms of and the one the gate at 0013 will hand-check.
 [TICKET-0010](./tickets/0010-ticket-url-resolution-and-dedup.md) is Ready in
 parallel and independent of it. 0015 and 0016 no longer wait on 0008 but still
 wait on 0014, which waits on the gate. 0018 still only unblocks 0011's
@@ -241,7 +272,7 @@ The shape is unchanged from what this section said before the backlog existed:
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
 3. **Stage 1 against live HN** — tickets 0006–0012. **0006, 0007 and 0008
-   Done**; 0009 and 0010 are the Ready work and neither depends on the other.
+   Done**; 0009 is half done and 0010 is untouched — neither depends on the other.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

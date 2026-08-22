@@ -55,3 +55,4 @@ are unfinished, not delegated.
 | [0011](./0011-cached-fetch-layer.md) | 2026-08-22 | Cached fetch layer |
 | [0012](./0012-cheerio-only-extraction.md) | 2026-08-22 | D-8: cheerio only, no DOM |
 | [0013](./0013-cheerio-extraction.md) | 2026-08-22 | HTML→text extraction; TICKET-0008 closes |
+| [0014](./0014-hn-query-and-parse.md) | 2026-08-22 | HN Algolia: query building and hit parsing |

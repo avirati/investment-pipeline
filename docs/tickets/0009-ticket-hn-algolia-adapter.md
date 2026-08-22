@@ -1,6 +1,6 @@
 # TICKET-0009 — HN Algolia adapter (`src/source/hn.ts`)
 
-Status: **Ready** · Depends on: 0008 (Done) · Blocks: 0011, 0012
+Status: **Ready** — query building and hit parsing shipped in [worklog 0014](../worklog/0014-hn-query-and-parse.md); paginated fetch and the usable-vs-unusable classifier are still open · Depends on: 0008 (Done) · Blocks: 0011, 0012
 Reads: [ADR-0004](../adr/0004-source-selection.md), [TESTING §4](../TESTING.md), [SCOPE](../SCOPE.md) in-scope #1
 
 ## Why

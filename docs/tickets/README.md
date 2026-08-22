@@ -70,7 +70,7 @@ index of the same thing. Three values, and only three:
 | [0017](./0017-ticket-evidence-gather.md) | Evidence gather (2a) | Bundles with ids, no LLM | Done — [worklog 0029](../worklog/0029-evidence-gather.md) |
 | [0018](./0018-ticket-llm-provider-and-cache.md) | LLM seam and response cache | Replay costs nothing | Done |
 | [0019](./0019-ticket-extraction-prompt.md) | Extraction prompt + CHANGELOG | Versioned, thesis-free | Done — [worklog 0030](../worklog/0030-extraction-prompt.md) |
-| [0020](./0020-ticket-fact-extraction.md) | Fact extraction (2b) | Facts only, ids enforced | **Ready** |
+| [0020](./0020-ticket-fact-extraction.md) | Fact extraction (2b) | Facts only, ids enforced | **In review** — [worklog 0031](../worklog/0031-fact-extraction.md); the first live capture is outstanding |
 | [0021](./0021-ticket-rubric-scoring.md) | The rubric | The only place a score exists | Blocked · 0020 |
 | [0022](./0022-ticket-stage-2-wiring.md) | Stage 2 wiring | `./pipeline analyse` | Blocked · 0020, 0021 |
 | [0023](./0023-ticket-missing-data-path-tests.md) | Missing-data path tests | Robustness as behaviour | Blocked · 0022, 0026 |

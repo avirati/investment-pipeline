@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `11d871d` · **Phase: specification complete, backlog derived, no code yet**
+Last updated: 2026-08-22 · at commit `b213322` · **Phase: scaffold landed, docs aligned, no `src/` yet**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -9,8 +9,9 @@ allowed to go stale, so update it at the end of every session.
 
 ## Where things stand
 
-Specification is written and committed across 12 atomic commits. There is no
-`src/`, no `package.json`, and no dependency installed. Nothing has been run.
+Specification is written and committed. The toolchain installs and all three
+gates pass, but there is still no `src/` — nothing has been run end to end.
+Tickets 0001 and 0002 are done.
 
 | Area | State |
 |---|---|
@@ -18,9 +19,10 @@ Specification is written and committed across 12 atomic commits. There is no
 | Architecture and stage contracts | Written, unimplemented |
 | ADRs 0001–0008 | Written |
 | Test strategy | Written, no tests exist |
-| Worklogs 0001–0002 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets derived from these docs |
-| Scaffold, `setup.sh`, `./pipeline` | Not started |
+| Worklogs 0001–0005 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets, 2 done |
+| Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
+| `src/`, `setup.sh`, `./pipeline` | Not started — next is 0003 |
 | Stages 1–3 | Not started |
 | Sample run, walkthrough video | Not started |
 
@@ -33,13 +35,20 @@ default, state that you took it, and record it in that session's worklog.
 
 | # | Decision | Blocked on | Default if unanswered |
 |---|---|---|---|
-| **D-1** | Default model in `.env.example` | What the author's OpenAI account has access to | Leave the value empty with a comment naming the two roles (`MODEL_EXTRACT`, `MODEL_ANALYSE`); `setup.sh` prompts for it |
 | **D-2** | Memo rendering: `eta` templates vs typed TS render functions | Author preference | `eta` — a partner can edit a memo template without reading TypeScript |
-| **D-3** | The `feed` seed form (`--seed yc:w25`) | See *Known inconsistencies* below | **Cut it.** Support `topic` and `urls` only, and remove `feed` from the CLI and SPEC |
 | **D-4** | Reflection sections in worklogs 0001 and 0002 | Author. Must not be AI-written — see CLAUDE.md | Leave as `TODO(author)`. Do not fill in |
 | **D-5** | Which topic becomes the committed sample run | First real stage-1 output | Pick whichever topic yields the cleanest 10–15 candidates and say why in the worklog |
 | **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
+
+### Recently closed
+
+- **D-1 · default model in `.env.example`** — taken at its default in
+  TICKET-0001. `MODEL_EXTRACT` and `MODEL_ANALYSE` ship empty with their roles
+  named in comments; `setup.sh` prompts. Worklog 0004.
+- **D-3 · the `feed` seed form** — cut in TICKET-0002, at its default. The seed
+  surface is `topic` and `urls`. Recorded as a consequence in ADR-0004 rather
+  than as a new ADR, because it aligns the docs to a decision already accepted.
 
 ### Deliberately closed — do not reopen without a new ADR
 
@@ -55,19 +64,21 @@ default, state that you took it, and record it in that session's worklog.
 
 Real defects, listed rather than silently patched.
 
-1. **`feed` seed form is unspecified and its example contradicts ADR-0004.**
-   `ARCHITECTURE.md` §7 advertises `--seed yc:w25`, and `SPEC.md` §3.1 names
-   three seed forms — but no feed adapter is specified anywhere, and ADR-0004
-   explicitly *rejected* the YC directory as a source. Resolve via **D-3**;
-   cutting it is the likely answer.
-2. **`.env.example` is referenced but does not exist.** `ARCHITECTURE.md` §7.1
-   step 4 depends on it. Create it with the scaffold.
+1. ~~**`feed` seed form is unspecified and its example contradicts ADR-0004.**~~
+   Fixed in TICKET-0002. `SPEC.md` §3.1 and `ARCHITECTURE.md` §1 and §7 now name
+   two seed forms, and ADR-0004 records the cut.
+2. ~~**`.env.example` is referenced but does not exist.**~~ Fixed in
+   TICKET-0001; `ARCHITECTURE.md` §7.1 step 4 now resolves.
 3. **The sample run id is a placeholder** (`<committed_sample>`) in
    `README.md`, `ARCHITECTURE.md`, and `SCOPE.md`. Replace all three once D-5 is
    settled.
 4. **Worklog index dangling link.** Commit `1035b1d` lists session 0002 before
    its file exists at `f5e1938`. Transient, one-commit window, left as-is rather
    than rewriting history.
+5. **`docs/worklog/README.md` promises `docs/evals/`** — *"how prompt and rubric
+   changes were evaluated … arrives with the first golden set"*. There is no
+   golden set and there will not be one; the eval harness was cut (`SCOPE.md`,
+   `CLAUDE.md`). Fix the row in TICKET-0029; do not fix it by building evals.
 
 ---
 
@@ -75,12 +86,13 @@ Real defects, listed rather than silently patched.
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. Start at [TICKET-0001](./tickets/0001-ticket-repo-scaffold.md) and
-work down the index.
+repo runnable. **0001 and 0002 are done**; resume at
+[TICKET-0003](./tickets/0003-ticket-cli-skeleton-and-help.md), which writes the
+first `src/`.
 
 The shape is unchanged from what this section said before the backlog existed:
 
-1. **Scaffold** — tickets 0001–0004. Resolves D-1 and D-3.
+1. **Scaffold** — tickets 0001–0004. Resolved D-1 and D-3; 0003–0004 remain.
 2. **Zod contracts** — ticket 0005. The stage boundary; get it right before any
    stage logic exists.
 3. **Stage 1 against live HN** — tickets 0006–0012.

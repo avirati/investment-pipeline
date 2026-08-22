@@ -12,7 +12,7 @@ previous stage's output without re-running the ones before it.
 ## 1. Data flow
 
 ```
-seed  (topic query | url list | feed id)
+seed  (topic query | url list)
   │
   ▼
 ┌─ STAGE 1 · SOURCE ────────────────────────────────────────────┐
@@ -220,7 +220,6 @@ $ ./pipeline --help
   Seed forms:
     --seed "AI agents for SMBs"     topic query
     --seed ./urls.txt               one URL per line
-    --seed yc:w25                   named feed
 
   Examples:
     ./pipeline run  --seed "LLM observability" --limit 15
@@ -234,7 +233,7 @@ $ ./pipeline --help
 $ ./pipeline run --help
 
   Options:
-    --seed <input>       topic query, URL list path, or feed id   [required]
+    --seed <input>       topic query or URL list path             [required]
     --limit <n>          max candidates to carry forward          [default: 15]
     --min-hits <n>       probe yield below which clarification
                          is offered                               [default: 8]

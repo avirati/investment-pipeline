@@ -56,3 +56,4 @@ are unfinished, not delegated.
 | [0012](./0012-cheerio-only-extraction.md) | 2026-08-22 | D-8: cheerio only, no DOM |
 | [0013](./0013-cheerio-extraction.md) | 2026-08-22 | HTML→text extraction; TICKET-0008 closes |
 | [0014](./0014-hn-query-and-parse.md) | 2026-08-22 | HN Algolia: query building and hit parsing |
+| [0015](./0015-hn-usable-classifier.md) | 2026-08-22 | The usable-vs-unusable classifier |

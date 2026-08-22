@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `ee9ad45` · **Phase: stage 1 has started — the HN adapter's pure half is in**
+Last updated: 2026-08-22 · at commit `1b96809` · **Phase: stage 1 has started — the HN adapter is written but has never fetched**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -36,17 +36,30 @@ url and can hit the fetch cache — `expandQuery` fixes the four expansion arms 
 code, and `parseSearchResponse` turns a captured Algolia payload into typed hits
 that carry `points`, `num_comments` and `created_at` through as nullable, never
 zeroed. Four fixtures are real captures from the live API, plus one hand-edited
-malformed page that says so. **Nothing in it fetches yet** — the paginated
-`searchHn` over `httpGet` and the usable-vs-unusable classifier are the rest of
-0009, which stays Ready. 0010 is Ready and independent.
+malformed page that says so.
+
+`classifyHit` is the other half now in: the usable-vs-unusable filter ADR-0004
+promised would be heuristic and auditable, and the definition D-6's threshold is
+written in terms of. It reads the url and never the page, because the probe has
+to classify a whole result set before a run starts; every verdict carries a
+`kind` the manifest can count and a prose `reason` a human reads when they
+disagree. **A repo counts as usable** — for a thesis about adoption before a
+sales motion the repo is the product surface — and the filter errs towards
+accepting throughout, so the usable count D-6 is compared against is an upper
+bound. One false positive class it structurally cannot see is pinned by a test
+rather than papered over.
+
+**Nothing in `src/source/` has fetched anything yet.** The paginated `searchHn`
+over `httpGet` is all that is left of 0009, which stays Ready. 0010 is Ready and
+independent.
 
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company** |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 140 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 17 HN query and parse (0009). Offline, no key |
-| Worklogs 0001–0014 | Factual sections written; reflections pending (see D-4) |
+| Test strategy | Written; 153 tests — 17 CLI (0003), 28 contracts (0005), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 30 HN parse and classifier (0009). Offline, no key |
+| Worklogs 0001–0015 | Factual sections written; reflections pending (see D-4) |
 | Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 8 Done, 3 Ready (0009, 0010, 0018), 19 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
@@ -55,9 +68,9 @@ malformed page that says so. **Nothing in it fetches yet** — the paginated
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
-| HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing; **no fetch and no classifier yet** (0009, half) |
+| HN adapter | `src/source/hn.ts` — url building, four expansion arms, tolerant hit parsing, usable-vs-unusable classifier; **nothing fetches yet** (0009, most) |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | Not wired — every command still exits 70. Stage 1's first module exists (0009, half) |
+| Stages 1–3 | Not wired — every command still exits 70. Stage 1's first module exists (0009, most) |
 | Sample run, walkthrough video | Not started |
 
 ---
@@ -72,7 +85,7 @@ default, state that you took it, and record it in that session's worklog.
 | **D-2** | Memo rendering: `eta` templates vs typed TS render functions | Author preference | `eta` — a partner can edit a memo template without reading TypeScript |
 | **D-4** | Reflection sections in worklogs 0001 and 0002 | Author. Must not be AI-written — see CLAUDE.md | Leave as `TODO(author)`. Do not fill in |
 | **D-5** | Which topic becomes the committed sample run | First real stage-1 output | Pick whichever topic yields the cleanest 10–15 candidates and say why in the worklog |
-| **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one |
+| **D-6** | Probe threshold `--min-hits` default of 8 | First real stage-1 run | Keep 8 until data contradicts it. It is a guess and is labelled as one. Now *measurable*: `classifyHits(...).usable.length` is the number it compares against, and that number is an upper bound (worklog 0015) |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
 
 ### Recently closed
@@ -244,6 +257,28 @@ Real defects, listed rather than silently patched.
     are recorded there so TICKET-0014's capture script can reproduce them, and
     that ticket is where a second, deliberately awkward topic should be added.
 
+21. **The classifier accepts by default, so the usable count is an upper bound.**
+    `classifyHit` rejects only what a narrow, nameable rule matches — no url, a
+    paper host or `.pdf`, a discussion or social host, a publishing platform, or
+    an article-shaped path — and passes everything else. The asymmetry is
+    argued in [worklog 0015](./worklog/0015-hn-usable-classifier.md): a wrong
+    reject leaves no trace anywhere in the output, a wrong accept costs one
+    analysis and is visible in a memo. Two consequences a reviewer should hold
+    onto. D-6's threshold is compared against a number that is systematically
+    generous. And there is a false positive class the url alone cannot see — a
+    trade blog on its own domain with no article path — which is pinned by a
+    test asserting the *wrong* answer on purpose, so 0013 meets it rather than
+    inherits it silently.
+
+22. **A repo counts as a company.** `github.com/...` and `*.github.io` classify
+    as `code_repo` and are usable, which TICKET-0009's own wording neither
+    requires nor forbids. The reasoning is the thesis — "adopted before it is
+    sold" makes the repo the product surface for a dev-tools launch, and
+    ADR-0004 already treats GitHub as the enrichment source. The cost is that a
+    weekend project and a seed-stage company look identical to this layer.
+    Whether stage 2's scoring actually separates them is an open question the
+    gate at 0013 should answer, not an assumption to carry quietly.
+
 ---
 
 ## Next session — start here
@@ -255,12 +290,11 @@ repo runnable. **0001–0007 are Done.**
 half and is still Ready; [TICKET-0018](./tickets/0018-ticket-llm-provider-and-cache.md),
 the LLM seam and response cache, is the other Ready one.
 
-**0008 is Done; 0009 is half in.** Resume in
-[TICKET-0009](./tickets/0009-ticket-hn-algolia-adapter.md) at its second half:
+**0008 is Done; 0009 is most of the way in.** Resume at its last piece:
 `searchHn` over `httpGet` — pagination past page 1, the four expansion arms
-deduped by `objectID`, source failures returned as data rather than thrown — and
-then the usable-vs-unusable classifier, which is the piece 0011's probe threshold
-is defined in terms of and the one the gate at 0013 will hand-check.
+deduped by `objectID`, source failures returned as data rather than thrown
+(ARCHITECTURE §5). That closes 0009 and unblocks
+[TICKET-0011](./tickets/0011-ticket-query-planning.md)'s probe half.
 [TICKET-0010](./tickets/0010-ticket-url-resolution-and-dedup.md) is Ready in
 parallel and independent of it. 0015 and 0016 no longer wait on 0008 but still
 wait on 0014, which waits on the gate. 0018 still only unblocks 0011's
@@ -272,7 +306,8 @@ The shape is unchanged from what this section said before the backlog existed:
 2. **Zod contracts** — ticket 0005. **Done.** The stage boundary is fixed; two
    places where it is deliberately incomplete are inconsistencies 8 and 9 above.
 3. **Stage 1 against live HN** — tickets 0006–0012. **0006, 0007 and 0008
-   Done**; 0009 is half done and 0010 is untouched — neither depends on the other.
+   Done**; 0009 needs only its fetch half and 0010 is untouched — neither depends
+   on the other.
    0018 is also Ready and sits outside the TICKET-0013 gate (inconsistency 13),
    but it is not on the critical path to the gate.
 4. **Stop and hand-check the candidate list before writing a line of stage 2** —

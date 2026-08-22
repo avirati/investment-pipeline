@@ -59,7 +59,7 @@ index of the same thing. Three values, and only three:
 | [0006](./0006-ticket-config-and-model-routing.md) | Config and model routing | Provider swap is an env change | Done |
 | [0007](./0007-ticket-evidence-store.md) | Evidence store | Content-addressed ids | Done |
 | [0008](./0008-ticket-cached-fetch-layer.md) | Cached fetch layer | One choke point for all network | Done |
-| [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | **Ready** — query + parse half shipped (0014) |
+| [0009](./0009-ticket-hn-algolia-adapter.md) | HN Algolia adapter | Sourcing + the usable classifier | **Ready** — parse (0014) and classifier (0015) shipped; fetch left |
 | [0010](./0010-ticket-url-resolution-and-dedup.md) | URL resolution and dedup | One company, one candidate | **Ready** |
 | [0011](./0011-ticket-query-planning.md) | Query planning: probe, then clarify | `query_plan.json` | Blocked · 0009, 0018 |
 | [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | Blocked · 0009, 0010, 0011 |

@@ -34,16 +34,25 @@ import { z } from "zod";
  *    `--replay` the caller has to fail loudly with a reason rather than quietly
  *    calling an API the operator asked it not to call.
  *
- * The one readability cost: input and output are JSON strings, so a long prompt
- * appears with escaped newlines. Kept, because the alternative — splitting text
- * into arrays of lines — makes every reader of the file reassemble it.
+ * The one readability cost: `input` is a JSON string, so a long prompt appears
+ * with its newlines escaped. Kept, because the alternative — splitting text into
+ * arrays of lines — makes every reader of the file reassemble it. `output` is
+ * not a string but the value itself, which is the half a reviewer reads.
  */
 
 /** Committed, per ADR-0006 and `.gitignore`. Point tests at a temp directory. */
 export const LLM_CACHE_DIR = join(".cache", "llm");
 
-/** A bump invalidates every entry by failing the parse, which reads as a miss. */
-export const LLM_CACHE_SCHEMA_VERSION = 1;
+/**
+ * A bump invalidates every entry twice over: it is hashed into the key, and an
+ * older entry would fail the parse, which reads as a miss.
+ *
+ * **2** — `output` was a string in 1. Structured output is a JSON value, and a
+ * value stringified into a JSON string is committed as one escaped line, which
+ * is the opposite of the readable cache ADR-0006 asks for. Found while wiring
+ * the first caller; no entry had been committed under 1.
+ */
+export const LLM_CACHE_SCHEMA_VERSION = 2;
 
 /**
  * Everything that can change an answer. `input` is the fully rendered prompt —
@@ -89,8 +98,12 @@ export const LlmCacheEntry = z.object({
   key: z.string().regex(/^[0-9a-f]{64}$/),
   call: CallFields,
   input: z.string(),
-  /** The model's answer verbatim. Structured output arrives here as JSON text. */
-  output: z.string(),
+  /**
+   * The model's answer as JSON. A structured call stores the parsed value, so
+   * the committed file is something a reviewer can read; the caller re-parses
+   * it against its schema on the way out, so a hit is checked, never trusted.
+   */
+  output: z.unknown().refine((value) => value !== undefined, { message: "output is missing" }),
   usage: LlmUsage,
   created_at: z.iso.datetime(),
 });
@@ -139,7 +152,7 @@ export interface LlmCacheWrite {
 }
 
 export interface LlmCacheRecord {
-  output: string;
+  output: unknown;
   usage: LlmUsage;
   created_at: string;
 }

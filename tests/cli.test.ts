@@ -1,4 +1,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { EXIT } from "../src/exit-codes.js";
@@ -12,6 +15,24 @@ function run(args: string[]): { status: number; stdout: string; stderr: string }
 }
 
 const COMMANDS = ["run", "source", "analyse", "memo"] as const;
+
+const RUN_ID = "2026-08-23-llm-observability";
+
+/** The least a run directory can hold and still be one (`src/manifest.ts`). */
+const MANIFEST = `${JSON.stringify(
+  {
+    schema_version: 1,
+    run_id: RUN_ID,
+    created_at: "2026-08-23T09:00:00.000Z",
+    seed: { form: "topic", value: "llm observability" },
+    git: { sha: null, dirty: null },
+    llm: { provider: null, models: {} },
+    prompt_versions: {},
+    stages: {},
+  },
+  null,
+  2,
+)}\n`;
 
 describe("pipeline --help", () => {
   const help = execFileSync(TSX, [CLI, "--help"], { encoding: "utf8" });
@@ -58,9 +79,14 @@ describe("exit codes", () => {
   // from HN Algolia and write a run directory into the repo. Which is what it
   // did for exactly one commit. The three that remain still exit before doing
   // anything (CLAUDE.md: never a test that needs the network or a key).
-  const UNIMPLEMENTED = ["run", "memo"] as const;
+  // `memo` left this list at TICKET-0026 for the same reason `source` did, and
+  // did not have to: stage 3 makes no request at all, so the case below is the
+  // one command in the suite that could safely have stayed. It moved anyway —
+  // it is wired, and a list of unimplemented commands that names a wired one is
+  // the kind of stale that outlives the ticket.
+  const UNIMPLEMENTED = ["run"] as const;
 
-  it.each(UNIMPLEMENTED.map((c) => [c, c === "memo" ? ["--run", "x"] : ["--seed", "x"]] as const))(
+  it.each(UNIMPLEMENTED.map((c) => [c, ["--seed", "x"]] as const))(
     "%s exits UNIMPLEMENTED until its stage lands",
     (command, args) => {
       const { status, stderr } = run([command, ...args]);
@@ -117,6 +143,64 @@ describe("pipeline analyse — offline failure paths", () => {
     const { stdout } = run(["analyse", "--help"]);
     expect(stdout).toContain("--replay");
     expect(stdout).toContain("spends nothing");
+  });
+});
+
+// Stage 3 is wired (TICKET-0026), and it is the one command that can be run
+// end to end in this file: it makes no request, reads no key, and writes only
+// into the temp directory it is pointed at.
+describe("pipeline memo", () => {
+  it("rejects an unusable --run before it reads anything", () => {
+    const r = run(["memo", "--run", "../escape"]);
+    expect(r.status).toBe(EXIT.USAGE);
+    expect(r.stderr).toContain("not a usable run id");
+  });
+
+  it("refuses a run directory stage 1 never made", () => {
+    const r = run(["memo", "--run", "2000-01-01-not-a-real-run"]);
+    expect(r.status).toBe(EXIT.USAGE);
+    expect(r.stderr).toContain("is not a run directory");
+  });
+
+  it("no longer reports itself unimplemented", () => {
+    const r = run(["memo", "--run", "2000-01-01-not-a-real-run"]);
+    expect(r.status).not.toBe(EXIT.UNIMPLEMENTED);
+    expect(r.stderr).not.toContain("not implemented");
+  });
+
+  it("offers no --replay, because stage 3 makes no LLM call", () => {
+    expect(run(["memo", "--help"]).stdout).not.toContain("--replay");
+  });
+
+  it("renders a run to disk and exits 0, with no key and no network", () => {
+    const cwd = mkdtempSync(join(tmpdir(), "cli-memo-"));
+    try {
+      const golden = fileURLToPath(new URL("./golden/", import.meta.url));
+      const runDir = join(cwd, "runs", RUN_ID);
+      mkdirSync(join(runDir, "analyses"), { recursive: true });
+      mkdirSync(join(runDir, "evidence"), { recursive: true });
+      writeFileSync(join(runDir, "manifest.json"), MANIFEST);
+      copyFileSync(
+        join(golden, "analysis.golden.json"),
+        join(runDir, "analyses", "acme-traces.json"),
+      );
+      for (const record of JSON.parse(
+        readFileSync(join(golden, "evidence.golden.json"), "utf8"),
+      ) as { id: string }[]) {
+        writeFileSync(join(runDir, "evidence", `${record.id}.json`), JSON.stringify(record));
+      }
+
+      const r = spawnSync(TSX, [CLI, "memo", "--run", RUN_ID], { encoding: "utf8", cwd });
+      expect(r.stderr).toBe("");
+      expect(r.status).toBe(EXIT.OK);
+      expect(r.stdout).toContain("acme-traces");
+      expect(r.stdout).toContain("1 written, 0 unchanged");
+      expect(readFileSync(join(cwd, "memos", RUN_ID, "acme-traces.md"), "utf8")).toBe(
+        readFileSync(join(golden, "memo.golden.md"), "utf8"),
+      );
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
   });
 });
 

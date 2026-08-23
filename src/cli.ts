@@ -4,6 +4,8 @@ import { Command, InvalidArgumentError } from "commander";
 import { type AnalyseOutcome, runAnalyse } from "./analyse/index.js";
 import { ConfigError, loadDotEnv } from "./config.js";
 import { EXIT } from "./exit-codes.js";
+import { MemoError, type MemoOutcome, runMemo } from "./memo/index.js";
+import { MemoValidationError } from "./memo/validate.js";
 import { RunError, validateRunId } from "./run.js";
 import { runSource, type SourceOutcome } from "./source/index.js";
 import { PlanError } from "./source/plan.js";
@@ -99,6 +101,14 @@ function exitFor(error: unknown): number | null {
   if (error instanceof Error && error.name === "AnalyseError") {
     return (error as { failure?: string }).failure === "no_candidates" ? EXIT.DATA_GAP : EXIT.USAGE;
   }
+  // Stage 3's two: a run that is not there or has nothing to render is the
+  // operator's, and a memo citing a record that does not exist is ours. The
+  // second carries its own code because it is the pipeline's only hard fail
+  // (ADR-0003) — a 3 means file a bug, not widen the seed.
+  if (error instanceof MemoError) {
+    return error.failure === "no_analyses" ? EXIT.DATA_GAP : EXIT.USAGE;
+  }
+  if (error instanceof MemoValidationError) return error.exit;
   return null;
 }
 
@@ -252,6 +262,46 @@ async function analyseAction(flags: { run: string; replay?: boolean }): Promise<
   }
 }
 
+/**
+ * Stage 3's. It leads with the files, because the thing an operator does next
+ * is open one, and it prints the path of every memo rather than the directory:
+ * a run of fifteen produces fifteen lines a terminal can click.
+ *
+ * `unchanged` is not noise. Stage 3 is the command that gets re-run after a
+ * template change, and a pass that reports fifteen unchanged memos is the one
+ * that says the change did nothing.
+ */
+function memoSummary(outcome: MemoOutcome): string {
+  const { stage } = outcome;
+  const lines = [`run ${outcome.run_id}`];
+  lines.push(
+    `  analyses    ${stage.counts.analyses} read` +
+      (stage.input.unreadable > 0 ? ` (${stage.input.unreadable} unreadable file(s))` : ""),
+  );
+  for (const memo of stage.memos) {
+    lines.push(
+      `  ${memo.slug.padEnd(20).slice(0, 20)} ${memo.call} ${memo.score}/100 · ` +
+        `${memo.citations} citation(s) · ${memo.path}` +
+        (memo.written ? "" : " (unchanged)"),
+    );
+  }
+  lines.push(
+    `  memos       ${stage.counts.written} written, ${stage.counts.unchanged} unchanged · ` +
+      `${stage.counts.citations} citation(s), all resolved`,
+  );
+  lines.push(`  manifest    ${outcome.paths.manifest}`);
+  lines.push(`  next        open ${outcome.paths.memoDir}/`);
+  return `${lines.join("\n")}\n`;
+}
+
+function memoAction(flags: { run: string }): void {
+  try {
+    process.stdout.write(memoSummary(runMemo({ runId: validateRunId(flags.run) })));
+  } catch (error) {
+    fail(error);
+  }
+}
+
 export function buildProgram(): Command {
   const program = new Command()
     .name("pipeline")
@@ -288,7 +338,7 @@ export function buildProgram(): Command {
     .command("memo")
     .description("Stage 3 only — render memos (no network, no API calls)")
     .requiredOption("--run <id>", "run id to render — required")
-    .action(() => notImplemented("memo", "TICKET-0026"));
+    .action(memoAction);
 
   return program;
 }

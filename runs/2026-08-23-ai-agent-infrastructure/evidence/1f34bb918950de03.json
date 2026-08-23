@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "1f34bb918950de03",
+  "url": "https://docs.agent-vault.dev/",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T04:06:49.741Z",
+  "status": 200,
+  "title": "Introduction - Agent Vault",
+  "text": "Getting Started\nIntroduction\nA credential broker for AI agents to prevent credential exfiltration.\nAgent Vault is an open source vault and proxy service by Infisical that sits between AI agents and the APIs they call including LLM providers, GitHub, Stripe, and more. Check out the GitHub repository.\nNeed an enterprise-grade solution? Infisical offers managed Agent Vault with enterprise support, SLAs, and advanced features.\nBook a demo with us to learn more.\nAgent Vault works with all kinds of AI Agent use-cases including secure remote coding agents, all-purpose agents, custom agents + harnesses, secure ephemeral sandboxes and more.\nAgents like Claude Code or OpenClaw route HTTP requests through an Agent Vault server, which swaps dummy credentials for real ones (or replaces auth headers entirely), before forwarding the request to the target service.\n+-----------------------------------------------------------------+\n| Public internet |\n| |\n| api.anthropic.com api.github.com api.stripe.com ... |\n| ^ ^ ^ |\n+----------+-------------------+------------------+---------------+\n| | |\n+-------------------+------------------+\n| outbound HTTPS, Agent Vault\n| injects credentials on the way out\n+------------------------------+----------------------------------+\n| Private network | |\n| | |\n| +---------------------------+----+ +--------------------+ |\n| | Agent Vault | | AI agent | |\n| | :14321 management UI / API |<----| HTTPS_PROXY= | |\n| | :14322 MITM proxy | | agent-vault:14322 | |\n| +----------------^---------------+ +--------------------+ |\n| | |\n+-------------------+---------------------------------------------+\n| operator access: keep private, or front\n| with TLS + auth (SSO reverse proxy, IP\n| allowlist, or VPN) if you need remote admin\n|\nOperator\n​\nWhy Agent Vault\nTraditional secrets management involves returning credentials back to you applications and services.\nThis is not suitable for AI agents because they are vulnerable to credential exfiltration via prompt injection; an attacker could craft a malicious prompt or payload and exfiltrate credentials from an agent back to the attacker.\nEnter Agent Vault - a new credential management solution built for agents that prevents credential exfiltration with ergonomic, agent-first design.\n​\nHow it works\nStart by setting up an instance of Agent Vault on a separate host machine:\nYou install the Agent Vault binary or deploy an instance with Docker.\nYou configure Agent Vault with the credentials and service credential substitution rules to enable Agent Vault to broker credentials for your AI agent.\nYou configure an agent in Agent Vault to represent your AI agent and obtain a token for it. If your workflow involves using an orchestrator backend to spin up ephemeral sandboxed agents, you can use the agent construct to represent your orchestrator and mint a short-lived token to be passed into the sandbox for the agent to use and proxy requests through Agent Vault.\nNext, you configure your AI agent to connect to Agent Vault:\nYou bootstrap your AI agent’s environment to automatically route all outbound HTTP and HTTPS traffic through Agent Vault. This can be done with the Agent Vault CLI and setting AGENT_VAULT_ADDR, AGENT_VAULT_TOKEN, and AGENT_VAULT_VAULT in the agent’s environment.\nYou give your AI agent dummy credentials like __anthropic_api_key__ or __github_pat__ to use when making API calls.\nThat’s it! Your AI agent is now able to make authenticated API calls to LLM providers and other HTTP services through any interface (API, CLI, SDK, MCP, etc.) without holding any real credentials.\nAgent Vault matches the target host on the proxied request against the configured service rules, performs any required credential substitutions, and forwards the reconstructed request upstream to the target service.\n​\nGet started\nInstallation\nDeploy Agent Vault, start a server, and register.\n​\nQuickstart\nClaude Code\nConnect Claude Code to Agent Vault.\nCursor\nConnect Cursor to Agent Vault.\nCodex\nConnect Codex to Agent Vault.\nOpenClaw\nConnect OpenClaw to Agent Vault.\nHermes Agent\nConnect Hermes Agent to Agent Vault.\nOpenCode\nConnect OpenCode to Agent Vault.\nCustom Agent\nConnect any HTTP-capable agent.\n⌘I",
+  "meta": {
+    "og_title": "Introduction - Agent Vault",
+    "og_description": "A credential broker for AI agents to prevent credential exfiltration.",
+    "og_site_name": "Agent Vault",
+    "og_type": "website",
+    "description": "A credential broker for AI agents to prevent credential exfiltration.",
+    "canonical": "https://docs.agent-vault.dev",
+    "main_selector": "main",
+    "from_cache": false,
+    "attempts": 1,
+    "page_role": "home",
+    "empty_shell": false,
+    "text_chars": 4196,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 4196
+  }
+}

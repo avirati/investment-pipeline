@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "b3896b61d8fdb5bc",
+  "url": "https://api.github.com/repos/Infisical/agent-vault/contributors?per_page=100",
+  "type": "github_repo",
+  "retrieved_at": "2026-08-23T04:06:48.719Z",
+  "status": 200,
+  "title": null,
+  "text": "contributors on the first page: 15\nhuman contributors: 13\nbot accounts: 2\nmost active: dangtony98 (155 commits), saifsmailbox98 (23 commits), jakehulberg (8 commits), varonix0 (4 commits), mvanhorn (2 commits)",
+  "meta": {
+    "call": "contributors",
+    "from_cache": false,
+    "attempts": 1,
+    "projection": "github_contributors.v1",
+    "contributors": 15,
+    "capped": false,
+    "text_truncated": false,
+    "text_original_length": 209
+  }
+}

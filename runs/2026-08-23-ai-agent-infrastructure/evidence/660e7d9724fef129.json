@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "660e7d9724fef129",
+  "url": "https://api.github.com/repos/freestyle-sh/adorable/contributors?per_page=100",
+  "type": "github_repo",
+  "retrieved_at": "2026-08-23T04:06:49.796Z",
+  "status": 200,
+  "title": null,
+  "text": "contributors on the first page: 5\nhuman contributors: 4\nbot accounts: 1\nmost active: JacobZwang (147 commits), theswerd (102 commits), willothy (22 commits), bhaktatejas922 (1 commits)",
+  "meta": {
+    "call": "contributors",
+    "from_cache": false,
+    "attempts": 1,
+    "projection": "github_contributors.v1",
+    "contributors": 5,
+    "capped": false,
+    "text_truncated": false,
+    "text_original_length": 184
+  }
+}

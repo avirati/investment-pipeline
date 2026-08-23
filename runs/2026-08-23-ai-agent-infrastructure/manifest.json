@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "created_at": "2026-08-23T04:06:24.233Z",
+  "seed": {
+    "form": "topic",
+    "value": "AI agent infrastructure"
+  },
+  "git": {
+    "sha": "0850bb5b5efc2a4badcbaa0b0c89cd6778e83588",
+    "dirty": false
+  },
+  "llm": {
+    "provider": "openai",
+    "models": {
+      "extract": "gpt-4.1-mini",
+      "analyse": null
+    }
+  },
+  "prompt_versions": {
+    "extract": "1"
+  },
+  "stages": {
+    "source": {
+      "started_at": "2026-08-23T04:06:24.233Z",
+      "finished_at": "2026-08-23T04:06:31.601Z",
+      "duration_ms": 7368,
+      "seed_form": "topic",
+      "flags": {
+        "limit": 3,
+        "since_days": 180,
+        "min_hits": 8,
+        "expand": true,
+        "replay": false,
+        "query_plan_file": null
+      },
+      "query": {
+        "chosen": "AI agent infrastructure",
+        "chosen_by": "probe",
+        "clarified": false,
+        "options_offered": [],
+        "probe": {
+          "hits": 50,
+          "usable": 25
+        },
+        "replayed": false
+      },
+      "search": {
+        "arms": [
+          {
+            "label": "raw",
+            "query": "AI agent infrastructure",
+            "tags": "story",
+            "pages_fetched": 2,
+            "hits": 100,
+            "new_hits": 100
+          },
+          {
+            "label": "show_hn",
+            "query": "AI agent infrastructure",
+            "tags": "story,show_hn",
+            "pages_fetched": 2,
+            "hits": 100,
+            "new_hits": 57
+          },
+          {
+            "label": "launch",
+            "query": "AI agent infrastructure launch",
+            "tags": "story",
+            "pages_fetched": 1,
+            "hits": 40,
+            "new_hits": 22
+          },
+          {
+            "label": "funding",
+            "query": "AI agent infrastructure raises seed funding",
+            "tags": "story",
+            "pages_fetched": 1,
+            "hits": 0,
+            "new_hits": 0
+          }
+        ],
+        "pages_fetched": 6,
+        "distinct_posts": 179,
+        "unparseable_hits": 0,
+        "failures": []
+      },
+      "fallback": null,
+      "filter": {
+        "usable_posts": 124,
+        "rejected_posts": 55,
+        "rejected_by_kind": {
+          "content": 21,
+          "no_url": 32,
+          "paper": 1,
+          "aggregator": 1
+        }
+      },
+      "dedup": {
+        "sites": 121,
+        "sites_with_multiple_posts": 3
+      },
+      "resolve": {
+        "requests": 3,
+        "redirected": 0,
+        "rekeyed": 0,
+        "unreachable": 0,
+        "rejected_on_landing": 0
+      },
+      "candidates": [
+        {
+          "slug": "freestyle",
+          "name": "Freestyle",
+          "url": "https://freestyle.sh",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "klaus",
+          "name": "Klaus",
+          "url": "https://klausai.com",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "agent-vault",
+          "name": "Agent Vault",
+          "url": "https://github.com/Infisical/agent-vault",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        }
+      ],
+      "counts": {
+        "candidates": 3,
+        "dropped": 0
+      }
+    },
+    "analyse": {
+      "started_at": "2026-08-23T04:10:33.386Z",
+      "finished_at": "2026-08-23T04:10:33.796Z",
+      "duration_ms": 410,
+      "flags": {
+        "replay": true,
+        "concurrency": 3,
+        "gather_concurrency": 4
+      },
+      "input": {
+        "lines": 3,
+        "candidates": 3,
+        "unparseable": 0
+      },
+      "budget": {
+        "candidates": 3,
+        "github_mode": "unauthenticated",
+        "github_calls": 5,
+        "site_pages": 3,
+        "over_planning_ceiling": false,
+        "planned": {
+          "github": 15,
+          "site": 12,
+          "hn": 3
+        },
+        "spent": {
+          "github": {
+            "spent": 0,
+            "limit": 60
+          },
+          "site": {
+            "spent": 0,
+            "limit": 240
+          },
+          "hn": {
+            "spent": 3,
+            "limit": null
+          }
+        }
+      },
+      "llm": {
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "prompt": {
+          "id": "extract",
+          "version": "1"
+        },
+        "attempts": 3,
+        "calls": 3,
+        "from_cache": 3,
+        "input_tokens": 22100,
+        "output_tokens": 3223,
+        "cost_usd": null
+      },
+      "facts": {
+        "kept": 47,
+        "dropped": 0,
+        "dropped_by_kind": {}
+      },
+      "candidates": [
+        {
+          "slug": "freestyle",
+          "status": "ok",
+          "reason": null,
+          "score": 55,
+          "coverage": 1,
+          "call": "WATCH",
+          "facts": 26,
+          "dropped": 0,
+          "evidence_records": 8,
+          "gather_failures": 1,
+          "duration_ms": 9
+        },
+        {
+          "slug": "klaus",
+          "status": "ok",
+          "reason": null,
+          "score": 63,
+          "coverage": 0.8,
+          "call": "WATCH",
+          "facts": 9,
+          "dropped": 0,
+          "evidence_records": 4,
+          "gather_failures": 2,
+          "duration_ms": 6
+        },
+        {
+          "slug": "agent-vault",
+          "status": "ok",
+          "reason": null,
+          "score": 75,
+          "coverage": 1,
+          "call": "TAKE_A_MEETING",
+          "facts": 12,
+          "dropped": 0,
+          "evidence_records": 8,
+          "gather_failures": 0,
+          "duration_ms": 6
+        }
+      ],
+      "counts": {
+        "candidates": 3,
+        "ok": 3,
+        "partial": 0,
+        "failed": 0,
+        "analyses": 3
+      }
+    }
+  }
+}

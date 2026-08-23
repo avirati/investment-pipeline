@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "67838102087e4058",
+  "url": "https://www.freestyle.sh/docs",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T04:06:47.920Z",
+  "status": 200,
+  "title": "Freestyle - Freestyle Docs",
+  "text": "Freestyle / Docs\nFreestyle\nFreestyle VMs are full Linux virtual machines designed for long running, complex tasks.\nFreestyle VMs are full Linux virtual machines designed for long running, complex tasks.\nQuickstart Create a VM, run your first command, and set up your Freestyle API key.\nFreestyle VMs Persistent Linux VMs that start in milliseconds and run for weeks.\nFreestyle CLI Manage VMs, VPCs, domains, and identities from a terminal.\nGuides Step-by-step guides for running tools and frameworks.\nAI-readable docs\nGive our Bash API to your agent so it can use our\ndocs: https://www.freestyle.sh/docs/bash\nFor example, give an agent this prompt:\nHelp me create a vm using freestyle, use their docs api with\n```bash\ncurl https://www.freestyle.sh/docs/bash\n```\nKey Features\nInstant Startup: Freestyle VMs provision in milliseconds, with p99s under 400ms.\nPersistence: Freestyle VMs can run forever, they can be hibernated with their exact memory in place and come back to life weeks later instantly, in that exact state.\nPowerful: Freestyle VMs go up to 64GB of RAM for public tiers and much further for enterprise. Full Linux capabilities including nested virtualization, FUSE, eBPF, and full networking.\nCheaply Snapshottable and Branchable: Instantly snapshot VMs with minimal interruption. Use snapshots to create new VMs in the exact state of the original, enabling branching, cloning, and rapid recovery.\nWhen to use Freestyle\nLong Running Agent Tasks: When you have tasks that take hours, days, weeks or months to run, Freestyle VMs provide a persistent and powerful environment that your agent can work in to completion.\nFailure Prone/Experimental Exploration: When your tasks involve branching, cloning or need time travel Freestyle VMs are ideal because of their cheap snapshottability and power that makes them great for experiments.\nComplex Coding Problems: When you are tackling advanced coding problems in research or production codebases, poor virtualization and small sandboxes will not cut it. Freestyle VMs provide the necessary resources and environment to handle these challenges effectively.\nMulti Tenant Usage Patterns: Build agent products with multiple customers. The slug system lets you key VMs by user, and the identity system provides granular access control and multi-tenant network isolation.",
+  "meta": {
+    "og_title": "Freestyle - Freestyle Docs",
+    "og_description": "Freestyle VMs are full Linux virtual machines designed for long running, complex tasks.",
+    "og_site_name": "Freestyle Docs",
+    "og_type": "article",
+    "description": "Freestyle VMs are full Linux virtual machines designed for long running, complex tasks.",
+    "canonical": "https://www.freestyle.sh/docs",
+    "main_selector": "main",
+    "from_cache": false,
+    "attempts": 1,
+    "page_role": "docs",
+    "empty_shell": false,
+    "text_chars": 2323,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 2323
+  }
+}

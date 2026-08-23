@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "4845da5537770e5f",
+  "url": "https://api.github.com/users/freestyle-sh",
+  "type": "github_user",
+  "retrieved_at": "2026-08-23T04:06:48.909Z",
+  "status": 200,
+  "title": "freestyle.sh",
+  "text": "account: freestyle-sh\ntype: Organization\nname: freestyle.sh\nbio: Freestyle is a cloud platform for managing AI code. We are the best play to run, deploy, and store code your AI writes.\ncompany: unknown\nlocation: unknown\nwebsite: https://www.freestyle.sh\npublic repositories: 47\nfollowers: 94\naccount created at: 2024-04-15T21:42:19Z",
+  "meta": {
+    "call": "owner",
+    "from_cache": false,
+    "attempts": 1,
+    "projection": "github_user.v1",
+    "login": "freestyle-sh",
+    "account_type": "Organization",
+    "text_truncated": false,
+    "text_original_length": 332
+  }
+}

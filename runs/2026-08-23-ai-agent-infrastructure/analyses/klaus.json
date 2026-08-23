@@ -1,0 +1,193 @@
+{
+  "schema_version": 2,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "klaus",
+    "name": "Klaus",
+    "url": "https://klausai.com",
+    "one_liner": "OpenClaw on a VM, batteries included",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T04:06:24.233Z",
+        "ref": "47337249",
+        "title": "Show HN: Klaus – OpenClaw on a VM, batteries included",
+        "posted_url": "https://klausai.com/",
+        "posted_at": "2026-03-11T15:54:23.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Klaus describes itself as 'OpenClaw on a VM, batteries included.'",
+      "value": "OpenClaw on a VM, batteries included",
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Klaus aims to provide a secure and powerful hosted OpenClaw solution that is simple to run without requiring complex setup.",
+      "value": null,
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Klaus runs OpenClaw by giving each user their own EC2 instance preconfigured with keys and integrations.",
+      "value": "hosted service",
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "Klaus depends on OpenClaw and integrates with OpenRouter, AgentMail, Orthogonal, Slack, and Google Workspace using OAuth apps.",
+      "value": null,
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "Klaus charges $19/month for a t4g.small instance, $49/month for t4g.medium, and $200/month for t4g.xlarge with priority support.",
+      "value": null,
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "Klaus offers Starter, Plus, Pro, and Managed Rollout pricing tiers with varying AI and Orthogonal credits, and cloud instance quality.",
+      "value": null,
+      "evidence_ids": [
+        "3b6f2710ebfd0986"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.launch_date",
+      "statement": "Klaus announced it will shut down on September 1, 2026 and no longer accepts new subscriptions.",
+      "value": "2026-09-01",
+      "evidence_ids": [
+        "3b6f2710ebfd0986"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.hn_engagement",
+      "statement": "Klaus' Hacker News thread titled 'Show HN: Klaus – OpenClaw on a VM, batteries included' received 160 points and 91 comments 5 months ago from retrieval date (August 23, 2026).",
+      "value": 160,
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.integration",
+      "statement": "Klaus integrates with many third-party services including Salesforce, HubSpot, Slack, Microsoft, Google, Zoom, Notion, Discord, GitHub, Stripe, Apollo, Zendesk, Intercom, and more.",
+      "value": null,
+      "evidence_ids": [
+        "3b6f2710ebfd0986"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 6,
+      "max": 25,
+      "band": "uncovered · floor of 6–12",
+      "evidence_ids": [],
+      "covered": false
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 15,
+      "max": 20,
+      "band": "11–15",
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "3b6f2710ebfd0986",
+        "4a45d9b1596e8bd4"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "4a45d9b1596e8bd4",
+        "3b6f2710ebfd0986"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "4a45d9b1596e8bd4",
+        "3b6f2710ebfd0986"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 63,
+  "coverage": 0.8,
+  "disqualifiers": [],
+  "call": "WATCH",
+  "unknowns": [
+    "D1 Founder–market fit & technical depth: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12"
+  ],
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 4,
+    "evidence_usable": 4,
+    "gather_failures": 2,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 9,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

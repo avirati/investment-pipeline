@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "e945f7b05e79ab56",
+  "url": "https://freestyle.sh",
+  "type": "company_site",
+  "retrieved_at": "2026-08-22T10:19:39.822Z",
+  "status": 200,
+  "title": "Freestyle - VMs and Git for AI Agents",
+  "text": "Give your agents real VMs and Git-backed filesystems. Freestyle provides powerful Linux VMs and Git repos for code you didn't write.\n\nFreestyle\nSearch⌘KDocsDSign InS\nGive your agents\na sandbox VM.\nGet StartedView Docs\n1import { freestyle } from \"freestyle\";\n2\n3const { vm } = await freestyle.vms.create();\n4\n5const result = await vm.exec({\n6 command: \"echo hello from a Linux VM\",\n7});\n8\n9console.log(result.stdout);\n10\nTrusted by\nvly.ai\nRork\nVibeflow\nvly.ai\nRork\nVibeflow\nAgent Scale VMs\nReal Linux VMs made for running tens of thousands of agents.\nInstant Startup\nVMs provision in under 600ms from API request to ready machine.\nroot@vm\n$ freestyle vms create\n[ok] Restored memory snapshot\n[ok] Mounted /dev/vda1\n[ok] Reached target network\n[ok] Started systemd-resolved\n[ok] Started sshd.service\n[ok] Reached target multi-user\nVM ready in 0.7s\nroot@vm ~ # █\nLive Forking\nClone a running VM without pausing it — get full copies in milliseconds.\nPause & Resume\nHibernate VMs and resume exactly where you left off — pay nothing while paused.\nManage Agent Code\nFreestyle Git gives every agent a branchable filesystem with commits, diffs, rollback, and review.\nSandbox\nGit Repo\nacme\nacme/app\nzipline\nzipline/api\nnova\nnova/app\n⋮\n⋮\nsandbox-10k\n10000/repo\nGranular Webhooks\nConfigure webhooks per repo, filter by branch, path, or event type.\nSync with GitHub\nBidirectional sync between Freestyle and GitHub repositories.\nClone into VMs\nGive every agent a real working tree backed by Freestyle Git, then run it inside a full Linux VM.\ngit clone https://git.freestyle.sh/app\ncd app && npm test\nThe Most Powerful VMs for AI Agents\nNot sandbox-shaped containers. Full Linux VMs with real root access.\nNested Virtualization\nRun VMs inside VMs, Docker, or any virtualization stack your agents need. Full KVM support.\nUsers, Groups, Services\nSealed Linux users, systemd services and groups; multi-user isolation inside every VM.\nFull Networking Stack\nThe full Linux networking stack with real root access.\nReady to get started?\nFree to start. No credit card required.\nStart buildingRead the docs\nWhat is a Freestyle VM?\nWhat do I pay for paused VMs?\nHow is this different from sandbox providers?\nHow secure is it?\nHow are Freestyle Git repos different than GitHub?\nProducts\nFreestyle GitFreestyle VMs\nDocumentation\nFreestyle API DocumentationFreestyle API Reference\nOpen Source\nAdorable (AI App Builder)Freestyle CLICloudstate (JavaScript Database)\nCompany\nCareersStatusBlogDiscordPrivacy Policy\n© 2026 Freestyle\n❯\nsearch the docs\nesc\nStart typing to search the Freestyle docs.",
+  "meta": {
+    "og_title": "Freestyle - VMs and Git for AI Agents",
+    "og_description": "Give your agents real VMs and Git-backed filesystems. Freestyle provides powerful Linux VMs and Git repos for code you didn't write.",
+    "og_site_name": "Freestyle",
+    "og_type": "website",
+    "description": "Give your agents real VMs and Git-backed filesystems. Freestyle provides powerful Linux VMs and Git repos for code you didn't write.",
+    "canonical": "https://www.freestyle.sh/",
+    "main_selector": "body",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "home",
+    "final_url": "https://www.freestyle.sh/",
+    "empty_shell": false,
+    "text_chars": 2564,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 2564
+  }
+}

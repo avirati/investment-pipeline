@@ -1,6 +1,6 @@
 # TICKET-0024 — Memo template and renderer
 
-Status: **In progress — the stage-2 half is in review** ([worklog 0035](../worklog/0035-memo-derivation.md)). `Analysis` v3 carries SPEC §4's sections, the change-my-mind list and the Watch upgrade trigger, derived by `src/analyse/derive.ts`; STATE inconsistency 9 is closed and the decision this ticket inherited is taken. **Outstanding: `templates/memo.md.eta`, `src/memo/render.ts` and the three acceptance items**, all of which now read an analysis that already has a body · Depends on: 0022 (In review) · Blocks: 0025, 0026
+Status: **Done** — the derivation in [worklog 0035](../worklog/0035-memo-derivation.md), the template and renderer in [worklog 0036](../worklog/0036-memo-template-and-render.md). `templates/memo.md.eta`, `src/memo/render.ts`, two committed golden memos and `pnpm golden`; all three acceptance items met, 26 tests · Depends on: 0022 (In review) · Blocks: 0025, 0026
 Reads: [SPEC §4](../SPEC.md#4-memo-contract), [STATE](../STATE.md) D-2, [CLAUDE.md](../../CLAUDE.md) invariant 3
 
 ## Why
@@ -42,7 +42,18 @@ therefore a rendering of the analysis and of nothing else, and the ticket's
 nothing left to trip on. Risks is built from fired disqualifiers, dimensions in
 the rubric's lowest band, and — below the coverage gate only — uncovered ones.
 
-**What the renderer still owns:** the header line, the ordering of sections as
-`sections` gives them, the sources table, and printing `omitted` counts rather
-than swallowing them. The bullet caps are already applied and recorded in the
-analysis, so the template enforces nothing it could disagree with.
+**What the renderer owns, and did:** the header line, the ordering of sections
+as `sections` gives them, the sources table, and printing `omitted` counts
+rather than swallowing them. The bullet caps are applied in stage 2, so the
+template enforces nothing it could disagree with.
+
+**One thing the renderer needed and did not get**, resolved by going back to
+stage 2: SPEC §4's *Why this call*. Choosing which dimension decided a call is a
+judgement, and a judgement in a template is invariant 3 broken where nobody
+looks — so it is `Analysis` v4's `why_this_call`, and the template prints it.
+
+**Citations render as memo-local labels** (`E1`, `E2`) with the full evidence id
+beside them in the sources table, which keeps SPEC §4's four columns and still
+lets a bullet lead to a file on disk. An id with no record behind it renders as
+`unknown` rather than being dropped — TICKET-0025 fails the run over it, and can
+only do that if the row is visible.

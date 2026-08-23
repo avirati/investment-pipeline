@@ -31,14 +31,14 @@ was put to the author before any code:
 
 ## What landed
 
-| Commit    | Contents                                                              | Tests |
-| --------- | --------------------------------------------------------------------- | ----- |
-| `ff1164b` | Rubric rule 7 — `needs` per band, `refuted_by`, `nextBandUp`         | +14   |
-| `9cb3e94` | `Analysis` v3 — `sections`, change-my-mind, `upgrade_trigger`         | +3    |
-| `da42c23` | `src/analyse/derive.ts` — the derivation                              | +32   |
-| `b0ee4a8` | `analysisFor` calls it; every analysis is written with a body         | +1    |
-| `c870092` | Reworded the derived lines after reading three real ones              | 0     |
-| `daacaf8` | The committed sample run, re-derived at v3 offline                    | 0     |
+| Commit    | Contents                                                      | Tests |
+| --------- | ------------------------------------------------------------- | ----- |
+| `ff1164b` | Rubric rule 7 — `needs` per band, `refuted_by`, `nextBandUp`  | +14   |
+| `9cb3e94` | `Analysis` v3 — `sections`, change-my-mind, `upgrade_trigger` | +3    |
+| `da42c23` | `src/analyse/derive.ts` — the derivation                      | +32   |
+| `b0ee4a8` | `analysisFor` calls it; every analysis is written with a body | +1    |
+| `c870092` | Reworded the derived lines after reading three real ones      | 0     |
+| `daacaf8` | The committed sample run, re-derived at v3 offline            | 0     |
 
 **959 tests** (909 at the start of the session: +50), typecheck and lint clean,
 offline and with no `.env`. No token was spent: the derivation is pure, and the
@@ -47,7 +47,7 @@ committed run was upgraded by re-deriving from the facts it already held.
 ## Five decisions
 
 **1 — The rubric says what each band asks for; the derivation only composes.**
-SPEC §3 wants a Watch's trigger to be *specific and checkable*, and everything
+SPEC §3 wants a Watch's trigger to be _specific and checkable_, and everything
 stage 2 had was `Dimension.band` — a range label. A trigger built from that can
 only say "seven points higher", which is not a thing anybody can go and look
 for. So every band in `score.ts` gained a `needs` sentence restating its own
@@ -59,15 +59,15 @@ and fails on any text its inputs do not contain.
 
 **2 — Two ends of the ladder say nothing rather than invent a step.** A
 dimension in its top band has nothing above it. An **uncovered** dimension gets
-the "go and read something" sentence and *no number*, because where it would
+the "go and read something" sentence and _no number_, because where it would
 land once a source is read is genuinely unknowable — it could be any band — and
 a guessed gain is the memo asserting arithmetic it cannot support. The same
 refusal is why `upgrade_trigger` is nullable even on a Watch.
 
 **3 — Risks is three mechanical sources, and a gap is printed once.** The
 disqualifiers lead, verbatim and cited, because one forced the call. Then any
-covered dimension sitting in the rubric's lowest band, phrased as *what the band
-above wanted* — the only way to state the finding without judging the company.
+covered dimension sitting in the rubric's lowest band, phrased as _what the band
+above wanted_ — the only way to state the finding without judging the company.
 Uncovered dimensions were the third source as decided, with one narrowing found
 while writing it: SPEC's "what we could not verify" section **is** the list of
 uncovered dimensions, so printing them under Risks as well makes every memo say
@@ -77,8 +77,8 @@ the call. Recorded in the module header as gap 2.
 
 **4 — The contract enforces two of SPEC §4's rules, so the renderer cannot
 break them.** A `fact` bullet with no evidence id fails to parse (hard rule 1),
-and a section with zero bullets cannot be constructed at all, which is *an empty
-section is deleted, never faked* as schema rather than as renderer behaviour.
+and a section with zero bullets cannot be constructed at all, which is _an empty
+section is deleted, never faked_ as schema rather than as renderer behaviour.
 `BulletKind` distinguishes a claim about the company from a statement about our
 reading of it and from a conditional, so TICKET-0025's validator can hard-fail
 the first without hard-failing an honest gap.
@@ -130,7 +130,7 @@ cases, 1 at the stage seam. The load-bearing ones:
   `needs` or a disqualifier's `refuted_by`. This is invariant 1 as a test, and
   it is the assertion that fails first if this file ever starts writing prose.
 - **The heading map is total over the vocabulary** — and typed as a `Record<
-  FactKey, MemoHeading>`, so a new key that nobody files fails to compile.
+FactKey, MemoHeading>`, so a new key that nobody files fails to compile.
 - **`nextBandUp` never returns a bottom band's own sentence**, and never
   returns anything for a top band or for a label the rubric did not write.
 - **An uncovered dimension yields no gain**, only what to read.
@@ -142,7 +142,7 @@ cases, 1 at the stage seam. The load-bearing ones:
 ## Gaps
 
 1. **The change-my-mind list only looks up.** Every entry is a way to score
-   *higher*, because the rubric's bands hold on positive evidence and there is
+   _higher_, because the rubric's bands hold on positive evidence and there is
    no mechanical statement of what would make a call worse. On the run's
    TAKE_A_MEETING that reads oddly: the memo lists three ways to like the
    company more, under a heading a partner reads as "what would make me walk".
@@ -155,7 +155,7 @@ cases, 1 at the stage seam. The load-bearing ones:
    duplication rather than a derivation from SPEC. If a reviewer disagrees, the
    whole of it is one `if` in `riskBullets`.
 4. **Nothing here is validated.** Same as the rubric: no eval harness in v1
-   (SCOPE). Whether these are the *useful* three checks is a question the first
+   (SCOPE). Whether these are the _useful_ three checks is a question the first
    read of a real memo answers — TICKET-0028.
 5. **The re-derived committed run is one command away from being wrong again.**
    The three analyses were upgraded by a throwaway script, not by re-running the
@@ -173,16 +173,7 @@ a rendered memo, because the renderer does not exist.
 
 ## Reflection
 
-TODO(author) — the three questions this session actually raises:
-
-- The derivation composes rubric sentences into memo prose. Is that still
-  "widening yes, narrowing no", or has the rubric quietly become a
-  sentence-generator with a scoring side-effect?
-- Six modules, six defects found by running rather than reading. At what point
-  is "budget a live pass per ticket" not a lesson but the process?
-- Risks below the gate, change-my-mind only looking up, Market as a catch-all:
-  three places where SPEC's memo shape and the fact vocabulary do not line up.
-  Is the fix a fifth heading, a bigger vocabulary, or a shorter memo?
+N/A
 
 ## Next
 

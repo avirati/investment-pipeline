@@ -1,6 +1,6 @@
 # TICKET-0025 — Citation validator (`src/memo/validate.ts`)
 
-Status: Blocked · 0024 · Depends on: 0007, 0024 · Blocks: 0026
+Status: **Ready** — 0024 is Done. `src/memo/render.ts` emits `Memo.citations`, and `BulletKind` (`fact` | `gap` | `check` | `summary`) is there so an uncited *claim about the company* hard-fails while an honest gap does not · Depends on: 0007, 0024 (Done) · Blocks: 0026
 Reads: [ADR-0003](../adr/0003-evidence-store-and-citations.md), [ARCHITECTURE §5](../ARCHITECTURE.md#5-failure-policy), [TESTING §2](../TESTING.md)
 
 ## Why

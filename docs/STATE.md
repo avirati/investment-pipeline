@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-23 · at commit `daacaf8` · **Phase: the memo's body is derived and stage 3 has something to render.** `Analysis` v3 carries SPEC §4's Team / Product / Market / Risks sections, the "what would change my mind" list and the Watch upgrade trigger, all mechanical (worklog 0035) — **inconsistency 9 is closed**, the decision TICKET-0024 inherited is taken, and the committed run's three analyses were re-derived offline at v3. The rubric gained rule 7 (`needs` per band, `refuted_by` per disqualifier) so a trigger names an observation rather than a number. 959 tests. Running it over the three real analyses rewrote its own prose twice — the sixth module in a row to change on first contact with real data — and surfaced 90 and 91. Next: **TICKET-0024's second half**, the eta template and `src/memo/render.ts`; inconsistency 84 still blocks TICKET-0028.
+Last updated: 2026-08-23 · at commit `6502cd0` · **Phase: a memo exists.** TICKET-0024 is Done — `Analysis` v3 then v4 carry SPEC §4's whole body (sections, why-this-call, change-my-mind, the Watch trigger), and `templates/memo.md.eta` plus `src/memo/render.ts` render it with no LLM and no decision in the template (worklogs 0035 and 0036). **Inconsistency 9 closed, D-2 taken at its default** (`eta`, ADR-0005 amended). 985 tests, two committed golden memos, `pnpm golden` to regenerate them. Reading real output rewrote the derived prose twice and the layout four times; new gaps are 90–92. Next: **TICKET-0025**, the memo validator, then 0026's wiring. Inconsistency 84 still blocks TICKET-0028.
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -529,11 +529,19 @@ default, state that you took it, and record it in that session's worklog.
 
 | # | Decision | Blocked on | Default if unanswered |
 |---|---|---|---|
-| **D-2** | Memo rendering: `eta` templates vs typed TS render functions | Author preference | `eta` — a partner can edit a memo template without reading TypeScript |
 | **D-4** | Reflection sections in worklogs 0001 and 0002 | Author. Must not be AI-written — see CLAUDE.md | Leave as `TODO(author)`. Do not fill in |
 | **D-7** | Whether ADR-0005 and ADR-0006 clear the "someone would disagree" bar | Author review | Keep both. Revisit only if a reviewer calls the ADR set padded |
 
 ### Recently closed
+
+- **D-2 · memo rendering** — taken at its default in TICKET-0024: **`eta`**,
+  recorded as an amendment to [ADR-0005](./adr/0005-typescript-stack.md) because
+  it is a runtime dependency. The amendment carries the counter-argument too:
+  after the derivation landed, the template is a header line, four loops and a
+  table, and a plain string function would have produced it with no dependency
+  at all. The default held because the layout is the one part of this pipeline a
+  *reader* of the output is entitled to change. See
+  [worklog 0036](./worklog/0036-memo-template-and-render.md).
 
 - **D-5 · the committed sample run topic** — taken at its default in
   TICKET-0013: **`AI agent infrastructure`**. Of the four topics the gate ran it
@@ -1602,6 +1610,22 @@ Real defects, listed rather than silently patched.
     state the observation that *breaks* it, which is a fifth column on every
     band and a second pass over SPEC §2. Left open deliberately.
 
+92. **A fetch that failed can be invisible in the memo.** The sources table is
+    the *cited* set, not the gathered set, so a page that 404'd appears in a
+    memo only when something cites it — and nothing cites a record with no text
+    in it. The count survives in `Analysis.inputs.gather_failures` and in the
+    manifest, and the only trace a reader gets is stage 2's `status_reason`
+    sentence, which exists only when the extraction itself was degraded. So a
+    run where the team page died but the model still answered from the homepage
+    produces a memo that reads as complete.
+
+    Three candidate fixes, none taken: cite the `fetch_failed` record from the
+    uncovered-dimension bullet that it caused; print `gather_failures` in the
+    header beside coverage; or give the memo a "what we tried to read" line.
+    The first is the most honest and the most work — the join from *this page
+    failed* to *therefore this dimension is unknown* is not currently made
+    anywhere. TICKET-0023's missing-data paths is where this bites first.
+
 ---
 
 ## Next session — start here
@@ -1796,7 +1820,8 @@ out of it:
    is not committed and stage 2 re-gathers rather than reading the evidence
    store it already has. Read 84 before TICKET-0028.
 
-**Nothing is blocking. Four tickets in review, none Ready-and-unstarted:**
+**Nothing is blocking. Three tickets in review, one Done awaiting review of the
+whole branch, and TICKET-0025 Ready:**
 
 - [TICKET-0020](./tickets/0020-ticket-fact-extraction.md) — **in review**
   ([worklog 0031](./worklog/0031-fact-extraction.md), and
@@ -1819,9 +1844,8 @@ out of it:
   distinction lives in the manifest and the `Analysis`, which is TICKET-0022's.
   Four new gaps are recorded as inconsistencies 79–82; the one worth a decision
   is **80, the unreachable coverage gate**.
-- [TICKET-0024](./tickets/0024-ticket-memo-template-and-render.md) — **in
-  progress**; its stage-2 half is in review and the renderer is outstanding.
-  See the block below.
+- [TICKET-0024](./tickets/0024-ticket-memo-template-and-render.md) — **Done**,
+  both halves. See the block below.
 - [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
   does not, and `{{thesis}}` waits on 0021. `loadPrompt` is now what it will use.
@@ -1856,11 +1880,38 @@ out of it:
    one company; 91, a change-my-mind list that can only look up, which reads
    oddly on a TAKE_A_MEETING.
 
-**The next step is TICKET-0024's second half**: `templates/memo.md.eta` and
-`src/memo/render.ts` (D-2's documented default, no LLM in the stage). The
-renderer starts from an analysis that already carries every section with its
-caps applied and its `omitted` counts, so the template owns the header line, the
-sources table and the ordering it is given — nothing it could disagree with.
+**TICKET-0024 is Done** ([worklog
+0036](./worklog/0036-memo-template-and-render.md)) — `templates/memo.md.eta`,
+`src/memo/render.ts`, `pnpm golden` and two committed golden memos. Four things
+a new session should carry out of it:
+
+1. **The template has no decisions in it, and that cost one more schema bump.**
+   SPEC §4's *Why this call* needs somebody to choose which dimension was
+   decisive; a template that chooses is invariant 3 broken where nobody looks.
+   So `Analysis` v4 carries `why_this_call`, and stage 3 is a loop over data.
+   The stand-in for "decisive" is crude and says so: strongest covered dimension
+   for a meeting, furthest-from-ceiling otherwise.
+2. **D-2 is taken and ADR-0005 carries the counter-argument**, which is that the
+   template got thin enough that no dependency was needed. Read it before
+   changing the renderer — the reason `eta` stays is about who edits a memo, not
+   about what the code needs.
+3. **Two golden memos are the first artifacts here a non-programmer can judge.**
+   `tests/golden/memo.golden.md` (a Watch, three points short) and
+   `memo.thin.md` (a Pass forced by two disqualifiers). `pnpm golden`
+   regenerates them, `pnpm golden --check` fails when they are stale, and a
+   template change is reviewed by reading the diff.
+4. **Rendering the real analyses caught four layout defects the JSON could not
+   show** — a three-line header where SPEC has two, multiplying blank lines,
+   `why_this_call` citations that never reached the page, and an unrendered
+   plural. Seventh module in a row to change on contact with real output.
+
+**The next step is [TICKET-0025](./tickets/0025-ticket-memo-validator.md)**, the
+memo validator, which is now Ready: resolve every id in `Memo.citations` against
+the run's evidence store and hard-fail the run on a miss (ADR-0003). `BulletKind`
+exists for its other half — an uncited `fact` is a bug, an uncited `gap` is the
+honest shape of a gap. Then
+[TICKET-0026](./tickets/0026-ticket-stage-3-wiring.md), where a memo first
+reaches disk.
 [TICKET-0023](./tickets/0023-ticket-missing-data-path-tests.md) is unblocked
 except for 0026 and needs nothing decided. Two things the gate hands
 forward into stage 2:
@@ -1902,11 +1953,12 @@ The shape of the whole thing, unchanged:
    rubric gained rule 7 at TICKET-0024 without any band changing.
 10. **Stage 2's wiring** — ticket 0022, **in review**. `./pipeline analyse`
     runs offline end to end and has never made a live call.
-11. **The memo's body** — ticket 0024's stage-2 half, **in review**. Derived,
-    not written: `Analysis` v3 and `src/analyse/derive.ts`.
-12. Then the renderer, the validator, stage 3's wiring, and the sample run on
-    `AI agent infrastructure` — where the rubric's bands and these derived
-    lists get read by a person for the first time.
+11. **The memo** — ticket 0024, **Done**. Its body derived rather than written
+    (`Analysis` v4, `src/analyse/derive.ts`) and rendered by a template with no
+    decisions in it (`templates/memo.md.eta`, `src/memo/render.ts`).
+12. Then the validator, stage 3's wiring, and the sample run on `AI agent
+    infrastructure` — where the rubric's bands and these derived lists get read
+    by a person for the first time.
 
 ## Invariants a new session must not break
 

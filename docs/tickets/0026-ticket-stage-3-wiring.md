@@ -1,6 +1,6 @@
 # TICKET-0026 — Stage 3 wiring: `./pipeline memo`
 
-Status: Blocked · 0024, 0025 · Depends on: 0003, 0024, 0025 · Blocks: 0023, 0027, 0028
+Status: **Blocked** · 0025 — 0024 is Done. The renderer takes an evidence array; reading `runs/<id>/evidence/` and writing `memos/<slug>.md` is this ticket's · Depends on: 0003, 0024 (Done), 0025 · Blocks: 0023, 0027, 0028
 Reads: [ARCHITECTURE §1, §4](../ARCHITECTURE.md), [SPEC §5](../SPEC.md#5-acceptance-criteria)
 
 ## Why

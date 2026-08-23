@@ -329,7 +329,8 @@ describe("what would change my mind", () => {
     );
     const first = result.what_would_change_my_mind[0];
     expect(first?.kind).toBe("check");
-    expect(first?.text).toContain("disqualifier D-3 no longer holds");
+    expect(first?.text.startsWith("Disqualifier D-3: find ")).toBe(true);
+    expect(first?.text).toContain("would no longer be forced to Pass");
     expect(first?.evidence_ids).toEqual([idOf("s2")]);
   });
 
@@ -345,7 +346,8 @@ describe("what would change my mind", () => {
       input([dimUncovered("D1"), dimAt("D2", 0), dimAt("D3", 0), dimAt("D4", 0), dimAt("D5", 2)]),
     );
     const last = result.what_would_change_my_mind.at(-1);
-    expect(last?.text).toContain("D1 Founder–market fit & technical depth stops being unknown");
+    expect(last?.text).toContain("D1 Founder–market fit & technical depth: find ");
+    expect(last?.text).toContain("Nothing was read for this dimension");
   });
 
   it("carries no citation on a check about an absence", () => {
@@ -378,7 +380,7 @@ describe("the upgrade trigger", () => {
     const trigger = deriveMemoFields(derived).upgrade_trigger ?? "";
     expect(trigger).toContain("3 points short of 72 (score 69)");
     expect(trigger).toContain("D4 Why now");
-    expect(trigger).toContain("clears it");
+    expect(trigger).toContain("alone clears it");
   });
 
   it("falls back to a combination when no single dimension covers the gap", () => {
@@ -387,8 +389,7 @@ describe("the upgrade trigger", () => {
     expect(derived.call).toBe("WATCH");
     const trigger = deriveMemoFields(derived).upgrade_trigger ?? "";
     expect(trigger).toContain("11 points short of 72 (score 61)");
-    expect(trigger).toContain("no single dimension covers it");
-    expect(trigger).toContain("Together:");
+    expect(trigger).toContain("no single dimension covers it, but these together do");
   });
 
   it("says nothing rather than inventing a trigger it cannot support", () => {
@@ -405,7 +406,7 @@ describe("the upgrade trigger", () => {
     expect(derived.call).toBe("WATCH");
     expect(derived.score).toBe(57);
     const trigger = deriveMemoFields(derived).upgrade_trigger;
-    expect(trigger === null || trigger.includes("Together:")).toBe(true);
+    expect(trigger === null || trigger.includes("these together do")).toBe(true);
   });
 
   /**

@@ -236,7 +236,7 @@ function riskBullets(input: DeriveInput): MemoBullet[] {
       kind: "gap",
       text:
         `${dimension.id} ${dimension.name} scored in its lowest band (${dimension.band}): ` +
-        `nothing in the evidence read met ${up.to} — ${up.needs}.`,
+        `nothing in the evidence read met ${up.to}, which asks for ${up.needs}.`,
       evidence_ids: [...dimension.evidence_ids],
     });
   }
@@ -249,7 +249,8 @@ function riskBullets(input: DeriveInput): MemoBullet[] {
         kind: "gap",
         text:
           `${dimension.id} ${dimension.name} is unknown, and coverage is below the ` +
-          `${Math.round(COVERAGE_GATE * 100)}% gate: ${up?.needs ?? "no primary source was read"}.`,
+          `${Math.round(COVERAGE_GATE * 100)}% gate: nothing was read, and reading it asks ` +
+          `for ${up?.needs ?? "any primary source"}.`,
         evidence_ids: [],
       });
     }
@@ -283,12 +284,20 @@ function opportunities(dimensions: readonly Dimension[]): BandUp[] {
     .map((entry) => entry.up);
 }
 
-/** One line of "what would change my mind", from one step up the rubric. */
+/**
+ * One line of "what would change my mind", from one step up the rubric.
+ *
+ * Two short sentences — the thing to find, then what finding it is worth —
+ * rather than one conditional. A band's `needs` is a noun phrase carrying its
+ * own commas and dashes, so both "if … exists," and a dash-joined clause
+ * produced sentences a partner had to read twice. That was visible in the first
+ * three real analyses this was run over and invisible in every fixture.
+ */
 function checkOf(up: BandUp): MemoBullet {
   const text = up.uncovered
-    ? `If ${up.needs} exists, ${up.id} ${up.name} stops being unknown — it is currently ` +
+    ? `${up.id} ${up.name}: find ${up.needs}. Nothing was read for this dimension — it is ` +
       `scored at ${up.from} and drags coverage down.`
-    : `If ${up.needs} exists, ${up.id} ${up.name} moves from ${up.from} to ${up.to} ` +
+    : `${up.id} ${up.name}: find ${up.needs}. That moves it from ${up.from} to ${up.to} ` +
       `(+${up.gain ?? 0}).`;
   return { kind: "check", text, evidence_ids: [] };
 }
@@ -305,8 +314,8 @@ function changeMyMind(input: DeriveInput): MemoBullet[] {
     bullets.push({
       kind: "check",
       text:
-        `If ${refutation} exists, disqualifier ${disqualifier.id} no longer holds and the ` +
-        "call is no longer forced to Pass.",
+        `Disqualifier ${disqualifier.id}: find ${refutation}. It would then no longer hold, ` +
+        "and the call would no longer be forced to Pass.",
       evidence_ids: [...disqualifier.evidence_ids],
     });
   }
@@ -323,7 +332,10 @@ function changeMyMind(input: DeriveInput): MemoBullet[] {
 const points = (n: number): string => `${n} point${n === 1 ? "" : "s"}`;
 
 const move = (up: BandUp): string =>
-  `${up.id} ${up.name} ${up.from} to ${up.to} (+${up.gain ?? 0})`;
+  `${up.id} ${up.name} from ${up.from} to ${up.to} (+${up.gain ?? 0})`;
+
+/** A move and what it asks for, kept together — see `checkOf` on why. */
+const moveNeeding = (up: BandUp): string => `${move(up)}, by finding ${up.needs}`;
 
 /**
  * SPEC §3's checkable trigger, for a Watch and for nothing else.
@@ -383,7 +395,7 @@ function upgradeTrigger(input: DeriveInput): string | null {
   if (single) {
     return (
       `${points(deficit)} short of ${MEETING_SCORE} (score ${input.score}). ` +
-      `${move(single)} clears it: ${single.needs}${andCoverage}.`
+      `${moveNeeding(single)}, alone clears it${andCoverage}.`
     );
   }
 
@@ -397,9 +409,9 @@ function upgradeTrigger(input: DeriveInput): string | null {
   if (gained < deficit) return null;
 
   return (
-    `${points(deficit)} short of ${MEETING_SCORE} (score ${input.score}), and no single ` +
-    `dimension covers it. Together: ${taken.map(move).join(", ")} — ` +
-    `${taken.map((up) => up.needs).join("; ")}${andCoverage}.`
+    `${points(deficit)} short of ${MEETING_SCORE} (score ${input.score}); no single ` +
+    "dimension covers it, but these together do: " +
+    `${taken.map(moveNeeding).join("; ")}${andCoverage}.`
   );
 }
 

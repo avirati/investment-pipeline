@@ -452,7 +452,7 @@ export const RUBRIC: readonly DimensionSpec[] = [
         label: "5–10",
         score: 10,
         when: (o) => o.fact("product.job"),
-        needs: "a stated job: the specific task, and the person doing it, the product is for",
+        needs: "a stated job — the specific task the product is for, and the person doing it",
       },
       { label: "0–4", score: 4, when: () => true, needs: BOTTOM_BAND },
     ],

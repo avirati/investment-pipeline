@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-23 · at commit `9503aaa` · **Phase: stage 2 has run against live sources and a live provider.** Three candidates on `AI agent infrastructure`: 47 facts, 0 dropped, 117 citations all resolving, one TAKE_A_MEETING and two WATCHes. The first attempt failed entirely — `extractionSchema`'s optional fields are illegal under strict structured output (worklog 0034) — and the fix is `EXTRACTION_SCHEMA_VERSION` 2. Inconsistencies 69 and 72 are closed; five quality findings and two bookkeeping bugs are open as 85–88. The run is committed — and **`--replay` on a fresh clone overwrites it with empty analyses** (inconsistency 84, measured), which has to be settled before TICKET-0028. Next: TICKET-0024, and the decision about the `Analysis` fields SPEC §4 still wants (inconsistency 9)**
+Last updated: 2026-08-23 · at commit `daacaf8` · **Phase: the memo's body is derived and stage 3 has something to render.** `Analysis` v3 carries SPEC §4's Team / Product / Market / Risks sections, the "what would change my mind" list and the Watch upgrade trigger, all mechanical (worklog 0035) — **inconsistency 9 is closed**, the decision TICKET-0024 inherited is taken, and the committed run's three analyses were re-derived offline at v3. The rubric gained rule 7 (`needs` per band, `refuted_by` per disqualifier) so a trigger names an observation rather than a number. 959 tests. Running it over the three real analyses rewrote its own prose twice — the sixth module in a row to change on first contact with real data — and surfaced 90 and 91. Next: **TICKET-0024's second half**, the eta template and `src/memo/render.ts`; inconsistency 84 still blocks TICKET-0028.
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -638,16 +638,22 @@ Real defects, listed rather than silently patched.
    TICKET-0024 needs it. Adding fields to `Analysis` then is a `schema_version`
    bump, which is cheap now and not later.
 
-   **Half closed at TICKET-0022.** `schema_version` 2 added `status`,
-   `status_reason` and `inputs` — how the analysis was produced, which is the
-   part stage 3 cannot re-derive. The four section lists, the "what would change
-   my mind" list and the Watch upgrade trigger are **still missing**, and they
-   are a design decision rather than a schema edit: all three have to be derived
-   mechanically (invariant 1 forbids the model writing them, invariant 3 forbids
-   stage 3 inventing them). The proposal on the table is sections by grouping
-   facts under the memo's headings, and the two derived lists from the rubric's
-   own next-band-up labels plus the arithmetic distance to the next threshold.
-   TICKET-0024 inherits it.
+   **Half closed at TICKET-0022** — `schema_version` 2 added `status`,
+   `status_reason` and `inputs`, the part of *how* an analysis was produced that
+   stage 3 cannot re-derive.
+
+   **Closed at TICKET-0024** ([worklog 0035](./worklog/0035-memo-derivation.md)).
+   `schema_version` 3 adds `sections`, `what_would_change_my_mind` and
+   `upgrade_trigger`, derived by `src/analyse/derive.ts` from facts, dimensions
+   and the rubric — the proposal on the table, taken by the author with Risks
+   built from fired disqualifiers, lowest-band dimensions and (below the
+   coverage gate only) uncovered ones. The enabling change is on the rubric
+   side: **rule 7**, a `needs` sentence on every band and a `refuted_by` on
+   every disqualifier, so a trigger can say *find a named design partner*
+   instead of *score seven points higher*. Two of SPEC §4's hard rules are now
+   schema: an uncited `fact` bullet does not parse, and a section with no
+   bullets cannot be constructed. Three follow-on gaps are 90, 91 and the
+   module's own header.
 10. **ADR-0006 names three providers; two ship.** Its sketch line reads
     `LLM_PROVIDER=openai | anthropic | ollama`, while its decision paragraph
     names `@langchain/openai` as the default adapter and `.env.example` — the
@@ -1574,6 +1580,28 @@ Real defects, listed rather than silently patched.
     keeping in mind: **three of this project's gates run over committed
     artifacts, and artifacts are not source.**
 
+90. **The Market heading carries too much of the vocabulary.** SPEC §4 fixes
+    four body headings; the 24 fact keys give Team six, Product nine and Market
+    nine — and Market's nine are mostly *traction*, which is not what a partner
+    reads a Market section for. Measured on the committed run:
+    `freestyle` renders Team 3, Product 5 (+3 omitted), Market 5 (**+10
+    omitted**). Ten real observations do not reach the memo, and the five that
+    do are chosen by vocabulary order rather than by importance. The three fixes
+    are a fifth heading SPEC does not have, a per-key cap under the section cap,
+    or a rubric-weighted ordering — all of which are decisions, so none was
+    taken. Read the `omitted` counts on the committed analyses before choosing.
+
+91. **"What would change my mind" can only look up.** Every entry is a way for
+    the score to *rise*: bands hold on positive evidence, so the rubric can say
+    what would move D3 from 6–12 to 13–19 and cannot say what would move it
+    down. On the run's TAKE_A_MEETING (`agent-vault`) the memo therefore lists
+    three ways to like the company more, under a heading a partner reads as
+    *what would make me walk*. It is honest — each line is checkable and cited
+    to the rubric — and it is answering a different question from the one SPEC
+    §4 asks. The fix is in the rubric, not the derivation: a band would need to
+    state the observation that *breaks* it, which is a fifth column on every
+    band and a second pass over SPEC §2. Left open deliberately.
+
 ---
 
 ## Next session — start here
@@ -1768,7 +1796,7 @@ out of it:
    is not committed and stage 2 re-gathers rather than reading the evidence
    store it already has. Read 84 before TICKET-0028.
 
-**Nothing is blocking. Three tickets in review, one Ready:**
+**Nothing is blocking. Four tickets in review, none Ready-and-unstarted:**
 
 - [TICKET-0020](./tickets/0020-ticket-fact-extraction.md) — **in review**
   ([worklog 0031](./worklog/0031-fact-extraction.md), and
@@ -1791,21 +1819,48 @@ out of it:
   distinction lives in the manifest and the `Analysis`, which is TICKET-0022's.
   Four new gaps are recorded as inconsistencies 79–82; the one worth a decision
   is **80, the unreachable coverage gate**.
+- [TICKET-0024](./tickets/0024-ticket-memo-template-and-render.md) — **in
+  progress**; its stage-2 half is in review and the renderer is outstanding.
+  See the block below.
 - [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
   does not, and `{{thesis}}` waits on 0021. `loadPrompt` is now what it will use.
+  Note that `{{thesis}}` now has a second candidate source: rule 7's `needs`
+  sentences are the rubric in prose, and a clarifier prompt could be built from
+  them rather than from a hand-written restatement.
 
-**[TICKET-0024](./tickets/0024-ticket-memo-template-and-render.md) is now Ready
-and is the next step**: the memo template and renderer, no LLM in the stage
-(invariant 3). **It inherits one decision that TICKET-0022 did not take** —
-`Analysis` still lacks SPEC §4's Team / Product / Market / Risks lists, the
-"what would change my mind" list and the checkable upgrade trigger every Watch
-owes (inconsistency 9). They cannot be model output and they cannot be invented
-by stage 3, so they have to be *derived* in stage 2; the proposal on the table
-is sections by grouping facts under the memo's headings, and the two derived
-lists from the rubric's own next-band-up labels plus the arithmetic distance to
-the next threshold. That is a `schema_version` bump and one new module, and it
-is the author's call before 0024 starts.
+**TICKET-0024's stage-2 half is done and in review** ([worklog
+0035](./worklog/0035-memo-derivation.md)) — `Analysis` v3, rubric rule 7 and
+`src/analyse/derive.ts`, 50 new tests, 959 in total. The decision it inherited
+was put to the author and taken: **the derivation lives in stage 2**, so stage 3
+renders the analysis and nothing else. Four things a new session should carry
+out of it:
+
+1. **Inconsistency 9 is closed.** Sections, the change-my-mind list and the
+   Watch trigger are fields, derived from facts, dimensions and the rubric.
+   Two of SPEC §4's hard rules are now schema rather than renderer behaviour:
+   an uncited `fact` bullet does not parse, and an empty section cannot exist.
+2. **The rubric now says what each band asks for.** Rule 7 — a `needs` sentence
+   per band, `refuted_by` per disqualifier, read through `nextBandUp` and
+   `refutedBy`. `derive.ts` composes those sentences and states no criterion of
+   its own; a property test walks every bullet and fails on any text its inputs
+   do not contain. **If a memo ever says something neither the model nor the
+   rubric said, `derive.ts` is the file that broke.**
+3. **It rewrote its own prose twice on first contact with the real run**, which
+   no fixture could have provoked — a fixture's statement is a short sentence
+   somebody wrote to be short. Sixth module in a row. The rule from worklog
+   0028 now has a corollary: budget a live pass *and read the output as a
+   reader*, not only as a test.
+4. **Two new gaps, both in the seam between SPEC's memo and the fact
+   vocabulary**: 90, Market carrying nine keys and dropping ten observations on
+   one company; 91, a change-my-mind list that can only look up, which reads
+   oddly on a TAKE_A_MEETING.
+
+**The next step is TICKET-0024's second half**: `templates/memo.md.eta` and
+`src/memo/render.ts` (D-2's documented default, no LLM in the stage). The
+renderer starts from an analysis that already carries every section with its
+caps applied and its `omitted` counts, so the template owns the header line, the
+sources table and the ordering it is given — nothing it could disagree with.
 [TICKET-0023](./tickets/0023-ticket-missing-data-path-tests.md) is unblocked
 except for 0026 and needs nothing decided. Two things the gate hands
 forward into stage 2:
@@ -1843,11 +1898,15 @@ The shape of the whole thing, unchanged:
    rubric, loaded from a versioned file by `src/llm/prompt.ts`. Nothing renders
    it yet.
 9. **Fact extraction and the rubric** — tickets 0020 and 0021, both **in
-   review**. Both are now wired; neither has been run against a provider.
+   review**. Both have now been run against a provider (worklog 0034), and the
+   rubric gained rule 7 at TICKET-0024 without any band changing.
 10. **Stage 2's wiring** — ticket 0022, **in review**. `./pipeline analyse`
     runs offline end to end and has never made a live call.
-11. Then stage 3, and the sample run on `AI agent infrastructure` — which is
-    also where the first real stage-2 output will come from.
+11. **The memo's body** — ticket 0024's stage-2 half, **in review**. Derived,
+    not written: `Analysis` v3 and `src/analyse/derive.ts`.
+12. Then the renderer, the validator, stage 3's wiring, and the sample run on
+    `AI agent infrastructure` — where the rubric's bands and these derived
+    lists get read by a person for the first time.
 
 ## Invariants a new session must not break
 

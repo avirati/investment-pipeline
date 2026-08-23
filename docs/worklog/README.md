@@ -78,3 +78,4 @@ are unfinished, not delegated.
 | [0034](./0034-first-live-run.md) | 2026-08-23 | The first live run: 3 candidates, one schema defect no offline test could catch, 47 facts and 117 resolving citations |
 | [0035](./0035-memo-derivation.md) | 2026-08-23 | The memo's body derived in stage 2: `Analysis` v3, rubric rule 7, `src/analyse/derive.ts`; inconsistency 9 closes |
 | [0036](./0036-memo-template-and-render.md) | 2026-08-23 | The memo template and renderer, `Analysis` v4's "why this call", two golden memos; TICKET-0024 closes |
+| [0037](./0037-memo-validator.md) | 2026-08-23 | The memo validator: the pipeline's one hard fail, read back out of the rendered markdown; TICKET-0025 closes |

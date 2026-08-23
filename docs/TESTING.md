@@ -37,6 +37,23 @@ Test the **failure** path, which is the one that matters:
   not rendered.
 - A valid memo passes and every citation resolves to a readable record.
 
+**Shipped in TICKET-0025**, 21 tests in `tests/memo-validate.test.ts`, failure
+path written first. Three things about how they are staged, because they are the
+reason the tests are worth anything:
+
+- The subject is a **rendered memo**, not a hand-written string: TICKET-0024's
+  two committed goldens through the real renderer, with each failure staged by
+  editing markdown that passes. The validator reads ids and labels back out of
+  that markdown rather than trusting `Memo.citations` — checking the renderer's
+  own account of what it cited tests the renderer against itself.
+- The store is a **real `evidenceStore`** on a temp directory, so `not_found`,
+  `unreadable` and `invalid` are three real disk states rather than three stubs.
+  `unreadable` is staged as a directory where the record should be, not as
+  `chmod 000`, so it holds for a suite running as root.
+- A record on disk that the memo never cites is **not** a failure. The sources
+  table is the cited set, not the gathered set; the gathered set being invisible
+  in a memo is STATE inconsistency 92 and is a separate, open question.
+
 ### 3. URL canonicalisation and dedup — `src/source/resolve.ts`
 
 Classic quiet-bug territory. `www.` prefixes, trailing slashes, `http`→`https`,

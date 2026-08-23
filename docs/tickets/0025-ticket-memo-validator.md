@@ -1,6 +1,6 @@
 # TICKET-0025 — Citation validator (`src/memo/validate.ts`)
 
-Status: **Ready** — 0024 is Done. `src/memo/render.ts` emits `Memo.citations`, and `BulletKind` (`fact` | `gap` | `check` | `summary`) is there so an uncited *claim about the company* hard-fails while an honest gap does not · Depends on: 0007, 0024 (Done) · Blocks: 0026
+Status: **Done** — [worklog 0037](../worklog/0037-memo-validator.md). `src/memo/validate.ts` reads the ids and labels back out of the *rendered markdown* rather than trusting `Memo.citations`; all three acceptance items met, 21 tests, failure path first. The `exitFor` branch that turns `MemoValidationError` into a process exit is TICKET-0026's, because `memo` is still `notImplemented` · Depends on: 0007, 0024 (Done) · Blocks: 0026
 Reads: [ADR-0003](../adr/0003-evidence-store-and-citations.md), [ARCHITECTURE §5](../ARCHITECTURE.md#5-failure-policy), [TESTING §2](../TESTING.md)
 
 ## Why

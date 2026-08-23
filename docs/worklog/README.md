@@ -79,3 +79,4 @@ are unfinished, not delegated.
 | [0035](./0035-memo-derivation.md) | 2026-08-23 | The memo's body derived in stage 2: `Analysis` v3, rubric rule 7, `src/analyse/derive.ts`; inconsistency 9 closes |
 | [0036](./0036-memo-template-and-render.md) | 2026-08-23 | The memo template and renderer, `Analysis` v4's "why this call", two golden memos; TICKET-0024 closes |
 | [0037](./0037-memo-validator.md) | 2026-08-23 | The memo validator: the pipeline's one hard fail, read back out of the rendered markdown; TICKET-0025 closes |
+| [0038](./0038-stage-3-wiring.md) | 2026-08-23 | Stage 3 wired: `./pipeline memo` writes validated memos offline, and exit 3 becomes reachable; TICKET-0026 closes |

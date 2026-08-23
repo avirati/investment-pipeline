@@ -19,7 +19,8 @@ export const EXIT = {
   INVARIANT: 3,
   /**
    * A stage this build does not have yet. Temporary scaffolding: it disappears
-   * as tickets 0012, 0022, 0026 and 0027 land. 70 is sysexits' EX_SOFTWARE.
+   * as tickets 0012, 0022, 0026 and 0027 land — 0027 is the last of them, and
+   * `run` is the last caller. 70 is sysexits' EX_SOFTWARE.
    */
   UNIMPLEMENTED: 70,
 } as const;

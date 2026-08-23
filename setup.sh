@@ -63,9 +63,9 @@ info "typecheck clean"
 # --- 6. offline self-verification -------------------------------------------
 # TODO(0028): ARCHITECTURE §7.1 step 6 re-renders the committed sample run —
 # `./pipeline memo --run <committed_sample>` — to prove the toolchain works with
-# no network and no API key. It cannot run yet: `memo` exits 70 until
-# TICKET-0026, and there is no committed sample run until TICKET-0028. That
-# ticket adds this step and is what closes the SCOPE #11 promise.
+# no network and no API key. The command itself works as of TICKET-0026; what is
+# missing is a run to point it at. TICKET-0028 commits one, adds this step, and
+# is what closes the SCOPE #11 promise.
 printf '\nSetup complete. Next:\n'
 printf "  ./pipeline --help\n"
 printf "  pnpm test          # offline, no API key needed\n"

@@ -1,6 +1,6 @@
 # TICKET-0026 — Stage 3 wiring: `./pipeline memo`
 
-Status: **Ready** — 0024 and 0025 are Done. The renderer takes an evidence array and the validator takes a store; reading `runs/<id>/evidence/`, writing `memos/<slug>.md`, and mapping `MemoValidationError` to `EXIT.INVARIANT` in `src/cli.ts`'s `exitFor` are this ticket's · Depends on: 0003, 0024 (Done), 0025 (Done) · Blocks: 0023, 0027, 0028
+Status: **Done** — [worklog 0038](../worklog/0038-stage-3-wiring.md). `src/memo/index.ts` renders and validates the whole set before writing anything, and `exitFor` maps `MemoValidationError` to `EXIT.INVARIANT` · Depends on: 0003 (Done), 0024 (Done), 0025 (Done) · Blocks: 0023, 0027, 0028
 Reads: [ARCHITECTURE §1, §4](../ARCHITECTURE.md), [SPEC §5](../SPEC.md#5-acceptance-criteria)
 
 ## Why

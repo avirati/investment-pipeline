@@ -1,6 +1,6 @@
 # TICKET-0027 — `./pipeline run` and replay
 
-Status: Blocked · 0026 · Depends on: 0012 (Done), 0022 (In review), 0026 · Blocks: 0028
+Status: **Ready** — 0026 is Done; 0022 is shipped and with the author. It is also the ticket that retires `EXIT.UNIMPLEMENTED`, whose last caller is now `run` alone · Depends on: 0012 (Done), 0022 (In review), 0026 (Done) · Blocks: 0028
 Reads: [ARCHITECTURE §4, §7](../ARCHITECTURE.md), [SPEC §5](../SPEC.md#5-acceptance-criteria), [ADR-0001](../adr/0001-file-based-staged-pipeline.md)
 
 ## Why

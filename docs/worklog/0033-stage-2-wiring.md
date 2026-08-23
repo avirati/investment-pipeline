@@ -14,8 +14,8 @@ keep the worklogs going with reflection hints, update ticket statuses.
 
 ## What landed
 
-| Commit    | Contents                                                          | Tests |
-| --------- | ----------------------------------------------------------------- | ----- |
+| Commit    | Contents                                                           | Tests |
+| --------- | ------------------------------------------------------------------ | ----- |
 | `2172694` | `requireLlmNames` / `replayModel` — a replay needs no API key      | +8    |
 | `f282357` | `Analysis` v2 — `status`, `status_reason`, `inputs`                | +3    |
 | `73098b5` | `src/analyse/index.ts` — the stage, the manifest record, the files | +15   |
@@ -28,7 +28,7 @@ and with no `.env`. No live run yet — see gap 1, which is the same gap
 ## Five decisions
 
 **1 — Gathering is a barrier; extraction is not.** `gatherRun` divides the
-request budget by the candidate count *before* it touches any candidate, which
+request budget by the candidate count _before_ it touches any candidate, which
 is what makes the allowance uniform rather than first-come-first-served
 ([inconsistency 60](../STATE.md)). That only works if the count is known, so the
 gather phase completes for everybody before extraction starts. Extraction then
@@ -41,14 +41,14 @@ to edit the file.
 **2 — A candidate's failure is never the run's, and there are exactly two
 exceptions.** Everything inside stage 2 already returns failures as data: both
 adapters, the fetch layer, and `extractFacts`. So the catch in this layer is for
-the cases none of them predicted — and the two errors that *must* escape it are
+the cases none of them predicted — and the two errors that _must_ escape it are
 the operator's rather than the candidate's. A cold cache under `--replay` and a
 cache entry a moved schema left behind both mean the run should stop and be
 re-issued, so `LlmCallError` passes straight through and the CLI maps it to a
 usage error.
 
 **3 — `--replay` spends nothing in either currency.** The ticket says the LLM
-cache; the acceptance says *zero network calls, asserted, not assumed*. So a
+cache; the acceptance says _zero network calls, asserted, not assumed_. So a
 replay suspends the HTTP cache's staleness rule — a run re-read a week later is
 exactly the case `HTTP_CACHE_MAX_AGE_MS` exists to expire, and expiring it would
 turn a replay into a re-fetch — and replaces the transport with one that
@@ -58,7 +58,7 @@ reached.
 
 That is also why `replayModel` exists. `callModel` answers a replay entirely
 from the cache and never touches the adapter, and the cache key holds only the
-provider's and the model's *names* — so demanding `OPENAI_API_KEY` for a request
+provider's and the model's _names_ — so demanding `OPENAI_API_KEY` for a request
 that will not be sent is `config.ts` rule 1 broken in the direction nobody
 notices. A fresh clone with a committed cache and no key can now re-run stage 2.
 
@@ -70,7 +70,7 @@ floors with 0% coverage and a PASS. Stage 3 has no LLM and may not guess
 verbatim, and an `inputs` record: evidence gathered, evidence readable, gather
 failures, and the extraction's own status, attempts and drops by kind. This is
 the third of the three things STATE handed this ticket, and it is deliberately
-*not* a second copy of the manifest — a memo for one company must render from
+_not_ a second copy of the manifest — a memo for one company must render from
 that company's analysis alone.
 
 **5 — Drops are counted in both places.**
@@ -107,7 +107,7 @@ plus five CLI cases that exit before a request is made:
 
 1. **Still no live run.** [Inconsistency 69](../STATE.md) again, and it now has
    a name: every stage-2 module except the two adapters has been built and
-   tested entirely against stubs. Both live runs that *did* happen changed the
+   tested entirely against stubs. Both live runs that _did_ happen changed the
    code, twice each. The prompt has still never been sent to a provider
    ([72](../STATE.md)), `MODEL_EXTRACT` is still empty, and `./pipeline analyse`
    has never spent a token. This is the ticket where that was supposed to
@@ -130,8 +130,8 @@ plus five CLI cases that exit before a request is made:
    would produce, and a reviewer should read it as "something we did not
    predict" rather than as a category with known members.
 4. **A replay writes new `fetch_failed` records when the HTTP cache is cold.**
-   The refusing transport becomes evidence, which is honest — *we did not look*
-   rather than *we looked and found nothing* — but it means a replay of a run
+   The refusing transport becomes evidence, which is honest — _we did not look_
+   rather than _we looked and found nothing_ — but it means a replay of a run
    whose HTTP cache has been cleared adds records to the run's evidence
    directory rather than reproducing it exactly. `.cache/http/` is not
    committed, so this is the state a fresh clone is in. New STATE
@@ -140,7 +140,7 @@ plus five CLI cases that exit before a request is made:
    9](../STATE.md) is only half closed: the artifact now says how it was
    produced, and it still does not carry SPEC §4's Team / Product / Market /
    Risks split, the "what would change my mind" list, or the checkable upgrade
-   trigger every Watch owes. All three have to be *derived*, not written by a
+   trigger every Watch owes. All three have to be _derived_, not written by a
    model (invariant 1) and not invented by stage 3 (invariant 3) — which makes
    them a design decision about what can be mechanically said, not a schema
    change. Left for review rather than taken unilaterally; see **Next**.
@@ -154,19 +154,7 @@ the stage-2 output of a real run, because there has not been one.
 
 ## Reflection
 
-TODO(author) — worth writing after the first live `analyse`, not before. Hints,
-not answers:
-
-- Three stage-2 modules were built against stubs and joined without ever being
-  run for real. Both adapter tickets that *did* run live changed their code on
-  the day. What did deferring the live pass a fourth time actually buy, and what
-  is the honest expectation of what the first real run breaks?
-- `--replay` was built to be structurally unable to spend anything, which cost
-  an addition to two Done modules. Was that the right amount of rigour for a
-  take-home, or gold-plating a flag the reviewer will use once?
-- The `failed` status has no natural cause, and `partial` now covers both a
-  silent model and an empty world. Is that a distinction a partner reading a
-  memo will care about, or bookkeeping that only the pipeline's author reads?
+We can now do a live run with LLM. The run should cache LLM responses while omitting HTTP responses (expected, as per ADR)
 
 ## Next
 

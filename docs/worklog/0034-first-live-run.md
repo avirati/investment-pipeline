@@ -43,7 +43,7 @@ optional. That is rule 2 of the schema and it is deliberate: a fact the model
 cannot complete should arrive to be dropped with a reason rather than costing
 the whole response. **OpenAI's strict structured-output mode refuses a schema
 whose `required` omits any property.** Optionality has to be expressed as a
-nullable *type*, not as an absent key.
+nullable _type_, not as an absent key.
 
 Nothing offline could have caught this. Every test in the suite parses the
 schema with Zod, and Zod is perfectly happy with it; the rule being broken
@@ -59,11 +59,11 @@ rehearsed.
 
 **Stage 2, after the fix.**
 
-| Candidate | Call | Score | Coverage | Facts |
-|---|---|---|---|---|
-| `agent-vault` | TAKE_A_MEETING | 75/100 | 100% | 12 |
-| `klaus` | WATCH | 63/100 | 80% | 9 |
-| `freestyle` | WATCH | 55/100 | 100% | 26 |
+| Candidate     | Call           | Score  | Coverage | Facts |
+| ------------- | -------------- | ------ | -------- | ----- |
+| `agent-vault` | TAKE_A_MEETING | 75/100 | 100%     | 12    |
+| `klaus`       | WATCH          | 63/100 | 80%      | 9     |
+| `freestyle`   | WATCH          | 55/100 | 100%     | 26    |
 
 47 facts kept, **0 dropped**, 3 calls, 22,100 input and 3,223 output tokens,
 `cost_usd: null` because `PRICES` is empty (inconsistency 54). **117 citations
@@ -93,10 +93,10 @@ three are the rubric and the prompt meeting reality.
 
 1. **An absence was written as a fact.** Freestyle's answer includes
    `funding.raised_usd: "There is no information about funding or capital raised
-   in the provided records."` That is a negative finding filed under a key whose
+in the provided records."` That is a negative finding filed under a key whose
    hint asks for "an amount, round, date or investor the source states", and it
    is invariant 4 broken in the one place the pipeline cannot see it: unknown is
-   supposed to be *absent*, not a cited fact. It does not move a score — no
+   supposed to be _absent_, not a cited fact. It does not move a score — no
    dimension reads that key — but it would reach a memo as a bullet. Prompt v2's
    problem. New inconsistency 85.
 2. **A fact cited all eight records at once.** The same fact. A citation list
@@ -114,7 +114,7 @@ three are the rubric and the prompt meeting reality.
    check anything against.
 5. **The top-scoring candidate is not a seed-stage company.** `agent-vault` is a
    repository belonging to Infisical, an established funded company, and it took
-   the only TAKE_A_MEETING in the run at 75/100. Stage 1 sourced a *project*, not
+   the only TAKE_A_MEETING in the run at 75/100. Stage 1 sourced a _project_, not
    a company, and nothing downstream can tell the difference — the gate
    (TICKET-0013) found this class and it is inconsistency 45's neighbour. Worth
    holding against the sample run at TICKET-0028.
@@ -147,7 +147,7 @@ three are the rubric and the prompt meeting reality.
 | Commit    | Contents                                                       | Tests |
 | --------- | -------------------------------------------------------------- | ----- |
 | `9503aaa` | `extractionSchema` required-and-nullable, version 2, the guard | +2    |
-| _(chore)_ | `biome.json` stops linting `.cache/` — see observation 8          | —     |
+| _(chore)_ | `biome.json` stops linting `.cache/` — see observation 8       | —     |
 
 **915 tests**, typecheck and lint clean. The run's own artifacts — `runs/`,
 three `.cache/llm/` entries — are **left uncommitted** for review; committing
@@ -162,21 +162,28 @@ checked against the source pages yet.
 
 ## Reflection
 
-TODO(author) — the first run is the cheapest honest evidence in the project, so
-this is worth writing while it is fresh. Hints, not answers:
+Live run exposed a schema issue, which was not caught with offline tests.
+Scoring seems to hold as well, for the small set of 3 smoke runs
 
-- The defect that broke it was invisible to 915 offline tests, and one live call
-  found it in eight seconds. Four tickets deferred this pass. What is the actual
-  rule going forward — every ticket that touches a provider spends a dollar
-  before it is called Done?
-- The failure mode was *good*: the run completed, recorded why, and still
-  scored. Was that worth the design cost of ARCHITECTURE §5, or would a crash
-  have been more honest and cheaper to build?
-- The top score in the run went to a large company's side project. The rubric
-  did nothing wrong. Where does that get fixed — sourcing, a disqualifier, or a
-  human reading the list?
-- 26 facts for Freestyle against 9 for Klaus, from the same prompt. Is that the
-  evidence being thicker, or the model being chattier where there is more text?
+## Correction — after the run was committed
+
+The author committed the run's artifacts (`200e1a3`) and the fix branch was
+fast-forwarded into `feat/0022-stage-2-wiring`. Two things follow that this
+entry did not know when it was written:
+
+- The `biome.json` fix in observation 8 landed **one commit before** it was
+  needed. Had the order been reversed, `pnpm lint` would have failed on the
+  committed cache entries.
+- **Inconsistency 84 was measured on a fresh `git clone` and is worse than it
+  was written.** `--replay` with no `.env` and no `.cache/http/` does not merely
+  add `fetch_failed` records: it **overwrites the committed analyses**, taking
+  all three from `TAKE_A_MEETING 75 / WATCH 63 / WATCH 55` to `PASS 25` at 0%
+  coverage, rewriting the manifest, and adding seven records. The committed LLM
+  cache is never consulted — `0 calls, 0 from cache` — because an empty bundle
+  short-circuits at `no_evidence` before a call is made. So the artifact that
+  exists to make a clone replayable is unreachable on the clone it exists for.
+  The three candidate fixes are written up at inconsistency 84 and TICKET-0028
+  now carries it.
 
 ## Next
 

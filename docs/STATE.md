@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-23 · at commit `9503aaa` · **Phase: stage 2 has run against live sources and a live provider.** Three candidates on `AI agent infrastructure`: 47 facts, 0 dropped, 117 citations all resolving, one TAKE_A_MEETING and two WATCHes. The first attempt failed entirely — `extractionSchema`'s optional fields are illegal under strict structured output (worklog 0034) — and the fix is `EXTRACTION_SCHEMA_VERSION` 2. Inconsistencies 69 and 72 are closed; five quality findings and two bookkeeping bugs are open as 85–88. Next: TICKET-0024, and the decision about the `Analysis` fields SPEC §4 still wants (inconsistency 9)**
+Last updated: 2026-08-23 · at commit `9503aaa` · **Phase: stage 2 has run against live sources and a live provider.** Three candidates on `AI agent infrastructure`: 47 facts, 0 dropped, 117 citations all resolving, one TAKE_A_MEETING and two WATCHes. The first attempt failed entirely — `extractionSchema`'s optional fields are illegal under strict structured output (worklog 0034) — and the fix is `EXTRACTION_SCHEMA_VERSION` 2. Inconsistencies 69 and 72 are closed; five quality findings and two bookkeeping bugs are open as 85–88. The run is committed — and **`--replay` on a fresh clone overwrites it with empty analyses** (inconsistency 84, measured), which has to be settled before TICKET-0028. Next: TICKET-0024, and the decision about the `Analysis` fields SPEC §4 still wants (inconsistency 9)**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -1503,6 +1503,29 @@ Real defects, listed rather than silently patched.
     tolerates this, commits its HTTP cache too, or teaches stage 2 to rebuild a
     bundle from the evidence store instead of re-fetching.
 
+    **Measured, and it is worse than this said.** With the first live run
+    committed, `--replay` was run from a fresh `git clone` with no `.env` and no
+    `.cache/http/`. It does not merely add records: it **overwrites the
+    committed analyses with empty ones**. All three went from
+    `TAKE_A_MEETING 75 / WATCH 63 / WATCH 55` to `PASS 25` at 0% coverage, the
+    manifest was rewritten, and seven new `fetch_failed` records appeared. The
+    committed LLM cache was never consulted — `0 calls, 0 from cache` — because
+    an empty bundle short-circuits at `no_evidence` before a call is made, so
+    the one artifact that *is* committed for replayability is unreachable on the
+    clone it exists for.
+
+    This breaks two submission-checklist lines: the sample run's outputs are
+    readable without running anything, but one documented command destroys them,
+    and "re-render from committed artifacts with zero API calls" holds for stage
+    3 and not for stage 2. Three fixes, cheapest first: **(a)** refuse to
+    overwrite an existing analysis without a flag — a safety net worth having
+    whichever else is chosen; **(b)** commit `.cache/http/` as well, which makes
+    a replay reproduce exactly and costs repo size and raw pages in git;
+    **(c)** teach a replay to rebuild bundles from `runs/<id>/evidence/` instead
+    of re-fetching, which is the principled fix, needs signals re-derived from
+    the stored payloads, and is not small. Decide before TICKET-0028 commits the
+    real sample run.
+
 85. **An absence can be written as a fact.** The first live run produced
     `funding.raised_usd: "There is no information about funding or capital
     raised in the provided records."` — a negative finding filed under a key
@@ -1736,12 +1759,14 @@ out of it:
    code's** — inconsistencies 85 and 86, and 79 arriving where it was predicted
    (a GitHub username scoring D1 as a named person). A prompt v2 is justified and
    needs a CHANGELOG entry measured against this run.
-4. **The run is uncommitted.** `runs/2026-08-23-ai-agent-infrastructure/` and
-   three `.cache/llm/` entries are on disk and not in git. Committing a run is
-   TICKET-0028's decision, and this one was a smoke test, not the sample. It did
-   flush out inconsistency 89 on the way — `pnpm lint` would have failed on the
-   first committed cache entry, because `biome.json` excluded `runs` and not
-   `.cache`.
+4. **The run is now committed** (`200e1a3`, the author's commit), and
+   committing it flushed out two things. Inconsistency 89: `pnpm lint` would
+   have failed on the first committed cache entry, because `biome.json` excluded
+   `runs` and not `.cache` — fixed one commit earlier. And inconsistency 84,
+   measured on a fresh clone and worse than it was written: **`--replay`
+   overwrites the committed analyses with empty ones**, because the HTTP cache
+   is not committed and stage 2 re-gathers rather than reading the evidence
+   store it already has. Read 84 before TICKET-0028.
 
 **Nothing is blocking. Three tickets in review, one Ready:**
 

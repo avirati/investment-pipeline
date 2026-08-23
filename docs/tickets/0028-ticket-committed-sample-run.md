@@ -1,6 +1,6 @@
 # TICKET-0028 — Commit the sample run and close `setup.sh`
 
-Status: Blocked · 0013, 0023, 0027 · Depends on: 0004, 0013, 0023, 0027 · Blocks: 0029
+Status: Blocked · 0013, 0023, 0027 · Depends on: 0004, 0013, 0023, 0027 · Blocks: 0029 · **Carries STATE inconsistency 84**: with a run committed, `--replay` from a fresh clone overwrites its analyses with empty ones (measured, worklog 0034). Settle that before committing the real sample run
 Reads: [SCOPE](../SCOPE.md) in-scope #8, [ARCHITECTURE §7.1](../ARCHITECTURE.md#71-setup-and-the-wrapper-script), [STATE](../STATE.md) inconsistency #3 and D-5
 
 ## Why

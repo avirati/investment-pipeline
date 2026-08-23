@@ -23,6 +23,7 @@ import {
 } from "../manifest.js";
 import { RUNS_ROOT, type RunPaths, runPaths } from "../run.js";
 import { mapWithConcurrency, type RequestPool } from "./budget.js";
+import { deriveMemoFields } from "./derive.js";
 import { type ExtractResult, extractFacts } from "./extract.js";
 import { type Bundle, gatherRun } from "./gather.js";
 import { scoreCandidate } from "./score.js";
@@ -317,6 +318,10 @@ function statusOf(extract: ExtractResult): { status: AnalysisStatus; reason: str
  * Bundle plus facts into the artifact stage 3 renders. The scoring call is the
  * only place a score comes into existence (CLAUDE.md invariant 1); everything
  * here is arithmetic and bookkeeping around it.
+ *
+ * `deriveMemoFields` runs after the scoring and reads its output, because the
+ * memo's Risks and its upgrade trigger are statements about bands and the call
+ * — they cannot be computed before the number they describe exists.
  */
 export function analysisFor(bundle: Bundle, extract: ExtractResult): Analysis {
   const scored = scoreCandidate({
@@ -325,12 +330,14 @@ export function analysisFor(bundle: Bundle, extract: ExtractResult): Analysis {
     evidence: bundle.evidence,
   });
   const { status, reason } = statusOf(extract);
+  const derived = deriveMemoFields({ facts: extract.facts, ...scored });
 
   return AnalysisSchema.parse({
     schema_version: ANALYSIS_SCHEMA_VERSION,
     candidate: bundle.candidate,
     facts: extract.facts,
     ...scored,
+    ...derived,
     status,
     status_reason: reason,
     inputs: {

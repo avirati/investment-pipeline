@@ -107,6 +107,22 @@ const MODEL_VARIABLE = {
 export type LlmRole = keyof typeof MODEL_VARIABLE;
 export const LLM_ROLES = Object.keys(MODEL_VARIABLE) as LlmRole[];
 
+/**
+ * Provider and model, without the key — everything that names a call and
+ * nothing that authorises one.
+ *
+ * It exists because `--replay` answers from the committed cache and never
+ * reaches a provider (`callModel`, rule 4), while the cache key is built from
+ * the provider's and the model's *names*. Demanding `OPENAI_API_KEY` for a
+ * request that will not be sent is rule 1 of this file broken in the direction
+ * nobody notices: failing early for a variable the run will never read.
+ */
+export interface LlmNames {
+  provider: LlmProvider;
+  role: LlmRole;
+  model: string;
+}
+
 export interface LlmConfig {
   provider: LlmProvider;
   role: LlmRole;
@@ -128,47 +144,76 @@ function notSet(variable: EnvVariable): string {
   return `not set — ${VARIABLES[variable]}`;
 }
 
+type Complain = (variable: EnvVariable, detail: string) => void;
+
+/**
+ * The half of the environment that names a call rather than authorises one.
+ * Shared by both readers below so that "which provider" and "which model" are
+ * decided in one place; the key is the only thing they disagree about.
+ */
+function readNames(
+  env: z.infer<typeof RawLlmEnv>,
+  role: LlmRole,
+  problem: Complain,
+): { provider: LlmProvider | null; model: string | null } {
+  const provider = env.LLM_PROVIDER;
+  if (provider === undefined) {
+    problem("LLM_PROVIDER", `${notSet("LLM_PROVIDER")} — one of: ${LLM_PROVIDERS.join(", ")}`);
+  } else if (!(LLM_PROVIDERS as readonly string[]).includes(provider)) {
+    problem("LLM_PROVIDER", `'${provider}' has no adapter — one of: ${LLM_PROVIDERS.join(", ")}`);
+  }
+
+  const modelVariable = MODEL_VARIABLE[role];
+  const model = env[modelVariable];
+  if (model === undefined) problem(modelVariable, notSet(modelVariable));
+
+  const usable =
+    provider !== undefined && (LLM_PROVIDERS as readonly string[]).includes(provider)
+      ? (provider as LlmProvider)
+      : null;
+  return { provider: usable, model: model ?? null };
+}
+
 /**
  * Role-specific on purpose. Stage 1 plans queries with `analyse` long before
  * `extract` is configured, and failing a run for a variable it will never read
  * is the "fail late" rule broken in the other direction.
  */
 function llmConfigSchema(role: LlmRole) {
-  const modelVariable = MODEL_VARIABLE[role];
-
   return RawLlmEnv.transform((env, ctx): LlmConfig => {
-    const problem = (variable: EnvVariable, detail: string): void => {
+    const problem: Complain = (variable, detail) => {
       ctx.addIssue({ code: "custom", path: [variable], message: detail });
     };
 
-    const provider = env.LLM_PROVIDER;
-    if (provider === undefined) {
-      problem("LLM_PROVIDER", `${notSet("LLM_PROVIDER")} — one of: ${LLM_PROVIDERS.join(", ")}`);
-    } else if (!(LLM_PROVIDERS as readonly string[]).includes(provider)) {
-      problem("LLM_PROVIDER", `'${provider}' has no adapter — one of: ${LLM_PROVIDERS.join(", ")}`);
-    }
-
-    const model = env[modelVariable];
-    if (model === undefined) problem(modelVariable, notSet(modelVariable));
+    const { provider, model } = readNames(env, role, problem);
 
     // The key variable is only knowable once the provider is, so an unusable
     // LLM_PROVIDER reports alone rather than guessing which key to ask for.
     let apiKey: string | undefined;
-    if (provider !== undefined && (LLM_PROVIDERS as readonly string[]).includes(provider)) {
-      const keyVariable = KEY_VARIABLE[provider as LlmProvider];
+    if (provider !== null) {
+      const keyVariable = KEY_VARIABLE[provider];
       apiKey = env[keyVariable];
       if (apiKey === undefined) problem(keyVariable, notSet(keyVariable));
     }
 
-    if (provider === undefined || model === undefined || apiKey === undefined) return z.NEVER;
+    if (provider === null || model === null || apiKey === undefined) return z.NEVER;
 
     return {
-      provider: provider as LlmProvider,
+      provider,
       role,
       model,
       api_key: apiKey,
-      toJSON: () => ({ provider: provider as LlmProvider, role, model, api_key: "[redacted]" }),
+      toJSON: () => ({ provider, role, model, api_key: "[redacted]" }),
     };
+  });
+}
+
+function llmNamesSchema(role: LlmRole) {
+  return RawLlmEnv.transform((env, ctx): LlmNames => {
+    const { provider, model } = readNames(env, role, (variable, detail) => {
+      ctx.addIssue({ code: "custom", path: [variable], message: detail });
+    });
+    return provider === null || model === null ? z.NEVER : { provider, role, model };
   });
 }
 
@@ -189,6 +234,17 @@ function toConfigError(error: z.ZodError, summary: string): ConfigError {
  */
 export function requireLlmConfig(role: LlmRole, env: EnvSource = process.env): LlmConfig {
   const result = llmConfigSchema(role).safeParse(env);
+  if (result.success) return result.data;
+  throw toConfigError(result.error, `LLM configuration for the '${role}' role is incomplete:`);
+}
+
+/**
+ * The same resolution minus the key, for a path that will not make a call.
+ * Never call this before a real call: a run that is about to spend money should
+ * fail on a missing key here, not inside the provider.
+ */
+export function requireLlmNames(role: LlmRole, env: EnvSource = process.env): LlmNames {
+  const result = llmNamesSchema(role).safeParse(env);
   if (result.success) return result.data;
   throw toConfigError(result.error, `LLM configuration for the '${role}' role is incomplete:`);
 }

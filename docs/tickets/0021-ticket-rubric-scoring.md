@@ -1,6 +1,6 @@
 # TICKET-0021 — The rubric (`src/analyse/score.ts`)
 
-Status: Blocked · 0020 · Depends on: 0005, 0020 · Blocks: 0022
+Status: **In review** — [worklog 0032](../worklog/0032-rubric-scoring.md). `src/analyse/score.ts` and 98 tests; the full TESTING §1 list is met offline. Four gaps are recorded in the module header and in STATE rather than fixed — the coverage gate is arithmetically unreachable (inconsistency 80), HN still contributes no metric (67), and the bands remain unvalidated against any real company (SCOPE, TICKET-0028) · Depends on: 0005 (Done), 0020 (In review) · Blocks: 0022
 Reads: [SPEC §1, §2, §3](../SPEC.md), [ADR-0002](../adr/0002-deterministic-scoring.md), [ADR-0007](../adr/0007-thesis-selection.md), [TESTING §1](../TESTING.md)
 
 ## Why

@@ -100,6 +100,26 @@ over hand-written facts, so they are analyses this pipeline could emit.
 `pnpm golden` regenerates the memos; `pnpm golden --check` fails when they are
 stale. See `tests/golden/README.md`.
 
+**TICKET-0026 ties the wiring to the same snapshot rather than adding a second
+one.** `tests/memo-run.test.ts` assembles a run directory from the golden
+analysis and its evidence, runs stage 3 end to end, and compares the file it
+wrote in `memos/<run_id>/` byte-for-byte with `memo.golden.md`. A template
+change is still reviewed by reading one diff.
+
+### 8. Stage 3 offline — `src/memo/index.ts`
+
+The guarantee `setup.sh` step 6 will rest on, asserted rather than intended:
+
+- A whole run renders with `globalThis.fetch` replaced by a function that
+  **throws**. A stub that counts requests proves the path did not make one; a
+  stub that cannot succeed proves it could not have.
+- The same run renders with every `LLM_*`, `MODEL_*`, `ANTHROPIC_*`, `OPENAI_*`
+  and `GITHUB_*` variable removed from the environment.
+- Two passes produce byte-identical memos, and the second reports every one of
+  them unchanged.
+- An unresolvable citation leaves `memos/` empty and the manifest without a
+  stage-3 record — the failure writes nothing at all.
+
 ---
 
 ## What is not tested

@@ -73,11 +73,11 @@ index of the same thing. Three values, and only three:
 | [0020](./0020-ticket-fact-extraction.md) | Fact extraction (2b) | Facts only, ids enforced | **In review** — [worklog 0031](../worklog/0031-fact-extraction.md); the first live capture is outstanding |
 | [0021](./0021-ticket-rubric-scoring.md) | The rubric | The only place a score exists | **In review** — [worklog 0032](../worklog/0032-rubric-scoring.md) |
 | [0022](./0022-ticket-stage-2-wiring.md) | Stage 2 wiring | `./pipeline analyse` · `Analysis` v2 | **In review** — [worklog 0033](../worklog/0033-stage-2-wiring.md) |
-| [0023](./0023-ticket-missing-data-path-tests.md) | Missing-data path tests | Robustness as behaviour | Blocked · 0026 |
+| [0023](./0023-ticket-missing-data-path-tests.md) | Missing-data path tests | Robustness as behaviour | **Ready** |
 | [0024](./0024-ticket-memo-template-and-render.md) | Memo template and renderer | One page, no LLM · **D-2** | Done — [worklog 0036](../worklog/0036-memo-template-and-render.md) |
 | [0025](./0025-ticket-memo-validator.md) | Citation validator | The one hard fail | Done — [worklog 0037](../worklog/0037-memo-validator.md) |
-| [0026](./0026-ticket-stage-3-wiring.md) | Stage 3 wiring | `./pipeline memo`, offline | **Ready** — carries `exitFor`'s `MemoValidationError` branch |
-| [0027](./0027-ticket-run-command-and-replay.md) | `run` and replay | One command · full manifest | Blocked · 0026 |
+| [0026](./0026-ticket-stage-3-wiring.md) | Stage 3 wiring | `./pipeline memo`, offline | Done — [worklog 0038](../worklog/0038-stage-3-wiring.md) |
+| [0027](./0027-ticket-run-command-and-replay.md) | `run` and replay | One command · full manifest | **Ready** — retires `EXIT.UNIMPLEMENTED` |
 | [0028](./0028-ticket-committed-sample-run.md) | Committed sample run | `setup.sh` step 6 · no key needed | Blocked · 0013, 0023, 0027 |
 | [0029](./0029-ticket-docs-closeout.md) | Docs closeout | STATE, worklogs, checklist | Blocked · 0028 |
 | [0030](./0030-ticket-walkthrough-video.md) | Walkthrough video | The other half of the deliverable | Blocked · 0029 |

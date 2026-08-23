@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-23 · at commit `bbfd68d` · **Phase: the memo is now checkable.** TICKET-0025 is Done — `src/memo/validate.ts` reads the ids and labels back out of the *rendered markdown* (not `Memo.citations`, which is the renderer's own account of itself), resolves each against the run's evidence store, and hard-fails on a miss, on a table that disagrees with the body, or on a header score that is not the sum of the dimensions (worklog 0037). 1006 tests, failure path first. New gap: 93 — the validator now knows the template's layout. Next: **TICKET-0026**, where a memo first reaches disk and `MemoValidationError` first reaches a process exit. Inconsistency 84 still blocks TICKET-0028.
+Last updated: 2026-08-23 · at commit `81c914a` · **Phase: a memo now reaches disk.** TICKET-0026 is Done — `./pipeline memo --run <id>` reads `analyses/*.json`, reads back only the evidence each analysis cites, renders, validates the whole set, and writes `memos/<run_id>/<slug>.md` (worklog 0038). Nothing is written unless every memo passes, so a failed citation check leaves `memos/` empty and exits 3 — the pipeline's one hard fail now reaches a process exit. 1031 tests, offline asserted with a `fetch` that throws. Two new gaps: 94, a stale memo is never removed; 95, an operator cannot see the memo that failed. Next: **TICKET-0027** (`./pipeline run`, and the end of `EXIT.UNIMPLEMENTED`) or **TICKET-0023** (missing-data paths) — either order. Inconsistency 84 still blocks TICKET-0028.
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -10,8 +10,9 @@ allowed to go stale, so update it at the end of every session.
 ## Where things stand
 
 Specification is written and committed. The toolchain installs, all three gates
-pass, and `./pipeline --help` is real — but every command still exits 70, so
-nothing has been run end to end. `./setup.sh` now takes a fresh clone from git
+pass, and `./pipeline --help` is real. *(Written when every command still exited
+70. Three of the four now run: `source` (0012), `analyse` (0022) and `memo`
+(0026); only `run` is left, and it is TICKET-0027.)* `./setup.sh` now takes a fresh clone from git
 to a type-checked tree without the operator knowing pnpm exists. The stage
 boundary now exists as six Zod schemas, so stage work can start against a fixed
 contract rather than inventing one as it goes. `src/config.ts` is the one place
@@ -486,9 +487,9 @@ code that produced it.
 | Thesis and rubric | Implemented in `src/analyse/score.ts` (0021) and **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 915 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run), 46 evidence gather and run budget (0017), 22 prompt loading (0019), 10 fact vocabulary and 37 fact extraction (0020, all against a stub model and the committed model fixtures), 98 rubric (0021 — every band edge, each disqualifier, the coverage gate and four properties over 400 generated fact sets), 15 stage-2 wiring and 8 keyless-replay/contract cases (0022, all against a stub model and a stub transport). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0034 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 21 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 3 in review (0020 — one acceptance item outstanding; 0021; 0022), 1 Ready (0024), 5 Blocked. Status is in each ticket header |
+| Test strategy | Written; 1031 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run), 46 evidence gather and run budget (0017), 22 prompt loading (0019), 10 fact vocabulary and 37 fact extraction (0020, all against a stub model and the committed model fixtures), 98 rubric (0021 — every band edge, each disqualifier, the coverage gate and four properties over 400 generated fact sets), 15 stage-2 wiring and 8 keyless-replay/contract cases (0022, all against a stub model and a stub transport), 26 memo derivation, template and rendering (0024, incl. two committed golden memos), 21 citation validation (0025, failure path first) and 25 stage-3 wiring and CLI (0026, incl. a whole run rendered with `fetch` replaced by a throw). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0038 | Factual sections written; reflections pending (see D-4). 0038 carries hints rather than prose |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 22 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 3 in review (0020 — one acceptance item outstanding; 0021; 0022), 2 Ready (0023, 0027), 3 Blocked (0028, 0029, 0030). Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -516,8 +517,12 @@ code that produced it.
 | Prompts | `prompts/clarify-query.v1.md`, `prompts/extract.v1.md` and `prompts/CHANGELOG.md` — written and versioned; `extract.v1` has been **sent to a provider three times** and produced 47 facts with 0 drops (worklog 0034); a v2 is now justified by inconsistencies 85–86, `clarify-query.v1` is still **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
 | Fixture capture | `scripts/capture-fixtures.ts` and `scripts/fixtures.ts` — `pnpm capture-fixtures`, a secret scan that refuses rather than redacts, `--refresh` as a deliberate act, and a generated `tests/fixtures/capture.json` (0014, Done). Not wired into `pnpm test`, never in CI |
 | Fixtures | 20 recorded: 6 HN (4 hand-captured and adopted, 1 thin topic, 1 derived), 8 GitHub payloads (owner, repo, README, contributors, commit activity), 2 real company pages, 4 authored model outputs, plus the hand-written `company-site.html` (0008/0014). Two gaps recorded rather than filled: no empty-shell page and no 404 body |
-| `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | **Stages 1 and 2 both run against live sources.** Stage 1 audited at TICKET-0013 (four live topics); stage 2 first run at worklog 0034 (`AI agent infrastructure`, 3 candidates) — one defect found and fixed, real output on disk. Stage 3 still exits 70 (0026), and so does `run` (0027) |
+| Memo derivation | `src/analyse/derive.ts` — the memo's sections, Risks, `why_this_call` and the upgrade trigger, composed in **stage 2** from the rubric's own `needs`/`refuted_by` sentences. States no criterion of its own; a property test walks every bullet (0024, Done) |
+| Memo template and renderer | `templates/memo.md.eta` and `src/memo/render.ts` — no decision in either; memo-local `E1`/`E2` labels, a sources table in first-cited order, an unresolvable id written as `unknown` rather than dropped. `pnpm golden` and two committed golden memos (0024, Done, **D-2**) |
+| Memo validator | `src/memo/validate.ts` — ids and labels parsed back out of the *rendered markdown*, resolved against the run's store; three misses kept distinct; the whole set fails at once. `MemoValidationError` carries `EXIT.INVARIANT` (0025, Done). The pipeline's one hard fail; its cost is gap 93 |
+| Stage 3 wiring | `src/memo/index.ts` — `runMemo`: read `analyses/*.json` → read back only the cited evidence → render → validate the set → write `memos/<run_id>/<slug>.md`. Synchronous, offline by construction, idempotent; **nothing is written unless every memo passes** (0026, Done). Gaps 94 and 95 |
+| `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, now waits on 0028 alone — the command it runs works (0026) |
+| Stages 1–3 | **All three stages run.** Stage 1 audited at TICKET-0013 (four live topics); stage 2 first run at worklog 0034 (`AI agent infrastructure`, 3 candidates) — one defect found and fixed, real output on disk; stage 3 wired at 0026 and run over both goldens, offline and keyless. Only `run` still exits 70 (0027) |
 | Sample run, walkthrough video | Not started as a *committed* artifact (TICKET-0028). One live smoke run exists uncommitted in `runs/2026-08-23-ai-agent-infrastructure/` — 3 candidates, 47 facts, 117 resolving citations (worklog 0034). Topic chosen (D-5): `AI agent infrastructure` |
 
 ---
@@ -1639,6 +1644,25 @@ Real defects, listed rather than silently patched.
     machine-readable sidecar written beside each memo, which would decouple the
     two at the price of an artifact no reader wants.
 
+94. **A stale memo is never removed.** `memos/<run_id>/` is written into, never
+    reconciled. Re-render a run after deleting one of its analyses and the memo
+    for that company stays on disk, indistinguishable from the ones this pass
+    produced — and `memos/` is committed output, so it would be committed too.
+    Detecting it is a `readdirSync` and a set difference; the decision that was
+    not this ticket's is what to *do* — delete a file the operator may have been
+    reading, or print a line naming it and leave it there. The second is
+    probably right and is one line in `memoSummary`. It bites for real at
+    TICKET-0028, where a committed sample run is re-rendered from a clone.
+
+95. **An operator cannot see the memo that failed validation.** Stage 3 renders
+    and validates the whole set before writing anything (worklog 0038, decision
+    1), so a memo with an unresolvable citation exists only in memory and the
+    operator gets a message naming ids, not a page. That is the strictest
+    reading of ADR-0003 and it is deliberate — a memo on disk is a memo a reader
+    trusts. It has never fired outside a test, so the cost is unmeasured. If it
+    fires in a real run and the message is not enough to find the bug, the fix
+    is a `.rejected/` directory beside `memos/`, not a `--force`.
+
 ---
 
 ## Next session — start here
@@ -1938,13 +1962,37 @@ should carry out of it:
    carries `EXIT.INVARIANT` and is **not yet in `exitFor`** — `memo` is still
    `notImplemented`, and a branch nothing can throw is dead code.
 
-**The next step is [TICKET-0026](./tickets/0026-ticket-stage-3-wiring.md)**,
-where a memo first reaches disk: `analyses/*.json` → render → validate →
-`memos/<run_id>/<slug>.md`, offline, idempotent, and the `exitFor` line that
-turns a failed validation into a non-zero exit.
-[TICKET-0023](./tickets/0023-ticket-missing-data-path-tests.md) is unblocked
-except for 0026 and needs nothing decided. Two things the gate hands
-forward into stage 2:
+**TICKET-0026 is Done** ([worklog 0038](./worklog/0038-stage-3-wiring.md)) —
+`src/memo/index.ts`, `./pipeline memo`, 25 tests. Four things a new session
+should carry out of it:
+
+1. **A failed validation writes nothing at all.** Not the memos that passed, not
+   a stage-3 record in the manifest. The whole set is rendered and validated in
+   memory and `assertMemosValid` throws for the set, so `memos/` is only ever
+   touched by a run that has already succeeded. The price is gap 95 — the
+   operator cannot open the page that failed — and it is unmeasured because it
+   has never fired outside a test.
+2. **Exit 3 is now reachable.** `MemoError` splits into a usage error and a data
+   gap; `MemoValidationError` carries `EXIT.INVARIANT` on itself and `exitFor`
+   returns `error.exit` rather than forming a second opinion. `EXIT.UNIMPLEMENTED`
+   is down to one caller, `run`, and TICKET-0027 retires it.
+3. **The offline guarantee is asserted, not intended.** `globalThis.fetch` is
+   replaced by a function that *throws* — a stub that counts proves the path did
+   not make a request, a stub that cannot succeed proves it could not have — and
+   a second test strips every provider variable from the environment. This is
+   what `setup.sh` step 6 will rest on.
+4. **The seven-module streak of live output changing the code is broken**, and
+   the reading is not obviously flattering: stage 3's inputs were two committed
+   artifacts rather than the world, so there was no world to be surprised by.
+   The first module whose inputs are real again is where the streak resumes.
+
+**The next step is [TICKET-0027](./tickets/0027-ticket-run-command-and-replay.md)**
+— `./pipeline run`, which is now three function calls, one manifest and the end
+of `EXIT.UNIMPLEMENTED` — or
+[TICKET-0023](./tickets/0023-ticket-missing-data-path-tests.md), the
+missing-data paths, which needs nothing decided. Either order; both block
+TICKET-0028, and inconsistency 84 blocks it after them. Two things the gate
+hands forward into stage 2:
 
 1. **`GET /users/<owner>` → `type: User | Organization`** separated all ten
    hobby projects from every real company in the gate's 48 (inconsistency 22).
@@ -1989,9 +2037,12 @@ The shape of the whole thing, unchanged:
 12. **The validator** — ticket 0025, **Done**. The pipeline's one hard fail,
     and the only one that means *this code is wrong* rather than *the world was
     thin*.
-13. Then stage 3's wiring, and the sample run on `AI agent infrastructure` —
-    where the rubric's bands and these derived lists get read by a person for
-    the first time.
+13. **Stage 3's wiring** — ticket 0026, **Done**. `./pipeline memo` writes
+    validated memos with no key and no network, and a failed citation check
+    exits 3 without writing anything.
+14. Then `./pipeline run` (0027) and the sample run on `AI agent infrastructure`
+    (0028) — where the rubric's bands and these derived lists get read by a
+    person for the first time.
 
 ## Invariants a new session must not break
 

@@ -177,18 +177,39 @@ Explicit list. Empty section is deleted, never faked.
 
 ## 5. Acceptance criteria
 
+*Walked at TICKET-0029, 2026-08-23, against the committed sample run
+`2026-08-23-ai-agent-infrastructure`. Each box below is ticked because it was
+checked, not because it was intended.*
+
 A partner can:
-- [ ] Run `./setup.sh` once, then `./pipeline run --seed "<topic>"`, and get
+- [x] Run `./setup.sh` once, then `./pipeline run --seed "<topic>"`, and get
       memos out.
-- [ ] Open any memo and understand the call in 60 seconds.
-- [ ] Discover every option from `./pipeline --help` without reading the source.
+- [x] Open any memo and understand the call in 60 seconds. **The call is clear.
+      One of the twelve is also wrong** — see STATE inconsistency 97, and note
+      that being legible and being right are different boxes.
+- [x] Discover every option from `./pipeline --help` without reading the source.
 
 A reviewer can:
-- [ ] Trace any claim in a memo to a URL and a retrieval timestamp.
-- [ ] Re-render every memo from committed artifacts with zero API calls.
-- [ ] Recompute any score by hand from the analysis JSON and this rubric.
-- [ ] Run `pnpm test` on a fresh clone with no API key configured.
-- [ ] Read [docs/worklog/](./worklog/) and see how the thing was actually built.
+- [x] Trace any claim in a memo to a URL and a retrieval timestamp. 42 of 42
+      citations in the sample run resolve; the validator exits 3 if one does not.
+- [x] Re-render every memo from committed artifacts with zero API calls.
+      Measured with `.cache/http/` moved out of the tree: 12 unchanged memos,
+      byte-identical analyses, 54ms, zero requests.
+- [x] Recompute any score by hand from the analysis JSON and this rubric.
+      Checked for **all twelve**: every total is the sum of its five dimension
+      scores, every coverage is covered-dimensions over five, and every call
+      follows from §3's three thresholds (72 / 55 / 0.6) and the disqualifier
+      override.
+- [x] Run `pnpm test` on a fresh clone with no API key configured. 1058 tests.
+- [x] Read [docs/worklog/](./worklog/) and see how the thing was actually built.
+      40 entries; the reflections are the author's and some are unwritten.
 
 A run of 10–20 candidates completes in one command, tolerates individual
-candidate failures without aborting, and records what failed.
+candidate failures without aborting, and records what failed. *(12 candidates,
+45.5s, 0 failed. Note that a provider that will not answer produces a `partial`
+candidate — an analysis at lower coverage, and a memo — rather than a `failed`
+one; `failed` means no analysis exists at all. The manifest counts both.)*
+
+**What these boxes do not say.** The rubric is not validated — there is no eval
+harness ([SCOPE](./SCOPE.md), ADR-0002) — and the pipeline is not reproducible
+run-to-run, only the committed run is (STATE inconsistencies 98 and 99).

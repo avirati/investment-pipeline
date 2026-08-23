@@ -543,6 +543,36 @@ describe("runAnalyse", () => {
       expect((error as Error).message).toContain("without --replay");
     });
 
+    it("writes its record beside the gather's, never over it", async () => {
+      const root = stageOneRun();
+      const httpCache = scratch("analyse-http-");
+      const llm = llmCache(scratch("analyse-llm-"));
+      await analyse(root, {
+        cache: llm,
+        http: {
+          transport: web(ROUTES).transport,
+          cacheDir: httpCache,
+          now: NOW,
+          retry: { retries: 0 },
+        },
+      });
+      const gather = readManifest(runPaths(RUN_ID, root).manifest)?.stages.analyse;
+
+      await analyse(root, {
+        replay: true,
+        cache: llm,
+        http: { cacheDir: scratch("analyse-cold-"), now: NOW, retry: { retries: 0 } },
+      });
+
+      // STATE inconsistency 96. The gather's record is the only place the
+      // requests it spent are written down at run level, and a replay spent
+      // none of them.
+      const after = readManifest(runPaths(RUN_ID, root).manifest);
+      expect(after?.stages.analyse).toEqual(gather);
+      const replayed = after?.stages.analyse_replay as { bundles: { source: string } } | undefined;
+      expect(replayed?.bundles.source).toBe("bundles");
+    });
+
     it("needs no API key, because a replay never reaches a provider", async () => {
       const root = stageOneRun();
       const httpCache = scratch("analyse-http-");

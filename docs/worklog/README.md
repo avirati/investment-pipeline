@@ -82,3 +82,4 @@ are unfinished, not delegated.
 | [0038](./0038-stage-3-wiring.md) | 2026-08-23 | Stage 3 wired: `./pipeline memo` writes validated memos offline, and exit 3 becomes reachable; TICKET-0026 closes |
 | [0039](./0039-bundles-and-the-run-command.md) | 2026-08-23 | Bundles as artifacts, a replay that reads them, and `./pipeline run`; inconsistencies 70 and 84 close, TICKET-0027 closes |
 | [0040](./0040-sample-run-and-hand-check.md) | 2026-08-23 | The committed sample run of 12, read by hand: one wrong call, one degenerate dimension, two runs that disagree; TICKET-0028 closes |
+| [0041](./0041-docs-closeout.md) | 2026-08-23 | Docs closeout: the checklist walked, every score recomputed by hand, and a replay that was eating the committed manifest; TICKET-0029 closes |

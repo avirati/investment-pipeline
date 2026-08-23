@@ -357,7 +357,15 @@ export function runMemo(options: MemoOptions): MemoOutcome {
       created_at: startedAt.toISOString(),
       seed: { form: "topic", value: runId },
     });
-  const manifest = writeStage(paths.manifest, base, "memo", stage);
+  // A re-render that changed nothing does not rewrite the record of the render
+  // that did. `setup.sh` step 6 runs this command against the committed sample
+  // run on every fresh clone, and without this the only thing it produces is a
+  // dirty working tree and two moved timestamps — which is exactly the churn
+  // `written` vs `unchanged` exists to make visible. Same rule stage 2 keeps
+  // for a replay (STATE inconsistency 96): do not overwrite a record of work
+  // this invocation did not do.
+  const unchangedRerender = stage.counts.written === 0 && base.stages.memo !== undefined;
+  const manifest = unchangedRerender ? base : writeStage(paths.manifest, base, "memo", stage);
 
   return { run_id: runId, paths, memos, unreadable: input.unreadable, stage, manifest };
 }

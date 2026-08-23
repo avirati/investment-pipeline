@@ -119,7 +119,7 @@ The key *vocabulary* is deliberately not enumerated in the contract — it belon
 to the extraction schema and the rubric, and it is unvalidated until real
 candidates exist.
 
-Two conventions hold across all six contracts. `schema_version` is a required
+Two conventions hold across all seven contracts. `schema_version` is a required
 literal written into the artifact, so an artifact from a different version fails
 to parse rather than being silently reinterpreted. And fields we have no value
 for are `null`, never omitted — unknown is written as unknown, and a gap should
@@ -177,6 +177,10 @@ runs/<run_id>/
   reviewer's clone is in (ADR-0009).
 - An `analyse` that is *not* a replay refuses to overwrite analyses already in
   the run directory. `--force` overrides it.
+- **A replay writes its manifest record beside the one it reproduces, never over
+  it** — `stages.analyse_replay` and `stages.run_replay`. `stages.analyse`
+  records the *gather*: the requests it spent against the limits it had, which
+  is the one part of the list above only the original invocation can know.
 - A prompt or schema version bump changes the cache key, so stale responses can
   never silently survive a change. That is the point of versioning them.
 

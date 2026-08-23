@@ -650,7 +650,14 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
     ...base,
     prompt_versions: { ...base.prompt_versions, [prompt.ref.id]: prompt.ref.version },
   });
-  const manifest = writeStage(paths.manifest, base, "analyse", stage);
+  // A replay writes beside the record, never over it (STATE inconsistency 96).
+  // `stages.analyse` describes the gather that decided this run — the requests
+  // it spent, against the limits it had — and a replay performed none of them.
+  // Overwriting it with `budget: null` destroyed the one part of ARCHITECTURE
+  // §4's list that only the original invocation could know, and did so on the
+  // documented command for reproducing a committed run. So a replay's record
+  // goes to `stages.analyse_replay`, dated, beside the one it reproduces.
+  const manifest = writeStage(paths.manifest, base, replay ? "analyse_replay" : "analyse", stage);
 
   return {
     run_id: runId,

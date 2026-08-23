@@ -320,6 +320,29 @@ describe("runPipeline", () => {
       // Stage 3 re-rendered from the same analyses, so nothing changed on disk.
       expect(outcome.memo.stage.counts.unchanged).toBe(2);
     });
+
+    it("leaves the run's own manifest records intact — STATE inconsistency 96", async () => {
+      const h = harness();
+      await pipeline(h);
+      const manifest = readManifest(runPaths(RUN_ID, h.root).manifest);
+      const run = manifest?.stages.run;
+      const analyse = manifest?.stages.analyse;
+
+      await pipeline(h, { replay: true });
+
+      // The documented way to reproduce a committed run must not damage it.
+      const after = readManifest(runPaths(RUN_ID, h.root).manifest);
+      expect(after?.stages.run).toEqual(run);
+      expect(after?.stages.analyse).toEqual(analyse);
+      expect(Object.keys(after?.stages ?? {}).sort()).toEqual([
+        "analyse",
+        "analyse_replay",
+        "memo",
+        "run",
+        "run_replay",
+        "source",
+      ]);
+    });
   });
 
   describe("a candidate that goes wrong", () => {

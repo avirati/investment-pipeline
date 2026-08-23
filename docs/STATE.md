@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-23 · at commit `81c914a` · **Phase: a memo now reaches disk.** TICKET-0026 is Done — `./pipeline memo --run <id>` reads `analyses/*.json`, reads back only the evidence each analysis cites, renders, validates the whole set, and writes `memos/<run_id>/<slug>.md` (worklog 0038). Nothing is written unless every memo passes, so a failed citation check leaves `memos/` empty and exits 3 — the pipeline's one hard fail now reaches a process exit. 1031 tests, offline asserted with a `fetch` that throws. Two new gaps: 94, a stale memo is never removed; 95, an operator cannot see the memo that failed. Next: **TICKET-0027** (`./pipeline run`, and the end of `EXIT.UNIMPLEMENTED`) or **TICKET-0023** (missing-data paths) — either order. Inconsistency 84 still blocks TICKET-0028.
+Last updated: 2026-08-23 · end of TICKET-0029 · **Phase: the pipeline is built, and it has been read by a person.** All four commands run. `./pipeline run --seed "<topic>"` chains the three stages (TICKET-0027, worklog 0039) and `EXIT.UNIMPLEMENTED` is retired with it. `--replay` now genuinely costs nothing: stage 2a writes `runs/<id>/bundles/<slug>.json` and a replay reads it instead of fetching (ADR-0009), and stage 1 reads the candidates it already decided instead of searching HN again — **inconsistencies 70 and 84 close**. A sample run of **12 companies** is committed and `setup.sh` step 6 re-renders it offline (TICKET-0028, worklog 0040), measured: `.cache/http/` moved out of the tree, 12 unchanged memos, byte-identical analyses, 54ms, zero requests. 1062 tests. **The hand-check found real defects and they are not fixed:** 97, `ardent` is called PASS by a disqualifier that fired against evidence quoted in its own memo; 98, two live runs over identical evidence moved six of twelve scores and flipped two calls; 96 (a replay overwriting the manifest's gather record) was found the same way and **is** fixed — it was damaging the committed run on the README's own documented command. D4 "Why now" is degenerate — eleven of twelve at 15/15 — and was **not** re-tuned (ADR-0002). Next: **TICKET-0023** (missing-data paths, still Ready and named as an outstanding dependency of 0028) and **TICKET-0030** (the walkthrough video). The extraction prompt is where 85, 97 and arguably 79 all land, and a prompt v2 is the single highest-value thing left.
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -11,11 +11,14 @@ allowed to go stale, so update it at the end of every session.
 
 Specification is written and committed. The toolchain installs, all three gates
 pass, and `./pipeline --help` is real. *(Written when every command still exited
-70. Three of the four now run: `source` (0012), `analyse` (0022) and `memo`
-(0026); only `run` is left, and it is TICKET-0027.)* `./setup.sh` now takes a fresh clone from git
+70. All four now run: `source` (0012), `analyse` (0022), `memo` (0026) and
+`run` (0027) — and exit 70 no longer exists, because `run` was its last
+caller.)* `./setup.sh` now takes a fresh clone from git
 to a type-checked tree without the operator knowing pnpm exists. The stage
 boundary now exists as six Zod schemas, so stage work can start against a fixed
-contract rather than inventing one as it goes. `src/config.ts` is the one place
+contract rather than inventing one as it goes. *(Seven, as of ADR-0009 —
+`src/contracts/bundle.ts` made stage 2a's output a file like every other stage
+boundary in this pipeline.)* `src/config.ts` is the one place
 `process.env` is read: model choice is an env change (ADR-0006), a missing
 variable names itself, and nothing validates at import — the offline paths still
 run with no `.env` at all. `src/evidence/store.ts` now owns the citation
@@ -549,7 +552,11 @@ default, state that you took it, and record it in that session's worklog.
   [worklog 0036](./worklog/0036-memo-template-and-render.md).
 
 - **D-5 · the committed sample run topic** — taken at its default in
-  TICKET-0013: **`AI agent infrastructure`**. Of the four topics the gate ran it
+  TICKET-0013 and **run at TICKET-0028**: **`AI agent infrastructure`**. The
+  author re-confirmed the default rather than overruling it, and the
+  counter-argument below **did not hold**: the twelve came out 3 Take-a-meeting
+  / 4 Watch / 5 Pass across 54–81, not uniformly positive. What did go wrong was
+  something the counter-argument did not predict — see inconsistencies 97 and 99. Of the four topics the gate ran it
   is the cleanest by every measure — 12 of 12 candidates are companies, no junk,
   no duplicates, one fallback name — and it exercises redirect resolution
   (`Kampala` → `zatanna.ai`) and the expansion arms (+59, +22 new posts) so a
@@ -610,18 +617,18 @@ Real defects, listed rather than silently patched.
    two seed forms, and ADR-0004 records the cut.
 2. ~~**`.env.example` is referenced but does not exist.**~~ Fixed in
    TICKET-0001; `ARCHITECTURE.md` §7.1 step 4 now resolves.
-3. **The sample run id is a placeholder** (`<committed_sample>`) in
-   `README.md`, `ARCHITECTURE.md`, and `SCOPE.md`. D-5 is now settled — the
-   topic is `AI agent infrastructure` — but the run id is not minted until
-   TICKET-0028 actually commits a run, so the three placeholders stand until
-   then and are replaced there.
+3. ~~**The sample run id is a placeholder** (`<committed_sample>`).~~ Fixed in
+   TICKET-0028. The id is `2026-08-23-ai-agent-infrastructure` in `README.md`,
+   `ARCHITECTURE.md` and `setup.sh`. Two hits remain in `docs/worklog/0006` and
+   `0007` and stay there: those sentences were true when written, and the
+   worklog is not edited to make a grep pass.
 4. **Worklog index dangling link.** Commit `1035b1d` lists session 0002 before
    its file exists at `f5e1938`. Transient, one-commit window, left as-is rather
    than rewriting history.
-5. **`setup.sh` step 6 cannot pass yet.** Addressed but not closed in
-   TICKET-0004: steps 1–5 ship, step 6 does not, and both the script's closing
-   output and ARCHITECTURE §7.1 now say so. The check itself still does not
-   exist, and SCOPE #11 is not closed until TICKET-0028 adds it.
+5. ~~**`setup.sh` step 6 cannot pass yet.**~~ Fixed in TICKET-0028. Step 6 runs
+   `./pipeline memo --run <the committed run>`, re-renders 12 memos with no
+   network and no key, and fails the script if the run directory is missing.
+   SCOPE #11 closes with it.
 6. **`docs/worklog/README.md` promises `docs/evals/`** — *"how prompt and rubric
    changes were evaluated … arrives with the first golden set"*. There is no
    golden set and there will not be one; the eval harness was cut (`SCOPE.md`,
@@ -1373,12 +1380,14 @@ Real defects, listed rather than silently patched.
     inconsistency was tracking is now measured rather than predicted: **every
     module that has been run live has changed on the day it was run.**
 
-70. **The bundle is in-memory and is not an artifact.** Evidence records are on
-    disk and committed; the `Bundle` that carries their ids to extraction is a
-    handoff inside stage 2 and is never written. A reviewer can reconstruct
-    what the model was shown from the analysis's `evidence_ids` plus the store,
-    but cannot open one file and see it. Writing `bundles/<slug>.json` is a
-    small addition to TICKET-0022 if that is wanted.
+70. ~~**The bundle is in-memory and is not an artifact.**~~ Fixed in
+    TICKET-0027's session as a consequence of settling 84 —
+    [ADR-0009](./adr/0009-bundles-as-artifacts.md). `runs/<id>/bundles/<slug>.json`
+    is a seventh Zod contract holding the join, the signals, the unknowns, the
+    people, the request counts and the failures, with evidence referenced by id
+    in gather order. A reviewer opens one file and sees what the model was
+    shown. It turned out to be the fix for 84 as well, which is why it stopped
+    being "a small addition if that is wanted".
 
 71. **`defaultCalls(mode)` now has two callers with different opinions.**
     `gatherGithub` still falls back to it when no `calls` are passed, which is
@@ -1512,8 +1521,23 @@ Real defects, listed rather than silently patched.
     The check stays — it is cheap and it is ADR-0003's guarantee written down —
     but it should be read as a dead branch, not as a live defence.
 
-84. **A replay with a cold HTTP cache writes new `fetch_failed` records.** The
-    refusing transport becomes evidence, which is the honest reading — *we did
+84. ~~**A replay with a cold HTTP cache writes new `fetch_failed` records.**~~
+    **Fixed** in TICKET-0027's session, as
+    [ADR-0009](./adr/0009-bundles-as-artifacts.md) — option (c)/(d), with (a)
+    alongside it. A replay reads `bundles/` and never fetches, so the failure
+    below is structurally unreachable rather than merely unlikely. Measured
+    again after the fix, on the committed sample run with `.cache/http/` moved
+    out of the tree: **12 unchanged memos, byte-identical analyses, 54ms, zero
+    requests, zero tokens** (worklog 0040). Two further things landed with it:
+    `analyse` refuses to overwrite an existing `analyses/` without `--replay`
+    or `--force`, and **stage 1 stopped re-searching HN on a replay** — which
+    was a second, unrecorded half of the same defect, and the worse half,
+    because HN moves and a replay could have found a company the run never saw.
+    The original entry is kept below because the measurement in it is the
+    evidence that made the decision.
+
+    ~~The
+    refusing transport became evidence, which is the honest reading — *we did
     not look* rather than *we looked and found nothing* — but it means replaying
     a run whose `.cache/http/` has been cleared **adds** records to the run's
     evidence directory instead of reproducing it. `.cache/http/` is not
@@ -1564,7 +1588,13 @@ Real defects, listed rather than silently patched.
     came from. A reviewer opening that citation learns nothing, which is the
     thing ADR-0003 exists to prevent.
 
-87. **The HN request pool charges for requests it did not make.**
+87. **The HN request pool charges for requests it did not make.** *(Now visible
+    in a committed artifact: the sample run's manifest reads
+    `spent: {github: 0, site: 0, hn: 12}` — the site and GitHub reads were
+    answered from a warm HTTP cache and charged nothing, and HN was charged
+    twelve times for the same kind of read. The three numbers sit side by side
+    and only one of them means what it looks like. `planned` is what a cold run
+    would cost: 24 GitHub, 48 site, 12 HN.)*
     `gatherCandidate` runs `charge("hn", 1)` unconditionally after
     `fetchEvidence`, so a warm HTTP cache and a `--replay` both report "3 hn
     requests" having made none. Site and GitHub count correctly, from the
@@ -1663,17 +1693,113 @@ Real defects, listed rather than silently patched.
     fires in a real run and the message is not enough to find the bug, the fix
     is a `.rejected/` directory beside `memos/`, not a `--force`.
 
+96. ~~**A replay overwrites the manifest's record of the gather.**~~ **Fixed at
+    TICKET-0029**, the same afternoon it was found and for a blunt reason: the
+    README's own documented replay command was damaging the committed sample
+    run every time it was demonstrated. A replay now writes
+    `stages.analyse_replay` and `stages.run_replay` **beside** the records it
+    reproduces rather than over them, dated, so a reader gets both the run and
+    the replay of it. **The same rule turned out to be needed a third time:**
+    stage 3 was rewriting `stages.memo`'s timestamps on a re-render that wrote
+    nothing, so `./setup.sh` — whose step 6 does exactly that on every fresh
+    clone — left the working tree dirty with a committed artifact modified. It
+    now leaves the record alone when `written === 0`. Original entry below.
+
+    ~~Found by
+    replaying into the committed sample run (worklog 0040): `stages.analyse`
+    was rewritten with the replay's numbers, so the run's actual request spend
+    — 16 site, 6 GitHub, 12 HN — became `budget: null`, and `run` lost its
+    stage timings with it. Stage 1 does not do this; it leaves its `source`
+    record alone precisely because a replay did not source anything. Stage 2
+    cannot take the same route, because a replay *after a rubric change* really
+    does produce different analyses and a record that still quoted the old
+    scores would be worse. The per-candidate request counts survive in
+    `bundles/*.json`, so nothing is unrecoverable — the run-level totals,
+    the limits and `over_planning_ceiling` are. Cheapest honest fix: carry
+    forward the previous `budget` when `bundles.source === "bundles"`, since
+    that *is* the gather being replayed. Worked around for the sample run by
+    re-running it clean.~~ *(The fix taken was neither of those: writing beside
+    rather than over needs no rule about which fields a replay may keep.)*
+
+97. **A disqualifier fired against evidence quoted in the same memo.**
+    `ardent` is called **PASS at 71/100** — the highest-scoring Pass in the
+    committed run, above two Watches — because D-1 held: *"the team is named
+    and nothing any of them is stated to have built appears in the evidence."*
+    Two sections above that, the memo's own Team bullet reads *"Evan is a named
+    founder of Ardent with 12 years prior experience in data engineering"*, and
+    the cited HN record says more than the memo does: *"I spent over a year
+    building an AI Data Engineer… Evan spent the last 12 years in data
+    engineering and hit this wall building agents at his last company."* That is
+    a prior role **and** a prior artifact, on the record D-1 cites.
+
+    **The rubric is right given its inputs; the inputs are wrong.** D-1 reads
+    `founder.prior_role`, `founder.prior_exit` and `founder.prior_artifact`. The
+    model filed Evan's twelve years under `founder.name_role` and dropped
+    Vikram's entirely. Same class as 85 (an absence filed as a fact) and the
+    cost side of 79 (the rubric reads presence, not meaning): all three are the
+    extraction prompt putting content in the wrong bucket, and all three are a
+    **prompt v2's** problem, not a scoring one. A prompt v2 wants a
+    `CHANGELOG.md` entry saying what it did to this candidate.
+
+98. **Two live runs over identical evidence disagree.** Same seed, same evidence
+    records, same prompt version, same model, no temperature set. **Six of
+    twelve scores moved and two calls flipped** — `runtime` WATCH 59 →
+    TAKE_A_MEETING 80, `kontext-cli` TAKE_A_MEETING 75 → WATCH 59 (worklog
+    0040 has the table). `src/llm/provider.ts` sets no temperature deliberately
+    and says why — providers disagree about which values their newer models
+    accept — and closes with *"reproducibility comes from the response cache,
+    not from a sampler setting."* That is now measured rather than asserted, and
+    what it means is worth stating plainly: **the rubric is deterministic given
+    facts; the facts are not deterministic given evidence.** The committed cache
+    makes the committed run reproducible. It does not make the pipeline
+    reproducible, and the twelve calls in `memos/` should be read as one draw.
+
+99. **D4 "Why now" discriminates nothing.** Eleven of twelve candidates in the
+    committed run score 15/15. Its top band asks for a stated launch date *or* a
+    repository younger than 548 days, and every company sourced from a Show HN
+    post inside a 180-day window has a stated launch date by construction — the
+    dimension is measuring the sourcing, not the company. D2 and D5 use only two
+    of their four bands as well, and nothing scored below the third band in
+    either. So the spread across candidates comes almost entirely from D1 and
+    D3, which are also the two dimensions with `uncovered` states — meaning rank
+    is driven largely by how much was *found*, which with GitHub unauthenticated
+    at 6 requests over 12 candidates is close to ranking by GitHub presence.
+    **Not re-tuned.** ADR-0002 and CLAUDE.md are explicit that there is no eval
+    harness and the rubric is not validated; moving bands to fit n=12 with no
+    held-out set would make the table look better and the claim less true.
+
 ---
 
 ## Next session — start here
 
 The work is broken down in **[docs/tickets/](./tickets/)** — 30 tickets derived
 from the documents in this directory, in dependency order, each one leaving the
-repo runnable. **0001–0010 and 0012–0019 are Done; 0011 is reopened.** The gate
-has reported, so stage 2 is released — the two tickets that reopened on the way
-out of it are closed again, the provider seam behind stage 2 is in, and stage
-2a plus its prompt are done. The next ticket is the first one that spends
-tokens.
+repo runnable.
+
+**As of TICKET-0029, 27 of 30 are Done.** 0020, 0021 and 0022 are In review with
+the author. **Two are open: 0023** (missing-data path tests — a dependency
+0028 shipped without, deliberately and on the record) **and 0030** (the
+walkthrough video).
+
+**What a new session should actually pick up, in order of value:**
+
+1. **A prompt v2.** Three of the four live defects in this document —
+   [85](#known-inconsistencies-in-the-committed-docs), 97, and the cost half of
+   79 — are the extraction prompt filing content under the wrong key, or filing
+   an absence as a fact. 97 produced a **wrong call** on a real company in the
+   committed run. This is the single highest-value thing left and it is not a
+   ticket yet.
+2. **TICKET-0023**, missing-data path tests. The sample run exercised those
+   paths for real, once; that is not the same as pinning them.
+3. **TICKET-0030**, the walkthrough. Everything it needs exists — and `ardent`
+   is a better thing to show on camera than a memo that came out right.
+
+**Do not** re-tune the rubric bands to fix 99. There is no eval harness and no
+held-out set; ADR-0002 and CLAUDE.md both say so, and fitting to n=12 would make
+the table look better and the claim less true.
+
+*(The rest of this section is the running record from earlier sessions and is
+kept in order. It is history, not instructions.)*
 
 **All five gate fixes have landed** — worklogs
 [0023](./worklog/0023-gate-fixes-canonicalisation.md) and
@@ -2040,9 +2166,23 @@ The shape of the whole thing, unchanged:
 13. **Stage 3's wiring** — ticket 0026, **Done**. `./pipeline memo` writes
     validated memos with no key and no network, and a failed citation check
     exits 3 without writing anything.
-14. Then `./pipeline run` (0027) and the sample run on `AI agent infrastructure`
-    (0028) — where the rubric's bands and these derived lists get read by a
-    person for the first time.
+14. **`./pipeline run`** — ticket 0027, **Done**. Three stages, one command, one
+    manifest record, and the end of `EXIT.UNIMPLEMENTED`. Closing it needed
+    `--replay` to be made true in two places rather than one: stage 2 stopped
+    re-fetching (ADR-0009) and stage 1 stopped re-searching HN.
+15. **The sample run** — ticket 0028, **Done**. 12 companies on
+    `AI agent infrastructure`, committed, and `setup.sh` step 6 re-renders it
+    with no key. This is where the rubric's bands and the derived lists were
+    read by a person for the first time, and **they did not come through
+    clean**: 97 (a wrong call), 98 (run-to-run variance) and 99 (a degenerate
+    dimension) all come from that reading. Read
+    [worklog 0040](./worklog/0040-sample-run-and-hand-check.md) before trusting
+    any number in `memos/`.
+16. **Docs closeout** — ticket 0029, **Done**
+    ([worklog 0041](./worklog/0041-docs-closeout.md)). This document, the README
+    banner, the attribution table below, and the submission checklist walked
+    honestly — plus inconsistency 96, which the sweep found by running the
+    command it was documenting.
 
 ## Invariants a new session must not break
 
@@ -2062,12 +2202,70 @@ recover from.
 ## Submission checklist
 
 The brief asks for a repo plus a ~5 minute walkthrough showing one startup
-end-to-end.
+end-to-end. Walked at TICKET-0029. **An unticked box is a better artifact than a
+ticked one that is not true**, and two of these are deliberately left unticked.
 
-- [ ] One command produces memos from a topic
-- [ ] Sample run committed — outputs readable without running anything
-- [ ] Any memo's call is clear in 60 seconds
-- [ ] Any claim traceable to a URL and a retrieval timestamp
-- [ ] `pnpm test` passes on a fresh clone with no API key
-- [ ] Worklog reflections written by the author (D-4)
-- [ ] ~5 min walkthrough video, one startup end-to-end
+- [x] **One command produces memos from a topic** — `./pipeline run --seed
+      "<topic>" --limit 12`. Done at TICKET-0027; the committed run is what it
+      produced.
+- [x] **Sample run committed — outputs readable without running anything** —
+      [`memos/2026-08-23-ai-agent-infrastructure/`](../memos/2026-08-23-ai-agent-infrastructure/),
+      12 memos, plus the run directory behind them. `./setup.sh` step 6
+      re-renders them with no API key.
+- [x] **Any memo's call is clear in 60 seconds** — header line plus "Why this
+      call". Checked by reading all twelve
+      ([worklog 0040](./worklog/0040-sample-run-and-hand-check.md)).
+      **Caveat on the record:** one of the twelve calls is *wrong*
+      (inconsistency 97). It is clear, and it is wrong, and those are different
+      boxes.
+- [x] **Any claim traceable to a URL and a retrieval timestamp** — 42 of 42
+      citations in the committed run resolve to an evidence record with a `url`
+      and a `retrieved_at`; the memo validator exits 3 if one does not
+      (ADR-0003). Six facts spot-checked verbatim against their cited text, six
+      supported.
+- [x] **`pnpm test` passes on a fresh clone with no API key** — 1058 tests, 32
+      files, offline by contract (TESTING §4) and asserted with a `fetch` that
+      throws.
+- [ ] **Worklog reflections written by the author (D-4)** — outstanding, and
+      correctly so. `TODO(author)` markers in worklogs 0001, 0002, 0039 and
+      0040. CLAUDE.md is explicit that ghostwritten reflection is penalised;
+      leaving these empty is the instruction being followed, not a gap.
+- [ ] **~5 min walkthrough video, one startup end-to-end** — TICKET-0030, not
+      started. Everything it needs exists: a committed run, a replay that costs
+      nothing, and a memo (`ardent`) whose defect is worth showing on camera.
+
+### Two things a reviewer should be told without having to dig
+
+1. **The rubric is not validated.** There is no eval harness — a deliberate cut
+   ([SCOPE.md](./SCOPE.md), [TESTING.md](./TESTING.md), ADR-0002). The committed
+   run shows what that costs: D4 discriminates nothing (99), and D2 and D5 use
+   two of their four bands.
+2. **The pipeline is not reproducible; the committed *run* is.** Two live runs
+   over identical evidence moved six of twelve scores and flipped two calls
+   (98). The response cache is what makes the committed artifacts reproducible,
+   and `src/llm/provider.ts` says so on purpose.
+
+## Attribution
+
+Per CLAUDE.md: *"If a module was written end-to-end by an assistant, the worklog
+says so. That is not penalised here; hiding it is."* The per-session detail is in
+each worklog's Attribution section; this is the summary.
+
+| Area | How it was written |
+|---|---|
+| `docs/SPEC.md`, `docs/ARCHITECTURE.md`, `docs/SCOPE.md`, ADR-0001–0008 | Author-directed, assistant-drafted, reworked by the author. The decisions and the rejected options are the author's. |
+| The thesis and the rubric's five dimensions and bands (SPEC §1–2) | **Author's.** The numbers were chosen by a person and have never been validated — see ADR-0002 and inconsistency 99. |
+| `docs/tickets/` | Assistant-drafted from the spec, ordered and pruned by the author. |
+| `src/contracts/`, `src/config.ts`, `src/run.ts`, `src/manifest.ts` | Assistant end-to-end, reviewed by the author. |
+| `src/source/` (HN adapter, canonicalisation, planning, wiring) | Assistant end-to-end. **Reworked after live runs** — the gate (TICKET-0013) sent five fixes back into it. |
+| `src/evidence/` (fetch, store, github, site, signal) | Assistant end-to-end. Both adapters changed after running against live sources. |
+| `src/analyse/gather.ts`, `budget.ts`, `extract.ts`, `keys.ts`, `derive.ts` | Assistant end-to-end. The 24-key fact vocabulary was assistant-proposed and author-pruned. |
+| `src/analyse/score.ts` | **Assistant-implemented from the author's rubric.** The bands and weights are the author's; the code that applies them is not. |
+| `src/analyse/bundles.ts`, `src/contracts/bundle.ts`, `src/pipeline.ts`, ADR-0009 | Assistant end-to-end. The choice between the four fixes for inconsistency 84 was the author's, made before any code existed. |
+| `src/memo/`, `templates/memo.md.eta` | Assistant end-to-end. |
+| `prompts/*.md` | Assistant-drafted, author-reviewed. Never revised past v1 — which inconsistencies 85 and 97 say was a mistake. |
+| `tests/` (1058) | Assistant end-to-end throughout. |
+| `setup.sh`, `pipeline`, `biome.json`, `vitest.config.ts` | Assistant end-to-end. There is no CI — the gates are `pnpm test`, `pnpm typecheck`, `pnpm lint`, run by hand and by `setup.sh` step 5. |
+| Worklog factual sections | Assistant-written during the session they describe. |
+| **Worklog reflections** | **Author's, and unfinished where they say `TODO(author)`.** None are ghostwritten. |
+| The hand-checks (TICKET-0013's gate, TICKET-0028's memo read) | Executed by the assistant, read by the author. The `ardent` finding (97) was the assistant's. |

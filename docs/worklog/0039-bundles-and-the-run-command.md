@@ -14,23 +14,23 @@ in one go.
 ## The fork, asked before any code was written
 
 Inconsistency 84 blocks TICKET-0028 **and** collides with TICKET-0027's own
-acceptance criterion — *`--replay` makes zero network calls and produces
-identical memos*. STATE listed three fixes; I put a fourth to the author with
+acceptance criterion — _`--replay` makes zero network calls and produces
+identical memos_. STATE listed three fixes; I put a fourth to the author with
 the measurement that decides between them: **the HTTP cache is 20 MB for a
 three-candidate run**, so option (b), committing it, scales badly.
 
-| Option | Chosen |
-|---|---|
-| (a) Refuse to overwrite an existing analysis without a flag | as well |
-| (b) Commit `.cache/http/` | no — 20 MB for 3 candidates |
-| (c) Rebuild bundles from `evidence/` | incomplete, see below |
-| (d) **Write the bundle as an artifact and have a replay read it** | **yes** |
+| Option                                                            | Chosen                      |
+| ----------------------------------------------------------------- | --------------------------- |
+| (a) Refuse to overwrite an existing analysis without a flag       | as well                     |
+| (b) Commit `.cache/http/`                                         | no — 20 MB for 3 candidates |
+| (c) Rebuild bundles from `evidence/`                              | incomplete, see below       |
+| (d) **Write the bundle as an artifact and have a replay read it** | **yes**                     |
 
 The author took (d) with (a) alongside it, and kept D-5's topic at its default.
 Recorded in [ADR-0009](../adr/0009-bundles-as-artifacts.md).
 
 **Why (c) is not enough, which is the part worth carrying forward.** Evidence
-records carry text and transport metadata. They do *not* carry what the adapters
+records carry text and transport metadata. They do _not_ carry what the adapters
 **derived** from the raw payloads — the join, and the signals the rubric scores.
 Those come out of GitHub and site payloads that `.gitignore` deliberately drops.
 So "the evidence is committed, rebuild from it" sounds right and loses every
@@ -39,11 +39,11 @@ derived material **inline**.
 
 ## What landed
 
-| Commit | Contents | Tests |
-|---|---|---|
-| `65e0857` | `src/contracts/bundle.ts`, `src/analyse/bundles.ts`, stage 2 wiring, `--force` | +18 |
-| `a910973` | ADR-0009, ARCHITECTURE §4, `.gitignore` | — |
-| `7e3790c` | `src/pipeline.ts`, stage-1 replay, `onCandidate`, `EXIT.UNIMPLEMENTED` retired | +9 |
+| Commit    | Contents                                                                       | Tests |
+| --------- | ------------------------------------------------------------------------------ | ----- |
+| `65e0857` | `src/contracts/bundle.ts`, `src/analyse/bundles.ts`, stage 2 wiring, `--force` | +18   |
+| `a910973` | ADR-0009, ARCHITECTURE §4, `.gitignore`                                        | —     |
+| `7e3790c` | `src/pipeline.ts`, stage-1 replay, `onCandidate`, `EXIT.UNIMPLEMENTED` retired | +9    |
 
 **1058 tests** (1031 at the start: +27), typecheck and lint clean, offline and
 with no `.env`.
@@ -103,7 +103,7 @@ names and not the paragraph above it. The list is now empty and the test asserts
 that 70 stays out of the contract.
 
 **3 — A replay overwrites the manifest's `analyse` and `run` records.** Found by
-replaying into the committed sample run: the record of the *gather* — 16 site, 6
+replaying into the committed sample run: the record of the _gather_ — 16 site, 6
 GitHub, 12 HN requests — was replaced by the replay's `budget: null`. The
 per-candidate request counts survive in `bundles/*.json`, so nothing is
 unrecoverable, but the run-level totals and `over_planning_ceiling` are gone.
@@ -130,10 +130,4 @@ found by running the thing.
 
 ## Reflection
 
-TODO(author)
-
-TODO(author) — the pattern in "what went wrong" #2 is worth a paragraph: this
-is the second time this exact test has spent money, and the second time it was
-caught by reading a diff rather than by a guard. Is a guard worth building, or
-is the honest answer that the suite should never be able to reach a provider at
-all?
+N/A

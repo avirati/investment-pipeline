@@ -246,7 +246,15 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineOut
     cost_usd: analyse.stage.llm.cost_usd,
   });
 
-  const manifest = writeStage(memo.paths.manifest, memo.manifest, "run", record);
+  // Same rule as stage 2's record, and for the same reason: a replay of a
+  // committed run must not overwrite that run's timings with its own 54ms
+  // (STATE inconsistency 96). `stages.run_replay` sits beside `stages.run`.
+  const manifest = writeStage(
+    memo.paths.manifest,
+    memo.manifest,
+    replay ? "run_replay" : "run",
+    record,
+  );
 
   return {
     run_id: runId,

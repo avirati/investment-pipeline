@@ -394,3 +394,54 @@ describe("writeMemo", () => {
     expect(writeMemo(root, "acme", "# Acme Traces\n").written).toBe(true);
   });
 });
+
+describe("a re-render that changed nothing", () => {
+  /**
+   * `setup.sh` step 6 runs `./pipeline memo --run <the committed sample>` on
+   * every fresh clone. Before this, that produced two moved timestamps and a
+   * dirty working tree — a reviewer's first `git status` after setup showing a
+   * committed artifact modified. Same rule stage 2 keeps for a replay (STATE
+   * inconsistency 96): do not overwrite a record of work you did not do.
+   */
+  it("leaves the manifest's memo record alone", () => {
+    const root = scenario({ names: ["golden"] });
+    const paths = runPaths(RUN_ID, root);
+    runMemo({ runId: RUN_ID, root, now: NOW });
+    const first = readManifest(paths.manifest)?.stages.memo;
+    const before = readFileSync(paths.manifest, "utf8");
+
+    const again = runMemo({
+      runId: RUN_ID,
+      root,
+      now: () => new Date("2026-08-24T09:00:00.000Z"),
+    });
+
+    expect(again.stage.counts.written).toBe(0);
+    expect(again.stage.counts.unchanged).toBe(again.stage.counts.memos);
+    // The outcome still reports this invocation honestly; the file does not move.
+    expect(again.stage.started_at).toBe("2026-08-24T09:00:00.000Z");
+    expect(readManifest(paths.manifest)?.stages.memo).toEqual(first);
+    expect(readFileSync(paths.manifest, "utf8")).toBe(before);
+  });
+
+  it("still writes the record when a memo actually changed", () => {
+    const root = scenario({ names: ["golden"] });
+    const paths = runPaths(RUN_ID, root);
+    runMemo({ runId: RUN_ID, root, now: NOW });
+    const first = readManifest(paths.manifest)?.stages.memo;
+
+    // Something else edited a memo. The next pass rewrites it, so the record
+    // of the render is this invocation's.
+    const memo = readdirSync(paths.memoDir).find((name) => name.endsWith(".md")) as string;
+    writeFileSync(join(paths.memoDir, memo), "stale\n");
+
+    const again = runMemo({
+      runId: RUN_ID,
+      root,
+      now: () => new Date("2026-08-24T09:00:00.000Z"),
+    });
+
+    expect(again.stage.counts.written).toBe(1);
+    expect(readManifest(paths.manifest)?.stages.memo).not.toEqual(first);
+  });
+});

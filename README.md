@@ -20,13 +20,25 @@ re-rendering the committed sample run — so it proves the toolchain works befor
 you have obtained a single API key.
 
 Memos land in `memos/<run_id>/`. `./pipeline --help` documents everything, and
-[a sample run of 12 companies](memos/2026-08-23-ai-agent-infrastructure/) is committed, so you can read real
-outputs without a key:
+[a sample run of 12 companies](memos/2026-08-23-ai-agent-infrastructure/) is
+committed, so you can read real outputs without a key:
 
 ```bash
-./pipeline memo --run 2026-08-23-ai-agent-infrastructure   # re-render, zero network calls
-pnpm test                                  # offline, no key required
+./pipeline memo --run 2026-08-23-ai-agent-infrastructure     # re-render, zero network
+./pipeline run  --run 2026-08-23-ai-agent-infrastructure --seed "AI agent infrastructure" --replay
+pnpm test                                              # offline, no key required
 ```
+
+The `--replay` line re-runs **all three stages** without a network call or a
+token: stage 1 reads the candidates it decided, stage 2 reads
+`runs/<id>/bundles/` and the committed LLM cache, stage 3 re-renders
+([ADR-0009](docs/adr/0009-bundles-as-artifacts.md)).
+
+> **Read [docs/STATE.md](docs/STATE.md) before trusting a number in those
+> memos.** The twelve calls were read by hand and one of them is wrong — a
+> disqualifier fired against evidence quoted two sections above it in the same
+> memo. The rubric is also unvalidated by design: there is no eval harness, and
+> [SCOPE.md](docs/SCOPE.md) says why it was cut.
 
 If a topic query returns too little to work with, stage 1 says so and offers
 refinements rather than silently proceeding with four bad candidates. Whatever
@@ -67,10 +79,10 @@ the run if a memo cites a source that does not exist.
 | [docs/SPEC.md](docs/SPEC.md) | Thesis, rubric, call thresholds, memo contract |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Stages, contracts, replay, failure policy |
 | [docs/STATE.md](docs/STATE.md) | Current phase, open decisions, next step — **start here** |
-| [docs/tickets/](docs/tickets/) | The backlog — 30 tickets in dependency order |
+| [docs/tickets/](docs/tickets/) | The backlog — 30 tickets in dependency order, 27 Done |
 | [docs/SCOPE.md](docs/SCOPE.md) | What is not being built, and why |
 | [docs/TESTING.md](docs/TESTING.md) | What is tested, what is not, and the eval harness that was cut |
-| [docs/adr/](docs/adr/) | Eight decision records, each with the rejected options |
+| [docs/adr/](docs/adr/) | Nine decision records, each with the rejected options |
 | [docs/worklog/](docs/worklog/) | How this was actually built, session by session |
 | [CLAUDE.md](CLAUDE.md) | Operating guide for AI assistants in this repo |
 

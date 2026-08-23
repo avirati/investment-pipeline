@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-23 · end of TICKET-0029 · **Phase: the pipeline is built, and it has been read by a person.** All four commands run. `./pipeline run --seed "<topic>"` chains the three stages (TICKET-0027, worklog 0039) and `EXIT.UNIMPLEMENTED` is retired with it. `--replay` now genuinely costs nothing: stage 2a writes `runs/<id>/bundles/<slug>.json` and a replay reads it instead of fetching (ADR-0009), and stage 1 reads the candidates it already decided instead of searching HN again — **inconsistencies 70 and 84 close**. A sample run of **12 companies** is committed and `setup.sh` step 6 re-renders it offline (TICKET-0028, worklog 0040), measured: `.cache/http/` moved out of the tree, 12 unchanged memos, byte-identical analyses, 54ms, zero requests. 1062 tests. **The hand-check found real defects and they are not fixed:** 97, `ardent` is called PASS by a disqualifier that fired against evidence quoted in its own memo; 98, two live runs over identical evidence moved six of twelve scores and flipped two calls; 96 (a replay overwriting the manifest's gather record) was found the same way and **is** fixed — it was damaging the committed run on the README's own documented command. D4 "Why now" is degenerate — eleven of twelve at 15/15 — and was **not** re-tuned (ADR-0002). Next: **TICKET-0023** (missing-data paths, still Ready and named as an outstanding dependency of 0028) and **TICKET-0030** (the walkthrough video). The extraction prompt is where 85, 97 and arguably 79 all land, and a prompt v2 is the single highest-value thing left.
+Last updated: 2026-08-23 · end of TICKET-0029, plus a README diagrams session (worklog 0042) · **Phase: the pipeline is built, and it has been read by a person.** All four commands run. `./pipeline run --seed "<topic>"` chains the three stages (TICKET-0027, worklog 0039) and `EXIT.UNIMPLEMENTED` is retired with it. `--replay` now genuinely costs nothing: stage 2a writes `runs/<id>/bundles/<slug>.json` and a replay reads it instead of fetching (ADR-0009), and stage 1 reads the candidates it already decided instead of searching HN again — **inconsistencies 70 and 84 close**. A sample run of **12 companies** is committed and `setup.sh` step 6 re-renders it offline (TICKET-0028, worklog 0040), measured: `.cache/http/` moved out of the tree, 12 unchanged memos, byte-identical analyses, 54ms, zero requests. 1062 tests. **The hand-check found real defects and they are not fixed:** 97, `ardent` is called PASS by a disqualifier that fired against evidence quoted in its own memo; 98, two live runs over identical evidence moved six of twelve scores and flipped two calls; 96 (a replay overwriting the manifest's gather record) was found the same way and **is** fixed — it was damaging the committed run on the README's own documented command. D4 "Why now" is degenerate — eleven of twelve at 15/15 — and was **not** re-tuned (ADR-0002). Next: **TICKET-0023** (missing-data paths, still Ready and named as an outstanding dependency of 0028) and **TICKET-0030** (the walkthrough video). The extraction prompt is where 85, 97 and arguably 79 all land, and a prompt v2 is the single highest-value thing left. **Since the closeout (worklog 0042):** the README now carries four Mermaid diagrams — high level, one candidate end to end, where the score comes from, and a module map — drawn from `src/` rather than from the prose, which surfaced **inconsistency 100**: `ARCHITECTURE.md` §6's repository layout is missing nine modules that exist.
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -1767,6 +1767,16 @@ Real defects, listed rather than silently patched.
     **Not re-tuned.** ADR-0002 and CLAUDE.md are explicit that there is no eval
     harness and the rubric is not validated; moving bands to fit n=12 with no
     held-out set would make the table look better and the claim less true.
+
+100. **`ARCHITECTURE.md` §6's repository layout is missing nine modules.**
+     `src/pipeline.ts`, `src/exit-codes.ts`, `src/analyse/budget.ts`,
+     `bundles.ts`, `derive.ts` and `keys.ts`, `src/evidence/signal.ts`,
+     `src/llm/prompt.ts` and `src/memo/index.ts` all exist and none is listed.
+     Found while drawing the README's module map from `src/` rather than from
+     the prose (worklog 0042). The tree is the section's whole content, so a
+     reader using it to find the request budget or the prompt loader does not
+     find them. Not fixed in that session: the ask was the README, and §6 is a
+     one-paste fix for whoever next opens `ARCHITECTURE.md`.
 
 ---
 

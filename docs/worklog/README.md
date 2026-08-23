@@ -83,3 +83,4 @@ are unfinished, not delegated.
 | [0039](./0039-bundles-and-the-run-command.md) | 2026-08-23 | Bundles as artifacts, a replay that reads them, and `./pipeline run`; inconsistencies 70 and 84 close, TICKET-0027 closes |
 | [0040](./0040-sample-run-and-hand-check.md) | 2026-08-23 | The committed sample run of 12, read by hand: one wrong call, one degenerate dimension, two runs that disagree; TICKET-0028 closes |
 | [0041](./0041-docs-closeout.md) | 2026-08-23 | Docs closeout: the checklist walked, every score recomputed by hand, and a replay that was eating the committed manifest; TICKET-0029 closes |
+| [0042](./0042-readme-diagrams.md) | 2026-08-23 | README diagrams: the data flow drawn from `src/`, four Mermaid figures, and a stale ARCHITECTURE §6 found on the way |

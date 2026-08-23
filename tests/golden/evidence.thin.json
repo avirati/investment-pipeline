@@ -1,0 +1,26 @@
+[
+  {
+    "schema_version": 1,
+    "id": "a1b2c3d4e5f60003",
+    "url": "https://news.ycombinator.com/item?id=40000001",
+    "type": "hn_item",
+    "retrieved_at": "2026-08-22T09:15:00.000Z",
+    "status": 200,
+    "title": "Show HN: Acme Traces",
+    "text": "Show HN: Acme Traces — OpenTelemetry-native tracing for LLM calls",
+    "meta": {}
+  },
+  {
+    "schema_version": 1,
+    "id": "a1b2c3d4e5f60004",
+    "url": "https://vaporware.example",
+    "type": "fetch_failed",
+    "retrieved_at": "2026-08-22T09:15:00.000Z",
+    "status": 0,
+    "title": null,
+    "text": "dns lookup failed",
+    "meta": {
+      "error": "ENOTFOUND"
+    }
+  }
+]

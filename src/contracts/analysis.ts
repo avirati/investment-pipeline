@@ -10,8 +10,24 @@ import { Fact } from "./fact.js";
  * nothing to find about: both arrive here as zero facts, and both score 25 with
  * 0% coverage. Stage 3 has no LLM and may not guess (CLAUDE.md invariant 3), so
  * the difference has to be written down by the stage that saw it.
+ *
+ * **3** — added `sections`, `what_would_change_my_mind` and `upgrade_trigger`
+ * (TICKET-0024, STATE inconsistency 9). SPEC §4's memo has a Team / Product /
+ * Market / Risks split, a falsifiable "what would change my mind" list, and
+ * every Watch owes a checkable upgrade trigger. None of the three can be model
+ * output (invariant 1) and none can be invented by stage 3 (invariant 3), so
+ * they are derived here, mechanically, by `src/analyse/derive.ts`. The memo is
+ * then a rendering of this file and of nothing else, which is what makes a
+ * committed analysis readable without running anything.
+ *
+ * **4** — added `why_this_call` (TICKET-0024's renderer). SPEC §4's first
+ * section is three sentences leading with the decisive factor, and picking
+ * which dimension is decisive is a reading of the rubric's output, not a
+ * layout choice. Deriving it here keeps the template a loop over data: stage 3
+ * contains no conditional prose, which is the only way invariant 3 stays true
+ * of a template rather than merely of the code around it.
  */
-export const ANALYSIS_SCHEMA_VERSION = 2;
+export const ANALYSIS_SCHEMA_VERSION = 4;
 
 /**
  * The pipeline's output vocabulary (SPEC §3). It lives here, once, because
@@ -104,6 +120,79 @@ export const AnalysisInputs = z.object({
 });
 export type AnalysisInputs = z.infer<typeof AnalysisInputs>;
 
+/* -------------------------------------------------------------------------- */
+/* What the memo prints                                                        */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * SPEC §4's four body headings, exactly. The set is closed because it is the
+ * memo's contract with a reader — a partner reads five memos in a row and the
+ * fifth has the same shape as the first — and because a heading nobody
+ * specified is a place for prose to accumulate.
+ */
+export const MemoHeading = z.enum(["Team", "Product", "Market", "Risks"]);
+export type MemoHeading = z.infer<typeof MemoHeading>;
+
+/**
+ * What kind of line this is, and therefore what the validator owes it.
+ *
+ * - `fact` — a claim about the company, taken verbatim from a `Fact`. Carries
+ *   evidence ids, always, and `src/memo/validate.ts` resolves every one.
+ * - `gap` — a statement about *our reading*, not about the company: a dimension
+ *   nothing was read for. It has no citation because there is nothing to cite,
+ *   and that is the point (CLAUDE.md invariant 4).
+ * - `check` — a conditional derived from the rubric: what would move a band, or
+ *   what would stop a disqualifier firing. It cites when the observation it
+ *   turns on was itself cited, and does not when it is an absence.
+ * - `summary` — a statement about *this analysis*: the call, the arithmetic
+ *   behind it, the dimension that decided it. It restates numbers that are
+ *   already in the file, so it carries a citation only when the thing it
+ *   restates carried one (a fired disqualifier).
+ *
+ * The discriminator exists so the memo validator can hard-fail an uncited
+ * `fact` (SPEC §4 hard rule 1) without hard-failing an honest gap.
+ */
+export const BulletKind = z.enum(["fact", "gap", "check", "summary"]);
+export type BulletKind = z.infer<typeof BulletKind>;
+
+/**
+ * One line of a memo. `evidence_ids` may be empty only when the line is not a
+ * claim about the company — the refinement below is SPEC §4 hard rule 1 as
+ * schema, so an uncited claim cannot be written to disk in the first place.
+ */
+export const MemoBullet = z
+  .object({
+    kind: BulletKind,
+    text: z.string().min(1),
+    evidence_ids: z.array(z.string().min(1)),
+  })
+  .superRefine((bullet, ctx) => {
+    if (bullet.kind === "fact" && bullet.evidence_ids.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["evidence_ids"],
+        message: "a fact bullet must carry at least one evidence id (SPEC §4 hard rule 1)",
+      });
+    }
+  });
+export type MemoBullet = z.infer<typeof MemoBullet>;
+
+/**
+ * One section of the memo body, already capped at what will be printed.
+ *
+ * A section with no bullets is not written: *an empty section is deleted, never
+ * faked* (SPEC §4), so absence here is how the renderer learns not to print a
+ * heading. `omitted` is the count that did not fit the cap — a cap that
+ * silently truncates reads as coverage, so the number travels with the section
+ * and the memo says it out loud.
+ */
+export const MemoSection = z.object({
+  heading: MemoHeading,
+  bullets: z.array(MemoBullet).min(1),
+  omitted: z.number().int().min(0),
+});
+export type MemoSection = z.infer<typeof MemoSection>;
+
 export const Analysis = z.object({
   schema_version: z.literal(ANALYSIS_SCHEMA_VERSION),
   candidate: Candidate,
@@ -117,6 +206,30 @@ export const Analysis = z.object({
   call: Call,
   /** Written out as unknowns, never smoothed into prose (SPEC §4 hard rule 4). */
   unknowns: z.array(z.string().min(1)),
+  /**
+   * SPEC §4's opening section: at most three sentences, leading with what
+   * decided the call. Never empty — there is always a verdict sentence.
+   */
+  why_this_call: z.array(MemoBullet).min(1),
+  /**
+   * SPEC §4's body, derived from `facts`, `dimensions` and `disqualifiers` by
+   * `src/analyse/derive.ts`. Ordered as the memo prints them; a heading with
+   * nothing under it is absent rather than empty.
+   */
+  sections: z.array(MemoSection),
+  /**
+   * SPEC §4's falsifiable list. Each entry is a rubric band's own requirement
+   * or a disqualifier's refutation — never a judgement, and never longer than
+   * the rubric can support.
+   */
+  what_would_change_my_mind: z.array(MemoBullet),
+  /**
+   * SPEC §3: every Watch states the specific, checkable thing that would
+   * upgrade it. Null for a Pass and for a Take a meeting — a call that is not a
+   * Watch has no upgrade to trigger — and null is also the honest answer when
+   * no reachable combination of bands would cross the threshold.
+   */
+  upgrade_trigger: z.string().min(1).nullable(),
   status: AnalysisStatus,
   /**
    * One sentence saying why the status is not `ok`, written by stage 2 and

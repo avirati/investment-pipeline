@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 4,
   "candidate": {
     "schema_version": 2,
     "slug": "agent-vault",
@@ -230,6 +230,149 @@
   "disqualifiers": [],
   "call": "TAKE_A_MEETING",
   "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Take a meeting — 75/100 clears the 72 threshold, at 100% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The strongest reading is D3 Evidence of pull at 25/25 (band 20–25).",
+      "evidence_ids": [
+        "32a05cf075a05dec",
+        "eecc01471ca81562",
+        "b3896b61d8fdb5bc"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Dangtony98 is a key contributor and appears as the most active contributor on the Agent Vault repository with 155 commits.",
+          "evidence_ids": [
+            "b3896b61d8fdb5bc",
+            "dece46c356dfb9f3"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The GitHub account 'Infisical' that owns the Agent Vault repository is an organization, not a personal account.",
+          "evidence_ids": [
+            "32a05cf075a05dec",
+            "951273502b253a90"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Agent Vault is an open-source HTTP credential proxy and vault for AI agents like Claude Code, OpenClaw, Hermes, custom agents + harnesses, and more.",
+          "evidence_ids": [
+            "32a05cf075a05dec",
+            "f66d67234093b024"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Agent Vault brokers AI agents' access to target services by substituting dummy credentials with real ones in HTTP requests, preventing agents from holding any real credentials and eliminating credential exfiltration risk.",
+          "evidence_ids": [
+            "dece46c356dfb9f3",
+            "f66d67234093b024",
+            "1f34bb918950de03"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Agent Vault is positioned as a credential broker and vault for AI agents that provides secrets management by brokering credentials to agents through an HTTP proxy with MITM architecture.",
+          "evidence_ids": [
+            "dece46c356dfb9f3",
+            "f66d67234093b024",
+            "1f34bb918950de03"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Agent Vault is open source and the repository is hosted publicly at https://github.com/Infisical/agent-vault.",
+          "evidence_ids": [
+            "dece46c356dfb9f3",
+            "32a05cf075a05dec",
+            "f66d67234093b024"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Agent Vault is implemented as a local forward HTTP proxy with a MITM architecture running as a single Go binary and can be deployed as a Docker container that the AI agent routes HTTPS traffic through via the HTTPS_PROXY environment variable.",
+          "evidence_ids": [
+            "dece46c356dfb9f3",
+            "f66d67234093b024",
+            "1f34bb918950de03"
+          ]
+        }
+      ],
+      "omitted": 1
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Agent Vault was first publicly launched and announced around April 2026, with the GitHub repository created on March 27, 2026.",
+          "evidence_ids": [
+            "dece46c356dfb9f3",
+            "32a05cf075a05dec"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "As of August 23, 2026, the Agent Vault GitHub repository has 2121 stars.",
+          "evidence_ids": [
+            "32a05cf075a05dec"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Agent Vault GitHub repository had 293 commits in the last 52 weeks, with 80 commits in the last 12 weeks and 17 weeks with at least one commit as of August 23, 2026.",
+          "evidence_ids": [
+            "eecc01471ca81562"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Agent Vault GitHub repository has 15 contributors on the first page, including 13 human contributors and 2 bot accounts, with dangtony98 being the most active contributor with 155 commits.",
+          "evidence_ids": [
+            "b3896b61d8fdb5bc"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find a prior employer, role or period stated for somebody the company names. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a named customer, design partner or user, stated to be using it for that job. That moves it from 11–15 to 16–20 (+5).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D4 Why now: find a technology, model or cost change the source says the product depends on, and when it arrived. That moves it from 4–8 to 9–12 (+4).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": null,
   "status": "ok",
   "status_reason": null,
   "inputs": {

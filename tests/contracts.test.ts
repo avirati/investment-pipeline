@@ -69,6 +69,24 @@ const analysis = (over: Record<string, unknown> = {}) => ({
   disqualifiers: [],
   call: "TAKE_A_MEETING",
   unknowns: [],
+  why_this_call: [
+    {
+      kind: "summary",
+      text: "Take a meeting — 74/100 clears the 72 threshold, at 80% coverage.",
+      evidence_ids: [],
+    },
+  ],
+  sections: [
+    {
+      heading: "Team",
+      bullets: [{ kind: "fact", text: "Ada is the CEO.", evidence_ids: [EVIDENCE_ID] }],
+      omitted: 0,
+    },
+  ],
+  what_would_change_my_mind: [
+    { kind: "check", text: "If a named design partner exists, D3 moves up.", evidence_ids: [] },
+  ],
+  upgrade_trigger: null,
   status: "ok",
   status_reason: null,
   inputs: {
@@ -207,6 +225,62 @@ describe("Analysis", () => {
   it("requires the produced-by record rather than defaulting it", () => {
     const { inputs: _inputs, ...without } = analysis();
     expect(Analysis.safeParse(without).success).toBe(false);
+  });
+
+  /**
+   * v3's three derived fields (TICKET-0024). The two tests below are SPEC §4's
+   * hard rule 1 and its "empty section is deleted" rule as *schema* — the memo
+   * validator will check the ids resolve, but an uncited claim or a heading
+   * with nothing under it cannot reach disk in the first place.
+   */
+  it("rejects a fact bullet with no citation, and accepts an uncited gap", () => {
+    const uncited = analysis({
+      sections: [
+        {
+          heading: "Team",
+          bullets: [{ kind: "fact", text: "Ada is the CEO.", evidence_ids: [] }],
+          omitted: 0,
+        },
+      ],
+    });
+    const gap = analysis({
+      sections: [
+        {
+          heading: "Risks",
+          bullets: [{ kind: "gap", text: "D1 is unknown.", evidence_ids: [] }],
+          omitted: 0,
+        },
+      ],
+    });
+    expect(Analysis.safeParse(uncited).success).toBe(false);
+    expect(Analysis.safeParse(gap).success).toBe(true);
+  });
+
+  it("rejects an empty section and a heading SPEC §4 does not have", () => {
+    expect(
+      Analysis.safeParse(analysis({ sections: [{ heading: "Team", bullets: [], omitted: 0 }] }))
+        .success,
+    ).toBe(false);
+    expect(
+      Analysis.safeParse(
+        analysis({
+          sections: [
+            {
+              heading: "Traction",
+              bullets: [{ kind: "fact", text: "900 stars.", evidence_ids: [EVIDENCE_ID] }],
+              omitted: 0,
+            },
+          ],
+        }),
+      ).success,
+    ).toBe(false);
+  });
+
+  // SPEC §3's trigger is nullable on purpose: a Watch with no reachable
+  // combination of bands says so rather than inventing one.
+  it("takes a null upgrade trigger and refuses a blank one", () => {
+    expect(Analysis.safeParse(analysis({ upgrade_trigger: null })).success).toBe(true);
+    expect(Analysis.safeParse(analysis({ upgrade_trigger: "" })).success).toBe(false);
   });
 });
 

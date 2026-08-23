@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 4,
   "candidate": {
     "schema_version": 2,
     "slug": "freestyle",
@@ -367,6 +367,169 @@
   "disqualifiers": [],
   "call": "WATCH",
   "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Watch — 55/100 meets the 55 a watch needs and is below the 72 a meeting needs, at 100% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D2 Wedge specificity at 4/20 (band 0–4).",
+      "evidence_ids": [
+        "ed4f7345ba83d9b7",
+        "e945f7b05e79ab56",
+        "67838102087e4058"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "The cofounders of Freestyle are Ben and Jacob.",
+          "evidence_ids": [
+            "ed4f7345ba83d9b7"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Adorable repository's four human contributors include named individuals JacobZwang, theswerd, willothy, and bhaktatejas922.",
+          "evidence_ids": [
+            "660e7d9724fef129"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The freestlye-sh GitHub account is an organization account.",
+          "evidence_ids": [
+            "4845da5537770e5f"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Freestyle describes its product as \"Sandboxes for Coding Agents.\"",
+          "evidence_ids": [
+            "ed4f7345ba83d9b7"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Freestyle provides powerful Linux VMs and Git repos for code agents did not write, enabling real VMs with sandbox environments and Git-backed filesystems.",
+          "evidence_ids": [
+            "e945f7b05e79ab56"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Freestyle maintains an open-source project called 'Adorable' under the MIT license that is an AI app builder using Freestyle cloud VMs with git-backed persistence.",
+          "evidence_ids": [
+            "bc96df27d722a38e",
+            "deafd64ac3b2452f"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Freestyle provides sandboxes that are interchangeable with EC2 virtual machines from an agent's perspective, running full Debian with systemd init instead of runc.",
+          "evidence_ids": [
+            "ed4f7345ba83d9b7"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Freestyle offers a free-to-start plan with no credit card required to get started.",
+          "evidence_ids": [
+            "e945f7b05e79ab56",
+            "92baf667d8ebcbd1"
+          ]
+        }
+      ],
+      "omitted": 3
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Freestyle states that the current generation of AI coding agents can utilize the full power of a computer sandbox, enabled by advances beyond minimal tools and basic serverless apps.",
+          "evidence_ids": [
+            "ed4f7345ba83d9b7"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Freestyle moved to its own bare metal racks because cloud providers' bare metal nodes were too costly and did not meet performance requirements for moving VMs across nodes.",
+          "evidence_ids": [
+            "ed4f7345ba83d9b7"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Freestyle sandboxes support full Linux capabilities including hardware virtualization, eBPF, FUSE, multiple users, and systemd services.",
+          "evidence_ids": [
+            "ed4f7345ba83d9b7"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Freestyle VMs provision in under 600 milliseconds from API request to ready machine.",
+          "evidence_ids": [
+            "e945f7b05e79ab56",
+            "67838102087e4058"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Freestyle VMs can live fork, cloning a running VM without pausing it, providing full copies in milliseconds.",
+          "evidence_ids": [
+            "e945f7b05e79ab56"
+          ]
+        }
+      ],
+      "omitted": 10
+    },
+    {
+      "heading": "Risks",
+      "bullets": [
+        {
+          "kind": "gap",
+          "text": "D2 Wedge specificity scored in its lowest band (0–4): nothing in the evidence read met 5–10, which asks for a stated job — the specific task the product is for, and the person doing it.",
+          "evidence_ids": [
+            "ed4f7345ba83d9b7",
+            "e945f7b05e79ab56",
+            "67838102087e4058"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find a prior employer, role or period stated for somebody the company names. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D3 Evidence of pull: find a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a stated job — the specific task the product is for, and the person doing it. That moves it from 0–4 to 5–10 (+6).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": "17 points short of 72 (score 55); no single dimension covers it, but these together do: D1 Founder–market fit & technical depth from 6–12 to 13–19 (+7), by finding a prior employer, role or period stated for somebody the company names; D3 Evidence of pull from 6–12 to 13–19 (+7), by finding a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days; D2 Wedge specificity from 0–4 to 5–10 (+6), by finding a stated job — the specific task the product is for, and the person doing it.",
   "status": "ok",
   "status_reason": null,
   "inputs": {

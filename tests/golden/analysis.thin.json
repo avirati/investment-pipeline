@@ -1,0 +1,199 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "vaporware",
+    "name": "Vaporware",
+    "url": "https://vaporware.example",
+    "one_liner": "",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "LLM observability",
+        "at": "2026-08-22T09:15:00.000Z",
+        "ref": "40000002",
+        "title": "Show HN: Vaporware — the operating system for autonomous enterprises",
+        "posted_url": "https://vaporware.example",
+        "posted_at": "2026-08-01T11:00:00.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "Vaporware calls itself the operating system for autonomous enterprises.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60003"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "The thread describes it as an agent platform.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60003"],
+      "confidence": "low"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 6,
+      "max": 25,
+      "band": "uncovered · floor of 6–12",
+      "evidence_ids": [],
+      "covered": false
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 4,
+      "max": 20,
+      "band": "0–4",
+      "evidence_ids": ["a1b2c3d4e5f60003"],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 6,
+      "max": 25,
+      "band": "uncovered · floor of 6–12",
+      "evidence_ids": [],
+      "covered": false
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 3,
+      "max": 15,
+      "band": "0–3",
+      "evidence_ids": ["a1b2c3d4e5f60003"],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 8,
+      "max": 15,
+      "band": "4–8",
+      "evidence_ids": ["a1b2c3d4e5f60003"],
+      "covered": true
+    }
+  ],
+  "score": 27,
+  "coverage": 0.6,
+  "disqualifiers": [
+    {
+      "id": "D-2",
+      "statement": "The product is described and nothing it could own — a model, a data asset, a runtime position, a repository — appears in the evidence.",
+      "evidence_ids": ["a1b2c3d4e5f60003"]
+    },
+    {
+      "id": "D-3",
+      "statement": "The company claims a category, a platform or a scope for itself and no single job for a single user appears in the evidence.",
+      "evidence_ids": ["a1b2c3d4e5f60003"]
+    }
+  ],
+  "call": "PASS",
+  "unknowns": [
+    "D1 Founder–market fit & technical depth: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12",
+    "D3 Evidence of pull: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12"
+  ],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Pass — disqualifiers D-2 and D-3 fired, and a cited disqualifier forces a pass whatever the score (27/100, 60% coverage).",
+      "evidence_ids": ["a1b2c3d4e5f60003"]
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D2 Wedge specificity at 4/20 (band 0–4).",
+      "evidence_ids": ["a1b2c3d4e5f60003"]
+    },
+    {
+      "kind": "summary",
+      "text": "2 of 5 dimensions had no primary source behind them; they are listed under what we could not verify.",
+      "evidence_ids": []
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "The thread describes it as an agent platform. (model confidence: low)",
+          "evidence_ids": ["a1b2c3d4e5f60003"]
+        },
+        {
+          "kind": "fact",
+          "text": "Vaporware calls itself the operating system for autonomous enterprises.",
+          "evidence_ids": ["a1b2c3d4e5f60003"]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Risks",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Disqualifier D-2 — The product is described and nothing it could own — a model, a data asset, a runtime position, a repository — appears in the evidence.",
+          "evidence_ids": ["a1b2c3d4e5f60003"]
+        },
+        {
+          "kind": "fact",
+          "text": "Disqualifier D-3 — The company claims a category, a platform or a scope for itself and no single job for a single user appears in the evidence.",
+          "evidence_ids": ["a1b2c3d4e5f60003"]
+        },
+        {
+          "kind": "gap",
+          "text": "D2 Wedge specificity scored in its lowest band (0–4): nothing in the evidence read met 5–10, which asks for a stated job — the specific task the product is for, and the person doing it.",
+          "evidence_ids": ["a1b2c3d4e5f60003"]
+        },
+        {
+          "kind": "gap",
+          "text": "D4 Why now scored in its lowest band (0–3): nothing in the evidence read met 4–8, which asks for a stated launch date, or a repository younger than 548 days.",
+          "evidence_ids": ["a1b2c3d4e5f60003"]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "Disqualifier D-2: find a stated position in the runtime, data the product accumulates, an open-source licence, a capability it depends on, or a public repository. It would then no longer hold, and the call would no longer be forced to Pass.",
+      "evidence_ids": ["a1b2c3d4e5f60003"]
+    },
+    {
+      "kind": "check",
+      "text": "Disqualifier D-3: find a stated job — one task, one user — beside the category the company claims. It would then no longer hold, and the call would no longer be forced to Pass.",
+      "evidence_ids": ["a1b2c3d4e5f60003"]
+    },
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a stated job — the specific task the product is for, and the person doing it. That moves it from 0–4 to 5–10 (+6).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": null,
+  "status": "partial",
+  "status_reason": "the company site did not resolve, so only the launch thread was read",
+  "inputs": {
+    "evidence_records": 2,
+    "evidence_usable": 1,
+    "gather_failures": 1,
+    "extraction": {
+      "status": "partial",
+      "attempts": 1,
+      "facts": 2,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": "the company site did not resolve, so only the launch thread was read"
+    }
+  }
+}

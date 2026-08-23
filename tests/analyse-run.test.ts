@@ -318,6 +318,30 @@ describe("runAnalyse", () => {
     expect(["PASS", "WATCH", "TAKE_A_MEETING"]).toContain(analysis?.call);
   });
 
+  /**
+   * TICKET-0024's stage-2 half, at the seam. `src/analyse/derive.ts` has its
+   * own 32 tests; what this one checks is that the stage actually calls it, so
+   * a memo has a body to render, and that the body is built from the facts this
+   * candidate cited rather than from anything the stage invented.
+   */
+  it("derives the memo's body from the analysis it just scored", async () => {
+    const root = stageOneRun();
+    const [coroot] = (await analyse(root)).analysed;
+    const analysis = coroot?.analysis;
+
+    expect(analysis?.sections.length).toBeGreaterThan(0);
+    const cited = new Set((analysis?.facts ?? []).flatMap((fact) => fact.evidence_ids));
+    for (const section of analysis?.sections ?? []) {
+      for (const bullet of section.bullets) {
+        if (bullet.kind !== "fact") continue;
+        expect(bullet.evidence_ids.length).toBeGreaterThan(0);
+        for (const id of bullet.evidence_ids) expect(cited.has(id)).toBe(true);
+      }
+    }
+    // SPEC §3: a Watch owes a trigger, and nothing else has one to owe.
+    if (analysis?.call !== "WATCH") expect(analysis?.upgrade_trigger).toBeNull();
+  });
+
   it("drops the facts the parser refuses, and counts them by kind", async () => {
     const root = stageOneRun();
     const outcome = await analyse(root);

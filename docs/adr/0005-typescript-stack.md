@@ -68,10 +68,39 @@ The decision is recorded and the extraction itself is not written yet — the
 fetch layer shipped its transport half only. It lands with TICKET-0008's
 remaining half.
 
+## Amendment — 2026-08-23 · `eta` for the memo template
+
+Closing **D-2** at its documented default, in TICKET-0024. The memo is rendered
+from `templates/memo.md.eta` by `eta` (4.6.0, one runtime dependency, no
+transitive ones), rather than from a typed TypeScript render function.
+
+**Why the default holds even though the case for it got weaker.** The argument
+in STATE was *a partner can edit a memo template without reading TypeScript*.
+That argument depends on the template being editable by somebody who is not a
+programmer — and after TICKET-0024's derivation, it is: `Analysis` v4 carries
+the whole memo body pre-composed and capped, so the template is a header line,
+four loops and a table. There is no conditional prose in it, and nothing a
+non-programmer could break beyond the memo's own layout.
+
+**The counter-argument, on the record.** A template that thin is also a template
+a `string` function could produce with no dependency at all, and the layer would
+then be typed end to end. The reason it is not: the layout is the one part of
+this pipeline a *reader* of the output is entitled to change, and asking them to
+edit TypeScript to move a heading is the wrong trade for one small library.
+
+**What this costs.** A runtime dependency whose failures are runtime failures:
+a typo in the template is an exception at render time, not a type error at build
+time. Mitigated by rendering being pure and covered by tests over a committed
+golden analysis, and by `autoEscape` being off — this is markdown, and escaping
+it would corrupt every citation.
+
 ## Revisit if
 
 The pipeline grows a data-analysis stage (cohort statistics, temporal modelling),
 where Python's ecosystem would decisively win.
 
 Or: extraction quality on prose pages becomes the thing limiting fact coverage,
-which is when the amendment above gets reversed.
+which is when the first amendment above gets reversed.
+
+Or: the memo template grows a conditional that is really a decision — at which
+point the decision belongs in stage 2 and the template does not need to exist.

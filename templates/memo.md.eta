@@ -1,0 +1,60 @@
+<%
+/*
+  SPEC §4's memo, as a template (TICKET-0024, D-2).
+
+  Everything here is a loop or a substitution. There is no LLM in this stage
+  (CLAUDE.md invariant 3) and — deliberately — no decision either: which
+  sections exist, which bullets survived the caps, which dimension decided the
+  call and what would upgrade a Watch are all fields on the `Analysis`, computed
+  by `src/analyse/derive.ts`. If something you want to change here needs an
+  `if` with a judgement in it, the change belongs in stage 2.
+
+  `it` is the view model from `src/memo/render.ts`:
+    it.analysis    the Analysis, verbatim
+    it.header      { name, call, score, coverage, url, one_liner, status_reason }
+    it.label(ids)  evidence ids as "[E1][E2]" — memo-local labels
+    it.sources     [{ label, id, url, retrieved, type }] in first-cited order
+
+  Edit freely: a partner changing the layout of a memo should not have to read
+  TypeScript. Two things are load-bearing rather than cosmetic — every bullet
+  prints `it.label(...)` beside it, and the sources table prints every row.
+  Dropping either breaks the citation guarantee (ADR-0003), not just the look.
+
+  Blank lines are normalised by the renderer, so a stray one here is not a diff
+  in the output.
+*/
+%># <%= it.header.name %> — <%= it.header.call %> · score <%= it.header.score %>/100 · coverage <%= it.header.coverage %>%
+
+<%= it.header.url %><% if (it.header.one_liner) { %> · <%= it.header.one_liner %><% } %>
+<% if (it.header.status_reason) { %>
+_Partial reading: <%= it.header.status_reason %>_
+<% } %>
+## Why this call
+
+<% it.analysis.why_this_call.forEach(function (bullet) { %><%= bullet.text %><%= it.label(bullet.evidence_ids) %> <% }) %>
+<% if (it.analysis.upgrade_trigger) { %>
+**To upgrade this Watch:** <%= it.analysis.upgrade_trigger %>
+<% } %>
+<% it.analysis.sections.forEach(function (section) { %>
+## <%= section.heading %>
+
+<% section.bullets.forEach(function (bullet) { %>- <%= bullet.text %><%= it.label(bullet.evidence_ids) %>
+<% }) %><% if (section.omitted > 0) { %>
+_<%= section.omitted %> further observation(s) in the analysis, not shown here._
+<% } %><% }) %>
+<% if (it.analysis.what_would_change_my_mind.length > 0) { %>
+## What would change my mind
+
+<% it.analysis.what_would_change_my_mind.forEach(function (bullet) { %>- <%= bullet.text %><%= it.label(bullet.evidence_ids) %>
+<% }) %><% } %>
+<% if (it.analysis.unknowns.length > 0) { %>
+## What we could not verify
+
+<% it.analysis.unknowns.forEach(function (unknown) { %>- <%= unknown %>
+<% }) %><% } %>
+## Sources
+
+| id | url | retrieved | type |
+| --- | --- | --- | --- |
+<% it.sources.forEach(function (source) { %>| <%= source.label %> (`<%= source.id %>`) | <%= source.url %> | <%= source.retrieved %> | <%= source.type %> |
+<% }) %>

@@ -74,6 +74,15 @@ and an explicit entry in `unknowns[]` — never a crash, never a fabricated valu
 One golden analysis JSON → one golden memo. Catches template regressions for
 free and makes memo changes visible in review as a diff.
 
+**Shipped in TICKET-0024, as two rather than one.** `tests/golden/` holds a
+Watch three points short of a meeting and a Pass forced by two disqualifiers —
+the second exists because the first renders no Risks section and no "could not
+verify" section, and a snapshot that never exercises them is a snapshot of half
+the template. Both analyses are the output of the real rubric and derivation
+over hand-written facts, so they are analyses this pipeline could emit.
+`pnpm golden` regenerates the memos; `pnpm golden --check` fails when they are
+stale. See `tests/golden/README.md`.
+
 ---
 
 ## What is not tested

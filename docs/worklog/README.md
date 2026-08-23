@@ -76,3 +76,5 @@ are unfinished, not delegated.
 | [0032](./0032-rubric-scoring.md) | 2026-08-23 | The rubric: five dimensions, four cited disqualifiers, the call; TICKET-0021 to review |
 | [0033](./0033-stage-2-wiring.md) | 2026-08-23 | Stage 2 wired: `./pipeline analyse`, `Analysis` v2, a replay that cannot spend anything; TICKET-0022 to review |
 | [0034](./0034-first-live-run.md) | 2026-08-23 | The first live run: 3 candidates, one schema defect no offline test could catch, 47 facts and 117 resolving citations |
+| [0035](./0035-memo-derivation.md) | 2026-08-23 | The memo's body derived in stage 2: `Analysis` v3, rubric rule 7, `src/analyse/derive.ts`; inconsistency 9 closes |
+| [0036](./0036-memo-template-and-render.md) | 2026-08-23 | The memo template and renderer, `Analysis` v4's "why this call", two golden memos; TICKET-0024 closes |

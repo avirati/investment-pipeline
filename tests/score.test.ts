@@ -1,15 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { FACT_KEY_LIST } from "../src/analyse/keys.js";
 import {
+  type BandUp,
   COMMUNITY_CONTRIBUTORS,
   COVERAGE_GATE,
   DISQUALIFIERS,
   decideCall,
   LOOP_CONTRIBUTORS,
   MEETING_SCORE,
+  nextBandUp,
   RECENT_PROJECT_DAYS,
   RECENT_PUSH_DAYS,
   RUBRIC,
+  refutedBy,
   type ScoreResult,
   STARS_CREDIBLE,
   SUSTAINED_WEEKS,
@@ -738,5 +741,151 @@ describe("properties, over 400 generated fact sets", () => {
       })),
     });
     expect(shouty).toEqual(plain);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Rule 7 — what the band above asks for                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * These sentences are what makes a Watch's upgrade trigger checkable (SPEC §3),
+ * so the tests here are about the *shape* of the ladder rather than the wording
+ * of any rung: that every rung has one, that reading upwards always gains
+ * points, and that the two ends — a top band and a bottom one — say nothing
+ * rather than inventing a step that does not exist.
+ */
+describe("the band above", () => {
+  it("gives every band and every uncovered floor a sentence", () => {
+    for (const spec of RUBRIC) {
+      expect(spec.unknown.needs.length).toBeGreaterThan(0);
+      for (const band of spec.bands) expect(band.needs.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("says nothing for a dimension already in its top band", () => {
+    for (const spec of RUBRIC) {
+      const top = spec.bands[0];
+      if (!top) throw new Error(`${spec.id} has no bands`);
+      const dimension = {
+        id: spec.id,
+        name: spec.name,
+        score: top.score,
+        max: spec.max,
+        band: top.label,
+        evidence_ids: [idOf("s1")],
+        covered: true,
+      };
+      expect(nextBandUp(dimension)).toBeNull();
+    }
+  });
+
+  /**
+   * A bottom band's own sentence is never printed — `nextBandUp` reads the band
+   * *above* — so the shared `BOTTOM_BAND` text must not be reachable through it.
+   */
+  it("never returns a bottom band's own sentence", () => {
+    for (const spec of RUBRIC) {
+      for (const [index, band] of spec.bands.entries()) {
+        const up = nextBandUp({
+          id: spec.id,
+          name: spec.name,
+          score: band.score,
+          max: spec.max,
+          band: band.label,
+          evidence_ids: [idOf("s1")],
+          covered: true,
+        });
+        if (index === 0) expect(up).toBeNull();
+        else expect(up?.needs).not.toMatch(/^nothing —/);
+        expect(up?.bottom ?? false).toBe(index === spec.bands.length - 1);
+      }
+    }
+  });
+
+  it("returns a positive gain, and the label of the band it names", () => {
+    for (const spec of RUBRIC) {
+      for (let index = 1; index < spec.bands.length; index += 1) {
+        const band = spec.bands[index];
+        const above = spec.bands[index - 1];
+        if (!band || !above) throw new Error("bands are contiguous");
+        const up = nextBandUp({
+          id: spec.id,
+          name: spec.name,
+          score: band.score,
+          max: spec.max,
+          band: band.label,
+          evidence_ids: [idOf("s1")],
+          covered: true,
+        });
+        expect(up?.to).toBe(above.label);
+        expect(up?.gain).toBe(above.score - band.score);
+        expect(up?.gain ?? 0).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  /**
+   * Invariant 4, in this module's terms. An uncovered dimension gets the
+   * "go and read something" sentence and **no number**: where it lands once a
+   * source is read is not knowable, and a guessed gain would be the memo
+   * asserting arithmetic it cannot support.
+   */
+  it("offers no number for an uncovered dimension, only what to read", () => {
+    const result = run({ facts: [f("product.job", "s1")] });
+    const d1 = dim(result, "D1");
+    expect(d1.covered).toBe(false);
+    const up = nextBandUp(d1);
+    expect(up?.uncovered).toBe(true);
+    expect(up?.gain).toBeNull();
+    expect(up?.to).toBeNull();
+    expect(up?.needs).toContain("primary source");
+  });
+
+  it("says nothing about a band label this rubric never wrote", () => {
+    expect(
+      nextBandUp({
+        id: "D1",
+        name: "Founder–market fit & technical depth",
+        score: 0,
+        max: 25,
+        band: "0 · no band held",
+        evidence_ids: [idOf("s1")],
+        covered: true,
+      }),
+    ).toBeNull();
+    expect(
+      nextBandUp({
+        id: "D9",
+        name: "not a dimension",
+        score: 0,
+        max: 10,
+        band: "0–5",
+        evidence_ids: [],
+        covered: true,
+      }),
+    ).toBeNull();
+  });
+
+  it("names what would stop each disqualifier firing, and nothing else", () => {
+    for (const spec of DISQUALIFIERS) expect(refutedBy(spec.id)?.length).toBeGreaterThan(0);
+    expect(refutedBy("D-9")).toBeNull();
+  });
+
+  it("answers for every dimension of every generated fact set", () => {
+    for (const result of generated()) {
+      for (const dimension of result.dimensions) {
+        const up: BandUp | null = nextBandUp(dimension);
+        if (up === null) {
+          // The only silent case reachable from `scoreCandidate` is a top band.
+          const spec = RUBRIC.find((entry) => entry.id === dimension.id);
+          expect(spec?.bands[0]?.label).toBe(dimension.band);
+          continue;
+        }
+        expect(up.needs.length).toBeGreaterThan(0);
+        expect(up.from).toBe(dimension.band);
+        if (up.gain !== null) expect(dimension.score + up.gain).toBeLessThanOrEqual(dimension.max);
+      }
+    }
   });
 });

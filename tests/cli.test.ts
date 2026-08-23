@@ -77,23 +77,15 @@ describe("exit codes", () => {
   // `source` left this list at TICKET-0012, and had to: the case below spawns
   // the command for real, so leaving it here would have made the suite fetch
   // from HN Algolia and write a run directory into the repo. Which is what it
-  // did for exactly one commit. The three that remain still exit before doing
-  // anything (CLAUDE.md: never a test that needs the network or a key).
-  // `memo` left this list at TICKET-0026 for the same reason `source` did, and
-  // did not have to: stage 3 makes no request at all, so the case below is the
-  // one command in the suite that could safely have stayed. It moved anyway —
-  // it is wired, and a list of unimplemented commands that names a wired one is
-  // the kind of stale that outlives the ticket.
-  const UNIMPLEMENTED = ["run"] as const;
-
-  it.each(UNIMPLEMENTED.map((c) => [c, ["--seed", "x"]] as const))(
-    "%s exits UNIMPLEMENTED until its stage lands",
-    (command, args) => {
-      const { status, stderr } = run([command, ...args]);
-      expect(status).toBe(EXIT.UNIMPLEMENTED);
-      expect(stderr).toContain("not implemented yet");
-    },
-  );
+  // did for exactly one commit. `analyse` left at 0022, `memo` at 0026, and
+  // `run` at TICKET-0027 — which emptied the list and retired the code with
+  // it. What is left is the assertion that it stays retired: no command
+  // reports itself unimplemented, and 70 is no longer in the contract.
+  it("no longer documents an unimplemented exit code", () => {
+    const { stdout } = run(["--help"]);
+    expect(stdout).not.toMatch(/^\s{2}70\s/m);
+    expect(stdout).not.toContain("not implemented");
+  });
 
   it("a missing required flag is a usage error", () => {
     expect(run(["source"]).status).toBe(EXIT.USAGE);
@@ -135,7 +127,6 @@ describe("pipeline analyse — offline failure paths", () => {
 
   it("no longer reports itself unimplemented", () => {
     const r = run(["analyse", "--run", "2000-01-01-not-a-real-run"]);
-    expect(r.status).not.toBe(EXIT.UNIMPLEMENTED);
     expect(r.stderr).not.toContain("not implemented");
   });
 
@@ -168,7 +159,6 @@ describe("pipeline memo", () => {
 
   it("no longer reports itself unimplemented", () => {
     const r = run(["memo", "--run", "2000-01-01-not-a-real-run"]);
-    expect(r.status).not.toBe(EXIT.UNIMPLEMENTED);
     expect(r.stderr).not.toContain("not implemented");
   });
 
@@ -221,7 +211,6 @@ describe("pipeline source — offline failure paths", () => {
 
   it("no longer reports itself unimplemented", () => {
     const r = run(["source", "--seed", "LLM observability", "--run", "../escape"]);
-    expect(r.status).not.toBe(EXIT.UNIMPLEMENTED);
     expect(r.stderr).not.toContain("not implemented");
   });
 });

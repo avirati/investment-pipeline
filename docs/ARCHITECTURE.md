@@ -284,7 +284,6 @@ Exit codes:
   1   usage or configuration error
   2   data gap — the run completed but found too little to act on
   3   invariant violation — a contract or citation check failed (ADR-0003)
-  70  not implemented yet — a stage this build does not have
 
 Run './pipeline <command> --help' for command options.
 ```
@@ -305,13 +304,23 @@ Options:
   --no-expand          use the raw seed verbatim; skips planning
   --since <days>       source window (default: 180)
   --run <id>           explicit run id (default: date-slug)
-  --replay             reuse cached LLM responses; spends nothing
+  --replay             reuse the stored bundles and LLM cache; spends nothing
   -h, --help           show this
 ```
 
-`source` takes the same sourcing options as `run`; `analyse` takes `--run` and
-`--replay`; `memo` takes `--run` alone, because stage 3 makes no LLM calls and
-so has nothing to replay.
+`source` takes the same sourcing options as `run`; `analyse` takes `--run`,
+`--replay` and `--force`; `memo` takes `--run` alone, because stage 3 makes no
+LLM calls and so has nothing to replay.
+
+There was a fifth exit code, `70 — not implemented yet`, while the stages were
+being wired one at a time. TICKET-0027 wired `run`, which was its last caller,
+and the code went with it.
+
+`run` writes progress to **stderr** and the three stage summaries to **stdout**,
+so `./pipeline run ... > report.txt` captures the summaries and still shows a
+person what is happening. Stage 2 reports a line per candidate, because it is
+the stage that takes minutes and a four-minute silence is indistinguishable
+from a hang.
 
 Sub-commands exist so the stage separation is visible from outside, not just in
 the source tree. `run` exists so a partner types one thing.

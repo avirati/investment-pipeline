@@ -220,9 +220,19 @@ describe("runSource — the run directory", () => {
     );
   });
 
-  it("reuses the run and its decided plan on a replay, without asking again", async () => {
-    const { http } = stub();
+  /**
+   * TICKET-0027. A replay used to re-plan from the stored plan and then search
+   * HN again — four live requests, and a real risk of *changing* the run: HN
+   * moves, so a replay of last week's seed can find a company last week's run
+   * never saw and write it into a directory whose analyses do not mention it.
+   * It now reads the candidates it already decided and rewrites nothing.
+   */
+  it("reads the candidates it already decided on a replay, and makes no request", async () => {
+    const { http, urls } = stub();
     const first = await runSource({ seed: SEED, root, http, runId: "sample-run", limit: 2 });
+    const before = stage(root, "sample-run");
+    urls.length = 0;
+
     const again = await runSource({
       seed: SEED,
       root,
@@ -231,8 +241,29 @@ describe("runSource — the run directory", () => {
       limit: 2,
       replay: true,
     });
+
+    expect(urls).toEqual([]);
+    expect(again.replayed).toBe(true);
     expect(again.plan).toEqual(first.plan);
-    expect(stage(root, "sample-run").query?.replayed).toBe(true);
+    expect(again.candidates).toEqual(first.candidates);
+    // The record on disk still describes the search that actually happened.
+    expect(stage(root, "sample-run")).toEqual(before);
+  });
+
+  it("sources for real when --replay names a run stage 1 never finished", async () => {
+    const { http, urls } = stub();
+    const outcome = await runSource({
+      seed: SEED,
+      root,
+      http,
+      runId: "sample-run",
+      limit: 2,
+      replay: true,
+    });
+
+    expect(outcome.replayed).toBe(false);
+    expect(outcome.candidates).toHaveLength(2);
+    expect(urls.length).toBeGreaterThan(0);
   });
 
   it("rejects a run id that is not a directory name", async () => {

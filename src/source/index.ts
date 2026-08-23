@@ -1,13 +1,17 @@
-import { readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { z } from "zod";
 import type { EnvSource } from "../config.js";
-import type { Candidate, QueryPlan } from "../contracts/index.js";
+import {
+  type Candidate,
+  Candidate as CandidateSchema,
+  type QueryPlan,
+} from "../contracts/index.js";
 import type { HttpOptions } from "../evidence/fetch.js";
-import { llmInfo, type Manifest, newManifest, writeStage } from "../manifest.js";
+import { llmInfo, type Manifest, newManifest, readManifest, writeStage } from "../manifest.js";
 import { createRunDir, type RunPaths, resolveRunId } from "../run.js";
 import { candidatesFromUrls, parseUrlList, toCandidates } from "./candidate.js";
 import { classifyHits, type HnSearchResult, type QueryExpansion, searchHn } from "./hn.js";
-import { type Chooser, type Clarifier, planQuery } from "./plan.js";
+import { type Chooser, type Clarifier, planQuery, readQueryPlan } from "./plan.js";
 import {
   dedupeHits,
   type ResolvedSite,
@@ -230,6 +234,14 @@ export interface SourceOutcome {
   plan: QueryPlan | null;
   stage: SourceStage;
   manifest: Manifest;
+  /**
+   * True when `--replay` read the candidates this run already decided rather
+   * than searching for them again. The `stage` record is then the *original*
+   * run's, unchanged on disk: a replay sourced nothing, and a record that
+   * claimed otherwise would be the second-worst kind of lie a manifest can
+   * tell — the plausible kind.
+   */
+  replayed: boolean;
 }
 
 function countKinds(entries: readonly { kind: string }[]): Record<string, number> {
@@ -251,6 +263,23 @@ function armsFor(
   expand: boolean,
 ): { expansions: QueryExpansion[] } | Record<string, never> {
   return expand ? {} : { expansions: [{ label: "raw", query, tags: "story" }] };
+}
+
+/**
+ * `candidates.jsonl` as candidates, for a replay to read back what this stage
+ * wrote. Deliberately strict where `readCandidates` in stage 2 is forgiving: a
+ * line stage 1 cannot re-read is stage 1's own output being wrong, and there is
+ * nothing to salvage by skipping it.
+ */
+function readCandidateFile(path: string): Candidate[] | null {
+  const lines = readFileSync(path, "utf8").split("\n").filter(Boolean);
+  const candidates: Candidate[] = [];
+  for (const line of lines) {
+    const parsed = CandidateSchema.safeParse(JSON.parse(line));
+    if (!parsed.success) return null;
+    candidates.push(parsed.data);
+  }
+  return candidates;
 }
 
 /** Stage 1, end to end. Writes `candidates.jsonl` and the manifest's `source` record. */
@@ -374,7 +403,7 @@ export async function runSource(options: SourceOptions): Promise<SourceOutcome> 
         (candidates.length > 0 ? "\n" : ""),
     );
     const written = writeStage(paths.manifest, manifest, "source", stage);
-    return { run_id: runId, paths, candidates, plan, stage, manifest: written };
+    return { run_id: runId, paths, candidates, plan, stage, manifest: written, replayed: false };
   };
 
   /** A run that cannot continue still writes its manifest: it is how a reviewer sees why. */
@@ -384,6 +413,39 @@ export async function runSource(options: SourceOptions): Promise<SourceOutcome> 
   };
 
   const at = startedAt.toISOString();
+
+  /**
+   * `--replay`: a second look at a decided run (`src/run.ts`, rule 2).
+   *
+   * Stage 1's decision is `candidates.jsonl`, and it is already on disk. Before
+   * this, a replay re-planned from the stored plan and then searched HN again —
+   * cheap in tokens, and four live requests, which is not what "makes no
+   * network call" means. It could also *change* the run: HN moves, so a replay
+   * of last week's seed can find a company last week's run never saw, and write
+   * it into a run directory whose analyses do not mention it.
+   *
+   * Nothing is rewritten here. The manifest's `source` record describes the
+   * search that actually happened and is left exactly as it was.
+   */
+  if (replay) {
+    const existing = existsSync(paths.candidates) ? readCandidateFile(paths.candidates) : null;
+    const record = readManifest(paths.manifest)?.stages.source;
+    const parsed = record === undefined ? null : SourceStage.safeParse(record);
+    if (existing !== null && existing.length > 0 && parsed?.success === true) {
+      return {
+        run_id: runId,
+        paths,
+        candidates: existing.slice(0, limit),
+        plan: readQueryPlan(paths.queryPlan),
+        stage: parsed.data,
+        manifest: readManifest(paths.manifest) as Manifest,
+        replayed: true,
+      };
+    }
+    // A `--replay` on a directory stage 1 never finished is not a replay. It
+    // falls through and sources for real, which is what the operator asked for
+    // in every reading except the one where they meant to type a different id.
+  }
 
   if (form === "urls") {
     const entries = parseUrlList(readFileSync(seed, "utf8"));

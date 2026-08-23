@@ -6,6 +6,7 @@ import { ConfigError, loadDotEnv } from "./config.js";
 import { EXIT } from "./exit-codes.js";
 import { MemoError, type MemoOutcome, runMemo } from "./memo/index.js";
 import { MemoValidationError } from "./memo/validate.js";
+import { type PipelineEvent, type PipelineOutcome, runPipeline } from "./pipeline.js";
 import { RunError, validateRunId } from "./run.js";
 import { runSource, type SourceOutcome } from "./source/index.js";
 import { PlanError } from "./source/plan.js";
@@ -31,7 +32,6 @@ Exit codes:
   1   usage or configuration error
   2   data gap — the run completed but found too little to act on
   3   invariant violation — a contract or citation check failed (ADR-0003)
-  70  not implemented yet — a stage this build does not have
 `;
 
 const FOOTER = `
@@ -69,15 +69,6 @@ function withRunOptions(cmd: Command, opts: { replay: boolean }): Command {
     cmd.option("--replay", "reuse the stored bundles and LLM cache; spends nothing");
   }
   return cmd;
-}
-
-/**
- * Scaffolding. Each stage ticket replaces its own call with a real action, and
- * the last one to land takes `EXIT.UNIMPLEMENTED` with it.
- */
-function notImplemented(command: string, ticket: string): never {
-  process.stderr.write(`pipeline ${command}: not implemented yet (${ticket})\n`);
-  process.exit(EXIT.UNIMPLEMENTED);
 }
 
 /**
@@ -127,6 +118,15 @@ function fail(error: unknown): never {
 function sourceSummary(outcome: SourceOutcome): string {
   const { stage } = outcome;
   const lines = [`run ${outcome.run_id}`];
+  // A replay sourced nothing. Reprinting the original run's search counts as
+  // though this invocation had made them is the summary telling the same
+  // plausible lie the manifest refuses to (`runSource`, the replay branch).
+  if (outcome.replayed) {
+    lines.push(`  source      replayed — ${outcome.candidates.length} candidate(s) read from disk`);
+    lines.push(`  candidates  ${outcome.paths.candidates}`);
+    lines.push(`  next        ./pipeline analyse --run ${outcome.run_id} --replay`);
+    return `${lines.join("\n")}\n`;
+  }
   if (stage.query) {
     const probe = stage.query.probe;
     const measured = probe ? ` (probe: ${probe.usable} usable of ${probe.hits})` : "";
@@ -313,6 +313,81 @@ function memoAction(flags: { run: string }): void {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* run — all three stages                                                      */
+/* -------------------------------------------------------------------------- */
+
+/** `4m12s`, `7.4s`, `410ms`. A run is minutes and a stage 3 is milliseconds. */
+function duration(ms: number): string {
+  if (ms < 1_000) return `${ms}ms`;
+  if (ms < 60_000) return `${(ms / 1_000).toFixed(1)}s`;
+  const minutes = Math.floor(ms / 60_000);
+  return `${minutes}m${Math.round((ms % 60_000) / 1_000)}s`;
+}
+
+/**
+ * What a run says while it is running, on stderr (pipeline rule 4).
+ *
+ * Stage 2 gets a line per candidate because it is the stage that takes minutes,
+ * and a four-minute silence is indistinguishable from a hang. Stages 1 and 3
+ * get a banner each, because they are seconds and milliseconds respectively and
+ * a progress bar over 400ms is decoration.
+ */
+function progressLine(event: PipelineEvent): string | null {
+  switch (event.kind) {
+    case "stage_started":
+      return `[${event.index}/${event.of}] ${event.stage}…`;
+    case "stage_finished":
+      return `[${event.index}/${event.of}] ${event.stage} done in ${duration(event.duration_ms)}`;
+    case "candidate":
+      return `        ${event.done}/${event.of} ${event.slug} — ${event.status}`;
+  }
+}
+
+/**
+ * The three stage summaries a person already knows how to read, and one line
+ * that only a run can say. Nothing is re-summarised: a reviewer comparing
+ * `./pipeline run` against the three commands separately should see the same
+ * text, because it is the same functions producing it.
+ */
+function runSummary(outcome: PipelineOutcome): string {
+  const { stage } = outcome;
+  return [
+    sourceSummary(outcome.source),
+    analyseSummary(outcome.analyse),
+    memoSummary(outcome.memo),
+    `run ${outcome.run_id} — ${duration(stage.duration_ms)} total (` +
+      `${stage.stages.map((row) => `${row.stage} ${duration(row.duration_ms)}`).join(" · ")})\n` +
+      `  ${stage.counts.candidates} candidate(s) · ${stage.counts.analyses} analysed` +
+      (stage.counts.partial > 0 ? ` · ${stage.counts.partial} partial` : "") +
+      (stage.counts.failed > 0 ? ` · ${stage.counts.failed} failed` : "") +
+      ` · ${stage.counts.memos} memo(s) · ` +
+      `${stage.cost_usd === null ? "cost unknown" : `$${stage.cost_usd.toFixed(4)}`}\n`,
+  ].join("\n");
+}
+
+async function runAction(flags: SourceFlags): Promise<void> {
+  try {
+    const outcome = await runPipeline({
+      seed: flags.seed,
+      limit: flags.limit,
+      minHits: flags.minHits,
+      sinceDays: flags.since,
+      expand: flags.expand,
+      ...(flags.queryPlan === undefined ? {} : { queryPlanFile: flags.queryPlan }),
+      ...(flags.run === undefined ? {} : { runId: flags.run }),
+      replay: flags.replay === true,
+      report: (event) => {
+        const line = progressLine(event);
+        if (line !== null) process.stderr.write(`${line}\n`);
+      },
+    });
+    process.stdout.write(runSummary(outcome));
+  } catch (error) {
+    fail(error);
+  }
+}
+
 export function buildProgram(): Command {
   const program = new Command()
     .name("pipeline")
@@ -327,7 +402,7 @@ export function buildProgram(): Command {
       program.command("run").description("Source, analyse and write memos in one pass"),
     ),
     { replay: true },
-  ).action(() => notImplemented("run", "TICKET-0027"));
+  ).action(runAction);
 
   withRunOptions(
     withSourcingOptions(

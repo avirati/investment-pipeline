@@ -249,6 +249,14 @@ export interface AnalyseOptions {
   limits?: Record<RequestPool, number | null>;
   now?: () => Date;
   env?: EnvSource;
+  /**
+   * Called as each candidate settles, so a caller can say something while a
+   * fifteen-candidate stage 2 spends four minutes. It is a notification and
+   * not a hook: it is given what the manifest row will say, it cannot change
+   * the outcome, and a throw from it is the caller's bug rather than the
+   * candidate's — so it is not caught here.
+   */
+  onCandidate?: (row: { slug: string; status: CandidateStatus; reason: string | null }) => void;
 }
 
 export interface AnalysedCandidate {
@@ -489,6 +497,10 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
           return bundle;
         });
 
+  const settled = (row: { slug: string; status: CandidateStatus; reason: string | null }): void => {
+    options.onCandidate?.(row);
+  };
+
   const analysed = await mapWithConcurrency(inputBundles, concurrency, async (bundle) => {
     const at = now().getTime();
     try {
@@ -502,12 +514,14 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
       });
       const analysis = analysisFor(bundle, extract);
       const path = writeAnalysis(paths.analysesDir, analysis);
+      const status: CandidateStatus = analysis.status === "ok" ? "ok" : "partial";
+      settled({ slug: bundle.slug, status, reason: analysis.status_reason });
       return {
         bundle,
         extract,
         analysis,
         path,
-        status: (analysis.status === "ok" ? "ok" : "partial") as CandidateStatus,
+        status,
         reason: analysis.status_reason,
         duration_ms: Math.max(0, now().getTime() - at),
       };
@@ -516,6 +530,7 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
       // out of here — anything else is this candidate's, and one candidate does
       // not cost the run (ARCHITECTURE §5).
       if (error instanceof Error && error.name === "LlmCallError") throw error;
+      settled({ slug: bundle.slug, status: "failed", reason: messageOf(error) });
       return {
         bundle,
         extract: null,

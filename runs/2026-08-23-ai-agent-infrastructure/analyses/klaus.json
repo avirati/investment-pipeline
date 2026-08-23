@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "candidate": {
     "schema_version": 2,
     "slug": "klaus",
@@ -175,6 +175,101 @@
   "unknowns": [
     "D1 Founder–market fit & technical depth: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12"
   ],
+  "sections": [
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Klaus describes itself as 'OpenClaw on a VM, batteries included.'",
+          "evidence_ids": [
+            "4a45d9b1596e8bd4"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Klaus aims to provide a secure and powerful hosted OpenClaw solution that is simple to run without requiring complex setup.",
+          "evidence_ids": [
+            "4a45d9b1596e8bd4"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Klaus runs OpenClaw by giving each user their own EC2 instance preconfigured with keys and integrations.",
+          "evidence_ids": [
+            "4a45d9b1596e8bd4"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Klaus charges $19/month for a t4g.small instance, $49/month for t4g.medium, and $200/month for t4g.xlarge with priority support.",
+          "evidence_ids": [
+            "4a45d9b1596e8bd4"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Klaus offers Starter, Plus, Pro, and Managed Rollout pricing tiers with varying AI and Orthogonal credits, and cloud instance quality.",
+          "evidence_ids": [
+            "3b6f2710ebfd0986"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Klaus depends on OpenClaw and integrates with OpenRouter, AgentMail, Orthogonal, Slack, and Google Workspace using OAuth apps.",
+          "evidence_ids": [
+            "4a45d9b1596e8bd4"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Klaus announced it will shut down on September 1, 2026 and no longer accepts new subscriptions.",
+          "evidence_ids": [
+            "3b6f2710ebfd0986"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Klaus integrates with many third-party services including Salesforce, HubSpot, Slack, Microsoft, Google, Zoom, Notion, Discord, GitHub, Stripe, Apollo, Zendesk, Intercom, and more.",
+          "evidence_ids": [
+            "3b6f2710ebfd0986"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Klaus' Hacker News thread titled 'Show HN: Klaus – OpenClaw on a VM, batteries included' received 160 points and 91 comments 5 months ago from retrieval date (August 23, 2026).",
+          "evidence_ids": [
+            "4a45d9b1596e8bd4"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "D3 Evidence of pull: find a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a named customer, design partner or user, stated to be using it for that job. That moves it from 11–15 to 16–20 (+5).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find any primary source that names who is behind this — a team page, an about page, or a repository owner. Nothing was read for this dimension — it is scored at uncovered · floor of 6–12 and drags coverage down.",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": "9 points short of 72 (score 63); no single dimension covers it, but these together do: D3 Evidence of pull from 6–12 to 13–19 (+7), by finding a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days; D2 Wedge specificity from 11–15 to 16–20 (+5), by finding a named customer, design partner or user, stated to be using it for that job.",
   "status": "ok",
   "status_reason": null,
   "inputs": {

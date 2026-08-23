@@ -1,0 +1,298 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "acme-traces",
+    "name": "Acme Traces",
+    "url": "https://acmetraces.dev",
+    "one_liner": "OpenTelemetry-native tracing for LLM calls.",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "LLM observability",
+        "at": "2026-08-22T09:15:00.000Z",
+        "ref": "40000001",
+        "title": "Show HN: Acme Traces — OpenTelemetry-native tracing for LLM calls",
+        "posted_url": "https://acmetraces.dev",
+        "posted_at": "2026-03-04T17:02:00.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "Ada Okafor is named as Acme Traces' cofounder and CTO.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60001"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.prior_role",
+      "statement": "Ada Okafor is stated to have led observability at Northwind.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60001"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Acme Traces describes itself as \"tracing for LLM calls.\"",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60001"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Acme Traces is for an on-call engineer debugging a failed agent run.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60001"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.open_source",
+      "statement": "The repository is published under Apache-2.0.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60002"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "It runs as a sidecar beside the application process.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60001", "a1b2c3d4e5f60002"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.self_serve",
+      "statement": "A free tier is available without contacting sales.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60001"],
+      "confidence": "low"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.integration",
+      "statement": "It integrates with OpenTelemetry collectors.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60002"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.hn_engagement",
+      "statement": "The Show HN thread drew 96 comments.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60003"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.github_stars",
+      "statement": "The repository shows 412 stars.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60002"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.launch_date",
+      "statement": "The first release is dated March 2026.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60002"],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "funding.raised_usd",
+      "statement": "The site states a $4M seed led by Northwind Ventures.",
+      "value": true,
+      "evidence_ids": ["a1b2c3d4e5f60001"],
+      "confidence": "medium"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 19,
+      "max": 25,
+      "band": "13–19",
+      "evidence_ids": ["a1b2c3d4e5f60001"],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 15,
+      "max": 20,
+      "band": "11–15",
+      "evidence_ids": ["a1b2c3d4e5f60001", "a1b2c3d4e5f60002"],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": ["a1b2c3d4e5f60002", "a1b2c3d4e5f60003"],
+      "covered": true
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 8,
+      "max": 15,
+      "band": "4–8",
+      "evidence_ids": ["a1b2c3d4e5f60002", "a1b2c3d4e5f60001"],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": ["a1b2c3d4e5f60001", "a1b2c3d4e5f60002"],
+      "covered": true
+    }
+  ],
+  "score": 69,
+  "coverage": 1,
+  "disqualifiers": [],
+  "call": "WATCH",
+  "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Watch — 69/100 meets the 55 a watch needs and is below the 72 a meeting needs, at 100% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D3 Evidence of pull at 12/25 (band 6–12).",
+      "evidence_ids": ["a1b2c3d4e5f60002", "a1b2c3d4e5f60003"]
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Ada Okafor is named as Acme Traces' cofounder and CTO.",
+          "evidence_ids": ["a1b2c3d4e5f60001"]
+        },
+        {
+          "kind": "fact",
+          "text": "Ada Okafor is stated to have led observability at Northwind.",
+          "evidence_ids": ["a1b2c3d4e5f60001"]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Acme Traces describes itself as \"tracing for LLM calls.\"",
+          "evidence_ids": ["a1b2c3d4e5f60001"]
+        },
+        {
+          "kind": "fact",
+          "text": "Acme Traces is for an on-call engineer debugging a failed agent run.",
+          "evidence_ids": ["a1b2c3d4e5f60001"]
+        },
+        {
+          "kind": "fact",
+          "text": "The repository is published under Apache-2.0.",
+          "evidence_ids": ["a1b2c3d4e5f60002"]
+        },
+        {
+          "kind": "fact",
+          "text": "It runs as a sidecar beside the application process.",
+          "evidence_ids": ["a1b2c3d4e5f60001", "a1b2c3d4e5f60002"]
+        },
+        {
+          "kind": "fact",
+          "text": "A free tier is available without contacting sales. (model confidence: low)",
+          "evidence_ids": ["a1b2c3d4e5f60001"]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "The first release is dated March 2026.",
+          "evidence_ids": ["a1b2c3d4e5f60002"]
+        },
+        {
+          "kind": "fact",
+          "text": "The repository shows 412 stars.",
+          "evidence_ids": ["a1b2c3d4e5f60002"]
+        },
+        {
+          "kind": "fact",
+          "text": "It integrates with OpenTelemetry collectors.",
+          "evidence_ids": ["a1b2c3d4e5f60002"]
+        },
+        {
+          "kind": "fact",
+          "text": "The Show HN thread drew 96 comments.",
+          "evidence_ids": ["a1b2c3d4e5f60003"]
+        },
+        {
+          "kind": "fact",
+          "text": "The site states a $4M seed led by Northwind Ventures.",
+          "evidence_ids": ["a1b2c3d4e5f60001"]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "D3 Evidence of pull: find a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find a named person with a stated prior role, and something they are stated to have founded, sold or shipped before this. That moves it from 13–19 to 20–25 (+6).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a named customer, design partner or user, stated to be using it for that job. That moves it from 11–15 to 16–20 (+5).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": "3 points short of 72 (score 69). D4 Why now from 4–8 to 9–12 (+4), by finding a technology, model or cost change the source says the product depends on, and when it arrived, alone clears it.",
+  "status": "partial",
+  "status_reason": "the team page returned 404, so the founder list is one source thin",
+  "inputs": {
+    "evidence_records": 4,
+    "evidence_usable": 3,
+    "gather_failures": 1,
+    "extraction": {
+      "status": "partial",
+      "attempts": 2,
+      "facts": 12,
+      "dropped": 1,
+      "dropped_by_kind": {
+        "schema": 1
+      },
+      "error": "the team page returned 404, so the founder list is one source thin"
+    }
+  }
+}

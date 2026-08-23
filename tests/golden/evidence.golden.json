@@ -1,0 +1,48 @@
+[
+  {
+    "schema_version": 1,
+    "id": "a1b2c3d4e5f60001",
+    "url": "https://acmetraces.dev",
+    "type": "company_site",
+    "retrieved_at": "2026-08-22T09:15:00.000Z",
+    "status": 200,
+    "title": "Acme Traces — OpenTelemetry-native tracing for LLM calls",
+    "text": "Acme Traces is OpenTelemetry-native tracing for LLM calls.",
+    "meta": {}
+  },
+  {
+    "schema_version": 1,
+    "id": "a1b2c3d4e5f60002",
+    "url": "https://api.github.com/repos/acme/traces",
+    "type": "github_repo",
+    "retrieved_at": "2026-08-22T09:15:00.000Z",
+    "status": 200,
+    "title": "acme/traces",
+    "text": "Tracing for LLM calls. Apache-2.0.",
+    "meta": {}
+  },
+  {
+    "schema_version": 1,
+    "id": "a1b2c3d4e5f60003",
+    "url": "https://news.ycombinator.com/item?id=40000001",
+    "type": "hn_item",
+    "retrieved_at": "2026-08-22T09:15:00.000Z",
+    "status": 200,
+    "title": "Show HN: Acme Traces",
+    "text": "Show HN: Acme Traces — OpenTelemetry-native tracing for LLM calls",
+    "meta": {}
+  },
+  {
+    "schema_version": 1,
+    "id": "a1b2c3d4e5f60004",
+    "url": "https://acmetraces.dev/team",
+    "type": "fetch_failed",
+    "retrieved_at": "2026-08-22T09:15:00.000Z",
+    "status": 404,
+    "title": null,
+    "text": "404 Not Found",
+    "meta": {
+      "error": "404"
+    }
+  }
+]

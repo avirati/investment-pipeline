@@ -9,7 +9,7 @@ import type { Signal } from "../evidence/signal.js";
  * always produce the same number, and a reviewer can recompute it by hand from
  * the analysis JSON and SPEC §2.
  *
- * Six rules shape it.
+ * Seven rules shape it.
  *
  * 1. **It switches on keys, never on English.** A band predicate may ask
  *    whether a `founder.prior_exit` fact exists and what `github.stars` said.
@@ -58,6 +58,18 @@ import type { Signal } from "../evidence/signal.js";
  *    behind those keys and `covered` is whether that set is non-empty. There is
  *    no way to score a dimension off a key it did not declare, and no way to
  *    claim coverage for evidence that did not reach the number.
+ *
+ * 7. **Every band says what it asks for, and every disqualifier says what
+ *    would refute it.** SPEC §3 requires every Watch to carry a specific,
+ *    checkable trigger, and a trigger that reads "seven points higher" is not
+ *    checkable — a partner cannot go and look for seven points. So each band
+ *    carries a `needs` sentence restating its own predicate in the terms a
+ *    person would search in, and `nextBandUp` reads the sentence one band
+ *    above where a company sits. This keeps the thesis in one file
+ *    (CLAUDE.md invariant 7): `src/analyse/derive.ts` composes those sentences
+ *    into the memo's lists and never writes one of its own. The sentences are
+ *    restatements, not judgements — if one reads like a verdict about a
+ *    company rather than a description of an observation, it is a bug.
  *
  * ## What this file is not
  *
@@ -302,12 +314,32 @@ function credibleSignals(o: Observed): string[] {
 /* The five dimensions                                                         */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Every bottom band's `needs`. Written once because it is the same statement
+ * five times, and because a bottom band is the one band nothing sits below —
+ * `nextBandUp` never reads this, and a test pins that it never does.
+ */
+const BOTTOM_BAND = "nothing — this is where a dimension lands when no stronger reading held";
+
 interface Band {
   /** SPEC's own range text. Printed to `Dimension.band`, so the number is traceable. */
   label: string;
   /** What meeting this band pays — its top (rule 3). */
   score: number;
   when: (o: Observed) => boolean;
+  /**
+   * What this band asks for, in the same terms `when` asks for it — rule 7.
+   *
+   * Read upwards: the sentence on the band *above* the one a company is in is
+   * the thing a partner would go and check. That is what makes a Watch's
+   * upgrade trigger checkable rather than arithmetic (SPEC §3), and it is why
+   * the sentence lives here, beside the predicate it restates, rather than in
+   * the module that renders it (CLAUDE.md invariant 7).
+   *
+   * A bottom band asks for nothing — it is where a dimension lands when no
+   * stronger reading held — and says so.
+   */
+  needs: string;
 }
 
 interface DimensionSpec {
@@ -318,8 +350,12 @@ interface DimensionSpec {
   reads: readonly string[];
   /** Strongest first. The first band that holds is the one that pays. */
   bands: readonly Band[];
-  /** What a dimension with no primary source pays: the floor of the second band. */
-  unknown: { score: number; label: string };
+  /**
+   * What a dimension with no primary source pays: the floor of the second band.
+   * `needs` is the sentence for an *uncovered* dimension — not a band above,
+   * but the absence of any reading at all, which is a different check.
+   */
+  unknown: { score: number; label: string; needs: string };
 }
 
 /**
@@ -352,12 +388,32 @@ export const RUBRIC: readonly DimensionSpec[] = [
         label: "20–25",
         score: 25,
         when: (o) => namedPeople(o) && o.fact("founder.prior_role") && priorArtifact(o),
+        needs:
+          "a named person with a stated prior role, and something they are stated to have " +
+          "founded, sold or shipped before this",
       },
-      { label: "13–19", score: 19, when: (o) => namedPeople(o) && o.fact("founder.prior_role") },
-      { label: "6–12", score: 12, when: namedPeople },
-      { label: "0–5", score: 5, when: () => true },
+      {
+        label: "13–19",
+        score: 19,
+        when: (o) => namedPeople(o) && o.fact("founder.prior_role"),
+        needs: "a prior employer, role or period stated for somebody the company names",
+      },
+      {
+        label: "6–12",
+        score: 12,
+        when: namedPeople,
+        needs:
+          "anybody named with a role beside them — on a team or about page, or as the " +
+          "repository's top contributor",
+      },
+      { label: "0–5", score: 5, when: () => true, needs: BOTTOM_BAND },
     ],
-    unknown: { score: 6, label: "uncovered · floor of 6–12" },
+    unknown: {
+      score: 6,
+      label: "uncovered · floor of 6–12",
+      needs:
+        "any primary source that names who is behind this — a team page, an about page, or a repository owner",
+    },
   },
   {
     id: "D2",
@@ -376,6 +432,7 @@ export const RUBRIC: readonly DimensionSpec[] = [
         label: "16–20",
         score: 20,
         when: (o) => o.fact("product.job") && o.fact("traction.named_user"),
+        needs: "a named customer, design partner or user, stated to be using it for that job",
       },
       // *The incumbent is structurally unable to serve it* is a judgement no
       // page states. The nearest observation is that the job leans on something
@@ -387,11 +444,23 @@ export const RUBRIC: readonly DimensionSpec[] = [
         when: (o) =>
           o.fact("product.job") &&
           (o.fact("product.capability_dependency") || o.fact("product.runtime_position")),
+        needs:
+          "a technology, model or cost change the job leans on, or a stated position in the " +
+          "runtime — agent, sidecar, proxy, kernel module, build step",
       },
-      { label: "5–10", score: 10, when: (o) => o.fact("product.job") },
-      { label: "0–4", score: 4, when: () => true },
+      {
+        label: "5–10",
+        score: 10,
+        when: (o) => o.fact("product.job"),
+        needs: "a stated job: the specific task, and the person doing it, the product is for",
+      },
+      { label: "0–4", score: 4, when: () => true, needs: BOTTOM_BAND },
     ],
-    unknown: { score: 5, label: "uncovered · floor of 5–10" },
+    unknown: {
+      score: 5,
+      label: "uncovered · floor of 5–10",
+      needs: "any primary source that says what the product does and who it is for",
+    },
   },
   {
     id: "D3",
@@ -422,6 +491,10 @@ export const RUBRIC: readonly DimensionSpec[] = [
           // talking about itself, so it carries the top band only alongside a
           // second, independent signal. A deliberate tightening of SPEC's "or".
           (o.fact("traction.integration") && credibleSignals(o).length >= 2),
+        needs:
+          `commits in each of the last ${SUSTAINED_WEEKS} weeks, ` +
+          `${COMMUNITY_CONTRIBUTORS} or more human contributors, or a named integration ` +
+          "alongside a second independent credible signal",
       },
       {
         label: "13–19",
@@ -431,16 +504,34 @@ export const RUBRIC: readonly DimensionSpec[] = [
           const recent = since === null || since <= RECENT_PUSH_DAYS;
           return credibleSignals(o).length >= 2 && recent;
         },
+        needs:
+          `a second credible signal — over ${STARS_CREDIBLE} stars, a named user, a named ` +
+          `integration — with the repository pushed inside ${RECENT_PUSH_DAYS} days`,
       },
-      { label: "6–12", score: 12, when: (o) => credibleSignals(o).length >= 1 },
+      {
+        label: "6–12",
+        score: 12,
+        when: (o) => credibleSignals(o).length >= 1,
+        needs: `one credible signal: over ${STARS_CREDIBLE} stars, a named user, or a named integration`,
+      },
       // *A launch post and nothing else.* The thread is the dated artifact.
-      { label: "0–5", score: 5, when: (o) => o.hn },
+      {
+        label: "0–5",
+        score: 5,
+        when: (o) => o.hn,
+        needs: "a Hacker News thread for this company in the run's evidence",
+      },
       // SPEC D3, verbatim: *undated claims score 0 for this dimension*. Reached
       // when the only pull evidence is prose the model wrote with no dated
       // signal underneath it and no thread behind it.
-      { label: "0 · undated", score: 0, when: () => true },
+      { label: "0 · undated", score: 0, when: () => true, needs: BOTTOM_BAND },
     ],
-    unknown: { score: 6, label: "uncovered · floor of 6–12" },
+    unknown: {
+      score: 6,
+      label: "uncovered · floor of 6–12",
+      needs:
+        "any dated primary source of use — a repository payload, a named customer, or the launch thread",
+    },
   },
   {
     id: "D4",
@@ -463,18 +554,34 @@ export const RUBRIC: readonly DimensionSpec[] = [
         label: "13–15",
         score: 15,
         when: (o) => o.fact("product.capability_dependency") && accumulatingAsset(o),
+        needs:
+          "something the timing thesis accumulates into — data the product builds up, a " +
+          `position in the runtime, or an open repository above ${STARS_CREDIBLE} stars`,
       },
-      { label: "9–12", score: 12, when: (o) => o.fact("product.capability_dependency") },
+      {
+        label: "9–12",
+        score: 12,
+        when: (o) => o.fact("product.capability_dependency"),
+        needs:
+          "a technology, model or cost change the source says the product depends on, and " +
+          "when it arrived",
+      },
       {
         label: "4–8",
         score: 8,
         when: (o) =>
           o.fact("product.launch_date") ||
           (o.num("github.age_days") ?? Number.POSITIVE_INFINITY) <= RECENT_PROJECT_DAYS,
+        needs: `a stated launch date, or a repository younger than ${RECENT_PROJECT_DAYS} days`,
       },
-      { label: "0–3", score: 3, when: () => true },
+      { label: "0–3", score: 3, when: () => true, needs: BOTTOM_BAND },
     ],
-    unknown: { score: 4, label: "uncovered · floor of 4–8" },
+    unknown: {
+      score: 4,
+      label: "uncovered · floor of 4–8",
+      needs:
+        "any primary source that dates this — a launch date, a repository age, or a capability it depends on",
+    },
   },
   {
     id: "D5",
@@ -498,14 +605,33 @@ export const RUBRIC: readonly DimensionSpec[] = [
           accumulatingAsset(o) &&
           (o.fact("traction.integration") ||
             (o.num("github.human_contributors") ?? 0) >= LOOP_CONTRIBUTORS),
+        needs:
+          "a named third-party product it works with, or " +
+          `${LOOP_CONTRIBUTORS} or more human contributors, beside the thing it accumulates`,
       },
-      { label: "9–12", score: 12, when: accumulatingAsset },
+      {
+        label: "9–12",
+        score: 12,
+        when: accumulatingAsset,
+        needs:
+          "something the product accumulates — data it builds up, a position in the runtime, " +
+          `or an open repository above ${STARS_CREDIBLE} stars`,
+      },
       // *Execution speed or design taste only* — there is a product, and
       // nothing about it that compounds was observed.
-      { label: "4–8", score: 8, when: (o) => o.fact("product.one_liner") || o.fact("product.job") },
-      { label: "0–3", score: 3, when: () => true },
+      {
+        label: "4–8",
+        score: 8,
+        when: (o) => o.fact("product.one_liner") || o.fact("product.job"),
+        needs: "a description of the product at all — a one-liner, or the job it is for",
+      },
+      { label: "0–3", score: 3, when: () => true, needs: BOTTOM_BAND },
     ],
-    unknown: { score: 4, label: "uncovered · floor of 4–8" },
+    unknown: {
+      score: 4,
+      label: "uncovered · floor of 4–8",
+      needs: "any primary source describing the product, or what using it leaves behind",
+    },
   },
 ];
 
@@ -519,6 +645,13 @@ interface DisqualifierSpec {
   when: (o: Observed) => boolean;
   /** The keys whose ids are the citation. Empty at call time means it cannot fire. */
   cite: (o: Observed) => string[];
+  /**
+   * Rule 7's other half: the observation whose *arrival* stops this firing.
+   * Each disqualifier is a positive reading plus an absence, so the absence is
+   * the checkable thing — this names it, and `src/analyse/derive.ts` prints it
+   * as the first entry of a passed candidate's "what would change my mind".
+   */
+  refuted_by: string;
 }
 
 /**
@@ -545,6 +678,8 @@ export const DISQUALIFIERS: readonly DisqualifierSpec[] = [
       !hasRepo(o) &&
       o.text("github.top_contributor") === null,
     cite: (o) => o.ids(["founder.name_role", "site.people_named"]),
+    refuted_by:
+      "a stated prior role for somebody they name, something one of them is stated to have built, or a public repository",
   },
   {
     id: "D-2",
@@ -558,6 +693,8 @@ export const DISQUALIFIERS: readonly DisqualifierSpec[] = [
       !o.fact("product.capability_dependency") &&
       !hasRepo(o),
     cite: (o) => o.ids(["product.one_liner", "product.category_claim"]),
+    refuted_by:
+      "a stated position in the runtime, data the product accumulates, an open-source licence, a capability it depends on, or a public repository",
   },
   {
     id: "D-3",
@@ -565,6 +702,7 @@ export const DISQUALIFIERS: readonly DisqualifierSpec[] = [
       "The company claims a category, a platform or a scope for itself and no single job for a single user appears in the evidence.",
     when: (o) => o.fact("product.category_claim") && !o.fact("product.job"),
     cite: (o) => o.ids(["product.category_claim"]),
+    refuted_by: "a stated job — one task, one user — beside the category the company claims",
   },
   {
     id: "D-4",
@@ -580,8 +718,93 @@ export const DISQUALIFIERS: readonly DisqualifierSpec[] = [
       o.text("github.license") === null &&
       !hasRepo(o),
     cite: (o) => o.ids(["adoption.sales_gate"]),
+    refuted_by:
+      "a self-serve path, a published price, an open-source licence, or a public repository",
   },
 ];
+
+/* -------------------------------------------------------------------------- */
+/* Reading the rubric backwards                                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * What the band above a dimension asks for. Rule 7, and the only route by which
+ * the thesis reaches the memo's derived lists — `src/analyse/derive.ts` calls
+ * this and composes; it never states a criterion of its own.
+ */
+export interface BandUp {
+  id: string;
+  name: string;
+  /** The band it is in now. `Dimension.band`, verbatim. */
+  from: string;
+  /**
+   * The band above it, or null when the dimension is uncovered: nothing was
+   * read, so there is no band it is standing on to be above.
+   */
+  to: string | null;
+  /**
+   * Points the move is worth, or null when uncovered. An uncovered dimension's
+   * gain is genuinely not knowable from here — reading its first source could
+   * land it anywhere from the bottom band to the top — and a guessed number in
+   * an upgrade trigger is the memo asserting something it cannot support.
+   */
+  gain: number | null;
+  /** The observation to go and look for. Never empty. */
+  needs: string;
+  /** Nothing was read for this dimension at all. */
+  uncovered: boolean;
+  /** Something was read, and it sits in the rubric's lowest band. */
+  bottom: boolean;
+}
+
+/**
+ * The step up from where a dimension is, or null when there is none.
+ *
+ * Null has two causes and both are correct silence: the dimension is already in
+ * its top band, and there is nothing above it; or its `band` is a label this
+ * rubric never wrote, which is `scoreCandidate`'s "no band held" fallback or an
+ * analysis from an older rubric. Neither is a thing to print at a partner.
+ */
+export function nextBandUp(dimension: Dimension): BandUp | null {
+  const spec = RUBRIC.find((entry) => entry.id === dimension.id);
+  if (!spec) return null;
+
+  if (!dimension.covered) {
+    return {
+      id: spec.id,
+      name: spec.name,
+      from: dimension.band,
+      to: null,
+      gain: null,
+      needs: spec.unknown.needs,
+      uncovered: true,
+      bottom: false,
+    };
+  }
+
+  const index = spec.bands.findIndex((band) => band.label === dimension.band);
+  const next = index > 0 ? spec.bands[index - 1] : undefined;
+  if (next === undefined) return null;
+
+  return {
+    id: spec.id,
+    name: spec.name,
+    from: dimension.band,
+    to: next.label,
+    // `max(0, …)` is belt and braces: bands are written strongest first, so a
+    // negative gain would mean the list is out of order, and a memo is not the
+    // place to discover that.
+    gain: Math.max(0, next.score - dimension.score),
+    needs: next.needs,
+    uncovered: false,
+    bottom: index === spec.bands.length - 1,
+  };
+}
+
+/** What would stop a fired disqualifier firing. Null for an id the rubric does not own. */
+export function refutedBy(id: string): string | null {
+  return DISQUALIFIERS.find((entry) => entry.id === id)?.refuted_by ?? null;
+}
 
 /* -------------------------------------------------------------------------- */
 /* The call                                                                    */

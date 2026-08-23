@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "candidate": {
     "schema_version": 2,
     "slug": "klaus",
@@ -174,6 +174,26 @@
   "call": "WATCH",
   "unknowns": [
     "D1 Founder–market fit & technical depth: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12"
+  ],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Watch — 63/100 meets the 55 a watch needs and is below the 72 a meeting needs, at 80% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D3 Evidence of pull at 12/25 (band 6–12).",
+      "evidence_ids": [
+        "3b6f2710ebfd0986",
+        "4a45d9b1596e8bd4"
+      ]
+    },
+    {
+      "kind": "summary",
+      "text": "1 of 5 dimensions had no primary source behind them; they are listed under what we could not verify.",
+      "evidence_ids": []
+    }
   ],
   "sections": [
     {

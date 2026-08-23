@@ -8,14 +8,22 @@ import type {
   MemoSection,
 } from "../contracts/index.js";
 import { FACT_KEY_LIST, type FactKey, isFactKey } from "./keys.js";
-import { type BandUp, COVERAGE_GATE, MEETING_SCORE, nextBandUp, refutedBy } from "./score.js";
+import {
+  type BandUp,
+  COVERAGE_GATE,
+  MEETING_SCORE,
+  nextBandUp,
+  refutedBy,
+  WATCH_SCORE,
+} from "./score.js";
 
 /**
  * The memo's body, derived (TICKET-0024, STATE inconsistency 9).
  *
- * SPEC §4 asks for a Team / Product / Market / Risks split, a falsifiable "what
- * would change my mind" list, and — SPEC §3 — a checkable upgrade trigger on
- * every Watch. Two invariants close off the obvious ways to produce them: the
+ * SPEC §4 asks for three sentences on why this call, a Team / Product / Market /
+ * Risks split, a falsifiable "what would change my mind" list, and — SPEC §3 —
+ * a checkable upgrade trigger on every Watch. Two invariants close off the
+ * obvious ways to produce them: the
  * model may not write them (invariant 1, ADR-0002) and stage 3 may not invent
  * them (invariant 3). So they are derived here, from what stage 2 already has,
  * and stage 3 becomes a rendering of this file's output.
@@ -27,7 +35,10 @@ import { type BandUp, COVERAGE_GATE, MEETING_SCORE, nextBandUp, refutedBy } from
  *    or a rubric band's own `needs` sentence with the dimension's name and
  *    arithmetic around it. This module contributes conjunctions and nothing
  *    else. If a memo ever says something neither the model nor the rubric said,
- *    this is the file that broke.
+ *    this is the file that broke. The one exception is `why_this_call`, whose
+ *    sentences are about *this analysis* rather than about the company — they
+ *    restate the call, its arithmetic and the dimension that decided it, and
+ *    every number in them is already in the file.
  *
  * 2. **It states no criterion.** Every threshold, band and refutation is read
  *    from `src/analyse/score.ts` through `nextBandUp` and `refutedBy` — the
@@ -70,6 +81,9 @@ export const SECTION_BULLET_CAP = 5;
 
 /** SPEC §4: *2–3 falsifiable, checkable statements*. The ceiling of that range. */
 export const CHANGE_MY_MIND_CAP = 3;
+
+/** SPEC §4: *≤ 3 sentences* on why this call. */
+export const WHY_THIS_CALL_CAP = 3;
 
 /* -------------------------------------------------------------------------- */
 /* Which heading a fact is filed under                                         */
@@ -134,6 +148,7 @@ export interface DeriveInput {
 }
 
 export interface Derived {
+  why_this_call: MemoBullet[];
   sections: MemoSection[];
   what_would_change_my_mind: MemoBullet[];
   upgrade_trigger: string | null;
@@ -249,7 +264,7 @@ function riskBullets(input: DeriveInput): MemoBullet[] {
         kind: "gap",
         text:
           `${dimension.id} ${dimension.name} is unknown, and coverage is below the ` +
-          `${Math.round(COVERAGE_GATE * 100)}% gate: nothing was read, and reading it asks ` +
+          `${percent(COVERAGE_GATE)}% gate: nothing was read, and reading it asks ` +
           `for ${up?.needs ?? "any primary source"}.`,
         evidence_ids: [],
       });
@@ -326,6 +341,111 @@ function changeMyMind(input: DeriveInput): MemoBullet[] {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Why this call                                                               */
+/* -------------------------------------------------------------------------- */
+
+const percent = (share: number): number => Math.round(share * 100);
+
+/**
+ * The verdict, in one sentence: what the call is and the arithmetic that
+ * produced it. Four shapes, and the first is the one that overrides everything
+ * (SPEC §1.1) — a cited disqualifier forces a pass whatever the score, so it is
+ * the only sentence here that carries evidence ids.
+ */
+function verdict(input: DeriveInput): MemoBullet {
+  const at = `${input.score}/100, ${percent(input.coverage)}% coverage`;
+
+  if (input.disqualifiers.length > 0) {
+    const ids = input.disqualifiers.map((entry) => entry.id);
+    const named =
+      ids.length === 1
+        ? `disqualifier ${ids[0]}`
+        : `disqualifiers ${ids.slice(0, -1).join(", ")} and ${ids.at(-1)}`;
+    return {
+      kind: "summary",
+      text:
+        `Pass — ${named} fired, and a cited disqualifier forces a pass whatever ` +
+        `the score (${at}).`,
+      evidence_ids: [...new Set(input.disqualifiers.flatMap((entry) => entry.evidence_ids))],
+    };
+  }
+
+  const text =
+    input.call === "TAKE_A_MEETING"
+      ? `Take a meeting — ${input.score}/100 clears the ${MEETING_SCORE} threshold, at ` +
+        `${percent(input.coverage)}% coverage.`
+      : input.call === "WATCH" && input.score >= MEETING_SCORE
+        ? `Watch — ${input.score}/100 clears ${MEETING_SCORE}, but ${percent(input.coverage)}% ` +
+          `coverage is below the ${percent(COVERAGE_GATE)}% gate, which caps the call at Watch.`
+        : input.call === "WATCH"
+          ? `Watch — ${input.score}/100 meets the ${WATCH_SCORE} a watch needs and is below ` +
+            `the ${MEETING_SCORE} a meeting needs, at ${percent(input.coverage)}% coverage.`
+          : `Pass — ${input.score}/100 is below the ${WATCH_SCORE} a watch needs, at ` +
+            `${percent(input.coverage)}% coverage.`;
+
+  return { kind: "summary", text, evidence_ids: [] };
+}
+
+/**
+ * The decisive factor, mechanically chosen: for a meeting it is the strongest
+ * covered dimension, and for anything else it is the covered dimension furthest
+ * from its own ceiling. Ties break on rubric order.
+ *
+ * This is the one place the derivation picks *which* number to lead with, and
+ * the rule is deliberately crude — "decisive" as SPEC means it is a judgement,
+ * and the honest mechanical stand-in is the largest number in the direction the
+ * call went. Null when nothing was covered: there is then no reading to lead
+ * with, and the coverage sentence says so instead.
+ */
+function decisive(input: DeriveInput): MemoBullet | null {
+  const covered = input.dimensions.filter((dimension) => dimension.covered);
+  if (covered.length === 0) return null;
+
+  const best = covered.reduce((left, right) =>
+    input.call === "TAKE_A_MEETING"
+      ? right.score > left.score
+        ? right
+        : left
+      : right.max - right.score > left.max - left.score
+        ? right
+        : left,
+  );
+  const lead = input.call === "TAKE_A_MEETING" ? "The strongest reading" : "The largest shortfall";
+  return {
+    kind: "summary",
+    text: `${lead} is ${best.id} ${best.name} at ${best.score}/${best.max} (band ${best.band}).`,
+    evidence_ids: [...best.evidence_ids],
+  };
+}
+
+/**
+ * SPEC §4's opening: at most three sentences, leading with what decided it.
+ *
+ * The third sentence exists only when something was not read, and it points at
+ * the section that lists it rather than repeating it — invariant 4 asks for
+ * unknowns to be written down, not written down twice.
+ */
+function whyThisCall(input: DeriveInput): MemoBullet[] {
+  const bullets: MemoBullet[] = [verdict(input)];
+
+  const factor = decisive(input);
+  if (factor) bullets.push(factor);
+
+  const uncovered = input.dimensions.filter((dimension) => !dimension.covered).length;
+  if (uncovered > 0) {
+    bullets.push({
+      kind: "summary",
+      text:
+        `${uncovered} of ${input.dimensions.length} dimensions had no primary source behind ` +
+        "them; they are listed under what we could not verify.",
+      evidence_ids: [],
+    });
+  }
+
+  return bullets.slice(0, WHY_THIS_CALL_CAP);
+}
+
+/* -------------------------------------------------------------------------- */
 /* The Watch upgrade trigger                                                   */
 /* -------------------------------------------------------------------------- */
 
@@ -360,15 +480,15 @@ const moveNeeding = (up: BandUp): string => `${move(up)}, by finding ${up.needs}
 function upgradeTrigger(input: DeriveInput): string | null {
   if (input.call !== "WATCH") return null;
 
-  const percent = Math.round(input.coverage * 100);
-  const gate = Math.round(COVERAGE_GATE * 100);
+  const covered = percent(input.coverage);
+  const gate = percent(COVERAGE_GATE);
   const ups = opportunities(input.dimensions);
   const uncovered = ups.filter((up) => up.uncovered);
 
   const coverageClause =
     uncovered.length === 0
-      ? `coverage is ${percent}% against the ${gate}% gate`
-      : `coverage is ${percent}% against the ${gate}% gate — ` +
+      ? `coverage is ${covered}% against the ${gate}% gate`
+      : `coverage is ${covered}% against the ${gate}% gate — ` +
         uncovered.map((up) => `${up.id} needs ${up.needs}`).join("; ");
 
   if (input.score >= MEETING_SCORE) {
@@ -440,6 +560,7 @@ export function deriveMemoFields(input: DeriveInput): Derived {
   }
 
   return {
+    why_this_call: whyThisCall(input),
     sections,
     what_would_change_my_mind: changeMyMind(input),
     upgrade_trigger: upgradeTrigger(input),

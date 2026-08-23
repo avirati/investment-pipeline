@@ -69,6 +69,13 @@ const analysis = (over: Record<string, unknown> = {}) => ({
   disqualifiers: [],
   call: "TAKE_A_MEETING",
   unknowns: [],
+  why_this_call: [
+    {
+      kind: "summary",
+      text: "Take a meeting — 74/100 clears the 72 threshold, at 80% coverage.",
+      evidence_ids: [],
+    },
+  ],
   sections: [
     {
       heading: "Team",

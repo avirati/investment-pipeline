@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "candidate": {
     "schema_version": 2,
     "slug": "freestyle",
@@ -367,6 +367,22 @@
   "disqualifiers": [],
   "call": "WATCH",
   "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Watch — 55/100 meets the 55 a watch needs and is below the 72 a meeting needs, at 100% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D2 Wedge specificity at 4/20 (band 0–4).",
+      "evidence_ids": [
+        "ed4f7345ba83d9b7",
+        "e945f7b05e79ab56",
+        "67838102087e4058"
+      ]
+    }
+  ],
   "sections": [
     {
       "heading": "Team",

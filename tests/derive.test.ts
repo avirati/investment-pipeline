@@ -6,6 +6,7 @@ import {
   HEADING_OF,
   HEADINGS,
   SECTION_BULLET_CAP,
+  WHY_THIS_CALL_CAP,
 } from "../src/analyse/derive.js";
 import { FACT_KEY_LIST } from "../src/analyse/keys.js";
 import {
@@ -14,6 +15,7 @@ import {
   decideCall,
   MEETING_SCORE,
   RUBRIC,
+  WATCH_SCORE,
 } from "../src/analyse/score.js";
 import {
   type Dimension,
@@ -125,6 +127,84 @@ describe("the heading map", () => {
 
   it("prints SPEC §4's headings in SPEC §4's order", () => {
     expect(HEADINGS).toEqual(["Team", "Product", "Market", "Risks"]);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Why this call                                                               */
+/* -------------------------------------------------------------------------- */
+
+describe("why this call", () => {
+  it("leads with the verdict and the arithmetic behind it", () => {
+    const derived = input(bands(0, 0, 0, 0, 0));
+    expect(derived.call).toBe("TAKE_A_MEETING");
+    const first = deriveMemoFields(derived).why_this_call[0];
+    expect(first?.kind).toBe("summary");
+    expect(first?.text).toBe(
+      `Take a meeting — 100/100 clears the ${MEETING_SCORE} threshold, at 100% coverage.`,
+    );
+  });
+
+  // SPEC §1.1: precedence is absolute, so it is the first thing the memo says.
+  it("leads with the disqualifier when one fired, and cites it", () => {
+    const derived = input(bands(0, 0, 0, 0, 0), {
+      disqualifiers: [{ id: "D-4", statement: "Contact sales only.", evidence_ids: [idOf("s3")] }],
+    });
+    expect(derived.call).toBe("PASS");
+    const first = deriveMemoFields(derived).why_this_call[0];
+    expect(first?.text).toContain("Pass — disqualifier D-4 fired");
+    expect(first?.text).toContain("forces a pass whatever the score");
+    expect(first?.evidence_ids).toEqual([idOf("s3")]);
+  });
+
+  // A score sitting exactly on a threshold is the sentence that is easiest to
+  // write wrongly: "above 55" is false at 55, and the run's own `freestyle`
+  // scores exactly 55.
+  it("says a score meets a threshold rather than clearing it, at the edge", () => {
+    const derived = input(bands(2, 3, 2, 1, 1));
+    const first = deriveMemoFields(derived).why_this_call[0]?.text ?? "";
+    if (derived.score === WATCH_SCORE) expect(first).toContain(`meets the ${WATCH_SCORE}`);
+    expect(first).not.toContain(`is above ${WATCH_SCORE}`);
+  });
+
+  it("names the strongest reading for a meeting and the largest shortfall otherwise", () => {
+    const meeting = deriveMemoFields(input(bands(0, 0, 0, 0, 0))).why_this_call[1];
+    expect(meeting?.text).toContain("The strongest reading is");
+
+    // D2 at 4/20 is 16 short; nothing else is further from its own ceiling.
+    const pass = deriveMemoFields(input(bands(2, 3, 2, 2, 2))).why_this_call[1];
+    expect(pass?.text).toContain("The largest shortfall is D2 Wedge specificity at 4/20");
+  });
+
+  it("says how much was not read, and points at the section that lists it", () => {
+    const derived = input([
+      dimAt("D1", 1),
+      dimAt("D2", 1),
+      dimAt("D3", 1),
+      dimUncovered("D4"),
+      dimUncovered("D5"),
+    ]);
+    const last = deriveMemoFields(derived).why_this_call.at(-1);
+    expect(last?.text).toBe(
+      "2 of 5 dimensions had no primary source behind them; they are listed under what we " +
+        "could not verify.",
+    );
+  });
+
+  it("says nothing about a decisive reading when nothing was read", () => {
+    const derived = input(RUBRIC.map((spec) => dimUncovered(spec.id)));
+    const why = deriveMemoFields(derived).why_this_call;
+    expect(why).toHaveLength(2);
+    expect(why.some((bullet) => bullet.text.includes("strongest reading"))).toBe(false);
+    expect(why.some((bullet) => bullet.text.includes("largest shortfall"))).toBe(false);
+  });
+
+  it("never runs past SPEC §4's three sentences, and never comes back empty", () => {
+    for (const dimensions of [bands(0, 0, 0, 0, 0), bands(3, 3, 4, 3, 3)]) {
+      const why = deriveMemoFields(input(dimensions)).why_this_call;
+      expect(why.length).toBeGreaterThan(0);
+      expect(why.length).toBeLessThanOrEqual(WHY_THIS_CALL_CAP);
+    }
   });
 });
 
@@ -504,6 +584,9 @@ describe("properties", () => {
 
     for (const one of cases) {
       const result = deriveMemoFields(one);
+      // `why_this_call` is excluded on purpose: its sentences are about this
+      // analysis rather than about the company, and every number in them is
+      // already in the file. The three tests above pin them instead.
       const texts = [
         ...result.sections.flatMap((entry) => entry.bullets.map((bullet) => bullet.text)),
         ...result.what_would_change_my_mind.map((bullet) => bullet.text),

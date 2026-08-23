@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "candidate": {
     "schema_version": 2,
     "slug": "agent-vault",
@@ -230,6 +230,22 @@
   "disqualifiers": [],
   "call": "TAKE_A_MEETING",
   "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Take a meeting — 75/100 clears the 72 threshold, at 100% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The strongest reading is D3 Evidence of pull at 25/25 (band 20–25).",
+      "evidence_ids": [
+        "32a05cf075a05dec",
+        "eecc01471ca81562",
+        "b3896b61d8fdb5bc"
+      ]
+    }
+  ],
   "sections": [
     {
       "heading": "Team",

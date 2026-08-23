@@ -19,8 +19,15 @@ import { Fact } from "./fact.js";
  * they are derived here, mechanically, by `src/analyse/derive.ts`. The memo is
  * then a rendering of this file and of nothing else, which is what makes a
  * committed analysis readable without running anything.
+ *
+ * **4** — added `why_this_call` (TICKET-0024's renderer). SPEC §4's first
+ * section is three sentences leading with the decisive factor, and picking
+ * which dimension is decisive is a reading of the rubric's output, not a
+ * layout choice. Deriving it here keeps the template a loop over data: stage 3
+ * contains no conditional prose, which is the only way invariant 3 stays true
+ * of a template rather than merely of the code around it.
  */
-export const ANALYSIS_SCHEMA_VERSION = 3;
+export const ANALYSIS_SCHEMA_VERSION = 4;
 
 /**
  * The pipeline's output vocabulary (SPEC §3). It lives here, once, because
@@ -137,11 +144,15 @@ export type MemoHeading = z.infer<typeof MemoHeading>;
  * - `check` — a conditional derived from the rubric: what would move a band, or
  *   what would stop a disqualifier firing. It cites when the observation it
  *   turns on was itself cited, and does not when it is an absence.
+ * - `summary` — a statement about *this analysis*: the call, the arithmetic
+ *   behind it, the dimension that decided it. It restates numbers that are
+ *   already in the file, so it carries a citation only when the thing it
+ *   restates carried one (a fired disqualifier).
  *
  * The discriminator exists so the memo validator can hard-fail an uncited
  * `fact` (SPEC §4 hard rule 1) without hard-failing an honest gap.
  */
-export const BulletKind = z.enum(["fact", "gap", "check"]);
+export const BulletKind = z.enum(["fact", "gap", "check", "summary"]);
 export type BulletKind = z.infer<typeof BulletKind>;
 
 /**
@@ -195,6 +206,11 @@ export const Analysis = z.object({
   call: Call,
   /** Written out as unknowns, never smoothed into prose (SPEC §4 hard rule 4). */
   unknowns: z.array(z.string().min(1)),
+  /**
+   * SPEC §4's opening section: at most three sentences, leading with what
+   * decided the call. Never empty — there is always a verdict sentence.
+   */
+  why_this_call: z.array(MemoBullet).min(1),
   /**
    * SPEC §4's body, derived from `facts`, `dimensions` and `disqualifiers` by
    * `src/analyse/derive.ts`. Ordered as the memo prints them; a heading with

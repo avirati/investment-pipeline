@@ -1,6 +1,6 @@
 # TICKET-0026 — Stage 3 wiring: `./pipeline memo`
 
-Status: **Blocked** · 0025 — 0024 is Done. The renderer takes an evidence array; reading `runs/<id>/evidence/` and writing `memos/<slug>.md` is this ticket's · Depends on: 0003, 0024 (Done), 0025 · Blocks: 0023, 0027, 0028
+Status: **Ready** — 0024 and 0025 are Done. The renderer takes an evidence array and the validator takes a store; reading `runs/<id>/evidence/`, writing `memos/<slug>.md`, and mapping `MemoValidationError` to `EXIT.INVARIANT` in `src/cli.ts`'s `exitFor` are this ticket's · Depends on: 0003, 0024 (Done), 0025 (Done) · Blocks: 0023, 0027, 0028
 Reads: [ARCHITECTURE §1, §4](../ARCHITECTURE.md), [SPEC §5](../SPEC.md#5-acceptance-criteria)
 
 ## Why
@@ -13,7 +13,8 @@ The command a reviewer runs with no API key and no network. It is also step 6 of
 - `./pipeline memo --run <run_id>` reads `analyses/*.json` → render → validate →
   `memos/<run_id>/<slug>.md`.
 - **Zero network, zero API calls.** Enforced in a test, not just intended.
-- Validator failure aborts with a non-zero exit and names what failed.
+- Validator failure aborts with a non-zero exit and names what failed —
+  `assertMemosValid` throws, and `exitFor` maps it to `EXIT.INVARIANT` (TICKET-0025).
 - Snapshot test per TESTING §7: one golden analysis → one golden memo, so
   template changes show up as a reviewable diff.
 

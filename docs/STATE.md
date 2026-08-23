@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-23 · at commit `6502cd0` · **Phase: a memo exists.** TICKET-0024 is Done — `Analysis` v3 then v4 carry SPEC §4's whole body (sections, why-this-call, change-my-mind, the Watch trigger), and `templates/memo.md.eta` plus `src/memo/render.ts` render it with no LLM and no decision in the template (worklogs 0035 and 0036). **Inconsistency 9 closed, D-2 taken at its default** (`eta`, ADR-0005 amended). 985 tests, two committed golden memos, `pnpm golden` to regenerate them. Reading real output rewrote the derived prose twice and the layout four times; new gaps are 90–92. Next: **TICKET-0025**, the memo validator, then 0026's wiring. Inconsistency 84 still blocks TICKET-0028.
+Last updated: 2026-08-23 · at commit `bbfd68d` · **Phase: the memo is now checkable.** TICKET-0025 is Done — `src/memo/validate.ts` reads the ids and labels back out of the *rendered markdown* (not `Memo.citations`, which is the renderer's own account of itself), resolves each against the run's evidence store, and hard-fails on a miss, on a table that disagrees with the body, or on a header score that is not the sum of the dimensions (worklog 0037). 1006 tests, failure path first. New gap: 93 — the validator now knows the template's layout. Next: **TICKET-0026**, where a memo first reaches disk and `MemoValidationError` first reaches a process exit. Inconsistency 84 still blocks TICKET-0028.
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -1626,6 +1626,19 @@ Real defects, listed rather than silently patched.
     failed* to *therefore this dimension is unknown* is not currently made
     anywhere. TICKET-0023's missing-data paths is where this bites first.
 
+93. **The memo validator knows the template's layout.** `src/memo/validate.ts`
+    parses the sources table, the bracketed citations and the header's score
+    back out of the rendered markdown — three regexes that encode what
+    `templates/memo.md.eta` prints. This is deliberate and is argued in worklog
+    0037: validating `Memo.citations` instead would check the renderer against
+    its own account of itself, and would pass a template that dropped the whole
+    sources table. The cost is that D-2's argument for a template — *a partner
+    can edit a memo without reading TypeScript* — now has an asterisk: a partner
+    who moves the id out of the first column fails their own memo. The failure
+    is at least loud and names the memo. The alternative nobody has costed is a
+    machine-readable sidecar written beside each memo, which would decouple the
+    two at the price of an artifact no reader wants.
+
 ---
 
 ## Next session — start here
@@ -1820,8 +1833,8 @@ out of it:
    is not committed and stage 2 re-gathers rather than reading the evidence
    store it already has. Read 84 before TICKET-0028.
 
-**Nothing is blocking. Three tickets in review, one Done awaiting review of the
-whole branch, and TICKET-0025 Ready:**
+**Nothing is blocking. Three tickets in review, two Done awaiting review of
+their branches, and TICKET-0026 Ready:**
 
 - [TICKET-0020](./tickets/0020-ticket-fact-extraction.md) — **in review**
   ([worklog 0031](./worklog/0031-fact-extraction.md), and
@@ -1905,13 +1918,30 @@ a new session should carry out of it:
    `why_this_call` citations that never reached the page, and an unrendered
    plural. Seventh module in a row to change on contact with real output.
 
-**The next step is [TICKET-0025](./tickets/0025-ticket-memo-validator.md)**, the
-memo validator, which is now Ready: resolve every id in `Memo.citations` against
-the run's evidence store and hard-fail the run on a miss (ADR-0003). `BulletKind`
-exists for its other half — an uncited `fact` is a bug, an uncited `gap` is the
-honest shape of a gap. Then
-[TICKET-0026](./tickets/0026-ticket-stage-3-wiring.md), where a memo first
-reaches disk.
+**TICKET-0025 is Done** ([worklog 0037](./worklog/0037-memo-validator.md)) —
+`src/memo/validate.ts`, 21 tests, failure path first. Three things a new session
+should carry out of it:
+
+1. **It validates the artifact, not the object.** The ids and the labels are
+   parsed out of the rendered markdown, because `Memo.citations` is what the
+   renderer *says* it cited and a template that drops the sources table leaves
+   it untouched. That trade is inconsistency 93 and is the one thing here worth
+   arguing with.
+2. **Three misses, three messages.** `not_found`, `unreadable` and `invalid`
+   stay distinct to the operator's terminal: file a bug, check the disk, find
+   out what else wrote to the store. A malformed id falls out for free — the row
+   regex captures whatever is between the backticks, so `` `../secrets` ``
+   is reported rather than skipped, and the store's own id check keeps the
+   traversal out of the join.
+3. **The whole set fails at once.** `assertMemosValid` takes every result, so a
+   run with three bad memos reports three and exits once. `MemoValidationError`
+   carries `EXIT.INVARIANT` and is **not yet in `exitFor`** — `memo` is still
+   `notImplemented`, and a branch nothing can throw is dead code.
+
+**The next step is [TICKET-0026](./tickets/0026-ticket-stage-3-wiring.md)**,
+where a memo first reaches disk: `analyses/*.json` → render → validate →
+`memos/<run_id>/<slug>.md`, offline, idempotent, and the `exitFor` line that
+turns a failed validation into a non-zero exit.
 [TICKET-0023](./tickets/0023-ticket-missing-data-path-tests.md) is unblocked
 except for 0026 and needs nothing decided. Two things the gate hands
 forward into stage 2:
@@ -1956,9 +1986,12 @@ The shape of the whole thing, unchanged:
 11. **The memo** — ticket 0024, **Done**. Its body derived rather than written
     (`Analysis` v4, `src/analyse/derive.ts`) and rendered by a template with no
     decisions in it (`templates/memo.md.eta`, `src/memo/render.ts`).
-12. Then the validator, stage 3's wiring, and the sample run on `AI agent
-    infrastructure` — where the rubric's bands and these derived lists get read
-    by a person for the first time.
+12. **The validator** — ticket 0025, **Done**. The pipeline's one hard fail,
+    and the only one that means *this code is wrong* rather than *the world was
+    thin*.
+13. Then stage 3's wiring, and the sample run on `AI agent infrastructure` —
+    where the rubric's bands and these derived lists get read by a person for
+    the first time.
 
 ## Invariants a new session must not break
 

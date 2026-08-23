@@ -66,7 +66,7 @@ function withSourcingOptions(cmd: Command): Command {
 function withRunOptions(cmd: Command, opts: { replay: boolean }): Command {
   cmd.option("--run <id>", "explicit run id (default: date-slug)");
   if (opts.replay) {
-    cmd.option("--replay", "reuse cached LLM responses; spends nothing");
+    cmd.option("--replay", "reuse the stored bundles and LLM cache; spends nothing");
   }
   return cmd;
 }
@@ -98,6 +98,10 @@ function exitFor(error: unknown): number | null {
   // Both are the operator's invocation rather than the world being thin, and
   // both are fixed by re-issuing the command (`callModel`, rules 3 and 4).
   if (error instanceof Error && error.name === "LlmCallError") return EXIT.USAGE;
+  // A replay against a run directory that cannot answer one — no `bundles/`,
+  // or a bundle naming evidence the store has lost. Same class as the two
+  // above: re-issue the command without --replay.
+  if (error instanceof Error && error.name === "BundleError") return EXIT.USAGE;
   if (error instanceof Error && error.name === "AnalyseError") {
     return (error as { failure?: string }).failure === "no_candidates" ? EXIT.DATA_GAP : EXIT.USAGE;
   }
@@ -216,8 +220,10 @@ function analyseSummary(outcome: AnalyseOutcome): string {
       (stage.input.unparseable > 0 ? ` (${stage.input.unparseable} unreadable line(s))` : ""),
   );
   lines.push(
-    `  evidence    ${stage.budget.spent.site?.spent ?? 0} site · ` +
-      `${stage.budget.spent.github?.spent ?? 0} github · ${stage.budget.spent.hn?.spent ?? 0} hn requests`,
+    stage.budget === null
+      ? `  evidence    ${stage.bundles.count} bundle(s) replayed from disk · 0 requests`
+      : `  evidence    ${stage.budget.spent.site?.spent ?? 0} site · ` +
+          `${stage.budget.spent.github?.spent ?? 0} github · ${stage.budget.spent.hn?.spent ?? 0} hn requests`,
   );
   lines.push(
     `  facts       ${stage.facts.kept} kept, ${stage.facts.dropped} dropped` +
@@ -250,11 +256,16 @@ function analyseSummary(outcome: AnalyseOutcome): string {
   return `${lines.join("\n")}\n`;
 }
 
-async function analyseAction(flags: { run: string; replay?: boolean }): Promise<void> {
+async function analyseAction(flags: {
+  run: string;
+  replay?: boolean;
+  force?: boolean;
+}): Promise<void> {
   try {
     const outcome = await runAnalyse({
       runId: validateRunId(flags.run),
       replay: flags.replay === true,
+      force: flags.force === true,
     });
     process.stdout.write(analyseSummary(outcome));
   } catch (error) {
@@ -329,7 +340,8 @@ export function buildProgram(): Command {
     .command("analyse")
     .description("Stage 2 only — gather evidence, extract facts, score")
     .requiredOption("--run <id>", "run id to analyse — required")
-    .option("--replay", "answer from the caches; makes no request and spends nothing")
+    .option("--replay", "answer from the stored bundles; spends nothing")
+    .option("--force", "re-analyse a run whose analyses are already on disk")
     .action(analyseAction);
 
   // No --replay on memo: stage 3 makes no LLM calls, so there is nothing to

@@ -143,6 +143,10 @@ describe("pipeline analyse — offline failure paths", () => {
     const { stdout } = run(["analyse", "--help"]);
     expect(stdout).toContain("--replay");
     expect(stdout).toContain("spends nothing");
+    // The other half of the same promise: a replay is safe *because* an
+    // ordinary re-run is not, and the flag that overrides that is advertised
+    // beside it (STATE inconsistency 84).
+    expect(stdout).toContain("--force");
   });
 });
 

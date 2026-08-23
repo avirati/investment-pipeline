@@ -18,7 +18,12 @@ import {
   runAnalyse,
 } from "../src/analyse/index.js";
 import type { GithubAuth } from "../src/config.js";
-import { Analysis, CANDIDATE_SCHEMA_VERSION, type Candidate } from "../src/contracts/index.js";
+import {
+  Analysis,
+  CANDIDATE_SCHEMA_VERSION,
+  type Candidate,
+  StoredBundle,
+} from "../src/contracts/index.js";
 import { GITHUB_API } from "../src/evidence/github.js";
 import { llmCache } from "../src/llm/cache.js";
 import { LlmCallError, type LlmModel } from "../src/llm/provider.js";
@@ -432,10 +437,10 @@ describe("runAnalyse", () => {
     const root = stageOneRun();
     const outcome = await analyse(root);
 
-    expect(outcome.stage.budget.candidates).toBe(2);
-    expect(outcome.stage.budget.github_mode).toBe("authenticated");
-    expect(outcome.stage.budget.spent.site?.spent).toBeGreaterThan(0);
-    expect(outcome.stage.budget.spent.github?.limit).toBe(5000);
+    expect(outcome.stage.budget?.candidates).toBe(2);
+    expect(outcome.stage.budget?.github_mode).toBe("authenticated");
+    expect(outcome.stage.budget?.spent.site?.spent).toBeGreaterThan(0);
+    expect(outcome.stage.budget?.spent.github?.limit).toBe(5000);
   });
 
   describe("--replay", () => {
@@ -487,6 +492,57 @@ describe("runAnalyse", () => {
       expect((error as LlmCallError).kind).toBe("replay_miss");
     });
 
+    it("reproduces a run whose HTTP cache is gone — STATE inconsistency 84", async () => {
+      const root = stageOneRun();
+      const httpCache = scratch("analyse-http-");
+      const llm = llmCache(scratch("analyse-llm-"));
+
+      const cold = await analyse(root, {
+        cache: llm,
+        http: {
+          transport: web(ROUTES).transport,
+          cacheDir: httpCache,
+          now: NOW,
+          retry: { retries: 0 },
+        },
+      });
+      const before = readdirSync(runPaths(RUN_ID, root).analysesDir)
+        .sort()
+        .map((file) => readFileSync(join(runPaths(RUN_ID, root).analysesDir, file), "utf8"));
+
+      // A fresh clone: `.cache/http/` is gitignored, so it is not there. This
+      // is the exact state that used to overwrite the committed analyses with
+      // `PASS 25` at 0% coverage, because gathering produced empty bundles.
+      rmSync(httpCache, { recursive: true, force: true });
+
+      const warm = await analyse(root, {
+        replay: true,
+        cache: llm,
+        http: { cacheDir: scratch("analyse-cold-"), now: NOW, retry: { retries: 0 } },
+      });
+
+      expect(warm.stage.bundles.source).toBe("bundles");
+      expect(warm.stage.budget).toBeNull();
+      expect(warm.analysed.map((entry) => entry.analysis?.coverage)).toEqual(
+        cold.analysed.map((entry) => entry.analysis?.coverage),
+      );
+      const after = readdirSync(runPaths(RUN_ID, root).analysesDir)
+        .sort()
+        .map((file) => readFileSync(join(runPaths(RUN_ID, root).analysesDir, file), "utf8"));
+      expect(after).toEqual(before);
+    });
+
+    it("stops rather than guessing when the run has no bundles to replay", async () => {
+      const root = stageOneRun();
+      const error = await analyse(root, {
+        replay: true,
+        http: { cacheDir: scratch("analyse-cold-"), now: NOW, retry: { retries: 0 } },
+      }).catch((e: unknown) => e);
+
+      expect((error as Error).name).toBe("BundleError");
+      expect((error as Error).message).toContain("without --replay");
+    });
+
     it("needs no API key, because a replay never reaches a provider", async () => {
       const root = stageOneRun();
       const httpCache = scratch("analyse-http-");
@@ -518,7 +574,61 @@ describe("runAnalyse", () => {
     });
   });
 
+  describe("bundles as an artifact", () => {
+    it("writes one bundle per candidate, naming its evidence in gather order", async () => {
+      const root = stageOneRun();
+      const outcome = await analyse(root);
+      const dir = runPaths(RUN_ID, root).bundlesDir;
+
+      expect(readdirSync(dir).sort()).toEqual(["coroot.json", "deadco.json"]);
+      const stored = StoredBundle.parse(JSON.parse(readFileSync(join(dir, "coroot.json"), "utf8")));
+      const analysis = outcome.analysed.find((entry) => entry.slug === "coroot")?.analysis;
+      expect(stored.slug).toBe("coroot");
+      expect(stored.evidence_ids.length).toBeGreaterThan(0);
+      // Everything the analysis cites was in the bundle it was extracted from.
+      for (const dimension of analysis?.dimensions ?? []) {
+        for (const id of dimension.evidence_ids) expect(stored.evidence_ids).toContain(id);
+      }
+      // The signals the rubric scored are here, because they cannot be
+      // recovered from the evidence store — that is why (c) was the fix.
+      expect(stored.signals.length).toBeGreaterThan(0);
+    });
+
+    it("records a candidate that yielded nothing, rather than omitting it", async () => {
+      const root = stageOneRun();
+      await analyse(root);
+      const stored = StoredBundle.parse(
+        JSON.parse(readFileSync(join(runPaths(RUN_ID, root).bundlesDir, "deadco.json"), "utf8")),
+      );
+
+      expect(stored.failures.length).toBeGreaterThan(0);
+      expect(stored.unknowns.length).toBeGreaterThan(0);
+    });
+  });
+
   describe("what the operator got wrong", () => {
+    it("refuses to overwrite analyses a previous pass decided", async () => {
+      const root = stageOneRun();
+      await analyse(root);
+      const dir = runPaths(RUN_ID, root).analysesDir;
+      const before = readFileSync(join(dir, "coroot.json"), "utf8");
+
+      const error = await analyse(root).catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(AnalyseError);
+      expect((error as AnalyseError).failure).toBe("analyses_exist");
+      expect(readFileSync(join(dir, "coroot.json"), "utf8")).toBe(before);
+    });
+
+    it("overwrites them when --force says so", async () => {
+      const root = stageOneRun();
+      await analyse(root);
+      const outcome = await analyse(root, { force: true });
+
+      expect(outcome.stage.flags.force).toBe(true);
+      expect(outcome.stage.counts.analyses).toBe(2);
+    });
+
     it("refuses a run directory that stage 1 never finished", async () => {
       const root = scratch();
       const error = await analyse(root).catch((e: unknown) => e);

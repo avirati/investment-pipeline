@@ -69,6 +69,21 @@ const analysis = (over: Record<string, unknown> = {}) => ({
   disqualifiers: [],
   call: "TAKE_A_MEETING",
   unknowns: [],
+  status: "ok",
+  status_reason: null,
+  inputs: {
+    evidence_records: 4,
+    evidence_usable: 4,
+    gather_failures: 0,
+    extraction: {
+      status: "ok",
+      attempts: 1,
+      facts: 1,
+      dropped: 0,
+      dropped_by_kind: {},
+      error: null,
+    },
+  },
   ...over,
 });
 
@@ -135,6 +150,63 @@ describe("Analysis", () => {
 
   it("rejects a coverage outside 0–1, so a percentage cannot be passed by mistake", () => {
     expect(Analysis.safeParse(analysis({ coverage: 80 })).success).toBe(false);
+  });
+
+  // The v2 fields. A candidate the model never answered about and one there was
+  // nothing to find about both arrive with zero facts; only these tell them
+  // apart, and stage 3 may not guess (CLAUDE.md invariant 3).
+  it("distinguishes a silent model from an empty world", () => {
+    const silent = analysis({
+      status: "partial",
+      status_reason: "the model returned no readable answer in two attempts",
+      inputs: {
+        evidence_records: 4,
+        evidence_usable: 4,
+        gather_failures: 0,
+        extraction: {
+          status: "partial",
+          attempts: 2,
+          facts: 0,
+          dropped: 0,
+          dropped_by_kind: {},
+          error: "the model returned no readable answer in two attempts",
+        },
+      },
+    });
+    const empty = analysis({
+      status: "partial",
+      status_reason: "no readable evidence: 2 record(s) gathered, none with text",
+      inputs: {
+        evidence_records: 2,
+        evidence_usable: 0,
+        gather_failures: 2,
+        extraction: {
+          status: "no_evidence",
+          attempts: 0,
+          facts: 0,
+          dropped: 0,
+          dropped_by_kind: {},
+          error: "no readable evidence: 2 record(s) gathered, none with text",
+        },
+      },
+    });
+
+    expect(Analysis.safeParse(silent).success).toBe(true);
+    expect(Analysis.safeParse(empty).success).toBe(true);
+    expect(Analysis.parse(silent).inputs.extraction.status).not.toBe(
+      Analysis.parse(empty).inputs.extraction.status,
+    );
+  });
+
+  it("rejects a status outside the enum, and a blank reason", () => {
+    expect(Analysis.safeParse(analysis({ status: "failed" })).success).toBe(false);
+    expect(Analysis.safeParse(analysis({ status_reason: "" })).success).toBe(false);
+  });
+
+  // Convention 2: a gap is written as null, never omitted.
+  it("requires the produced-by record rather than defaulting it", () => {
+    const { inputs: _inputs, ...without } = analysis();
+    expect(Analysis.safeParse(without).success).toBe(false);
   });
 });
 

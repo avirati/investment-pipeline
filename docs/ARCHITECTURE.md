@@ -85,7 +85,8 @@ Candidate   { slug, name, url, one_liner, provenance[] }
 Evidence    { id, url, type, retrieved_at, status, title, text, meta }
 Fact        { key, statement, value, evidence_ids: string[], confidence }
 Analysis    { candidate, facts, dimensions[], score, coverage,
-              disqualifiers[], call, unknowns[] }
+              disqualifiers[], call, unknowns[],
+              status, status_reason, inputs{} }
 Memo        { markdown, citations[] }
 ```
 
@@ -98,6 +99,15 @@ about one company collapse to one candidate, and the singular field v1 shipped
 could record only one of them. The primary is the group's strongest post — the
 one whose link is the candidate's `url` — so the order is load-bearing and not
 presentational.
+
+`Analysis.status` and `Analysis.inputs` are at `schema_version` 2, added at
+TICKET-0022. v1 could not tell a candidate the model *failed to answer about*
+from one there was *nothing to find about*: both reach stage 3 as zero facts,
+scoring at the unknown floors with no coverage. Stage 3 has no LLM and may not
+guess (invariant 3), so the difference is written down by the stage that saw
+it — `inputs` carries the counts, `status_reason` the sentence a memo prints.
+It is not a second copy of the manifest: a memo for one company must be
+renderable from that company's analysis alone (§1).
 
 `Fact.key` is a stable identifier — `founder.prior_exit`, `github.stars` — and is
 what the rubric switches on. It was added at TICKET-0005: this section previously

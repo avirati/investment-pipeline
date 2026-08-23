@@ -12,6 +12,7 @@ import {
   LlmCallError,
   type LlmModel,
   type PriceTable,
+  replayModel,
   type TokenUsage,
 } from "../src/llm/provider.js";
 
@@ -75,6 +76,35 @@ describe("createModel", () => {
   it("reports the model variable for the role it was asked for", async () => {
     const env = { LLM_PROVIDER: "openai", OPENAI_API_KEY: "sk-test", MODEL_ANALYSE: "gpt-5" };
     await expect(createModel("extract", env)).rejects.toThrow(/MODEL_EXTRACT/);
+  });
+});
+
+describe("replayModel", () => {
+  const NAMES = { LLM_PROVIDER: "openai", MODEL_EXTRACT: "gpt-5-mini" };
+
+  it("names the call without an API key, so a replay needs no secret", () => {
+    const model = replayModel("extract", NAMES);
+    expect(model.provider).toBe("openai");
+    expect(model.model).toBe("gpt-5-mini");
+  });
+
+  it("answers a cached call, and the key is the one the real model would have used", async () => {
+    const store = cache();
+    await call(stubModel(), store);
+
+    const result = await call(replayModel("extract", NAMES), store, { replay: true });
+    expect(result.from_cache).toBe(true);
+  });
+
+  it("still fails when the environment cannot name the model", () => {
+    expect(() => replayModel("extract", {})).toThrow(ConfigError);
+  });
+
+  // Not a run's failure mode: reaching it means a caller built a replay model
+  // and then called without `replay: true`.
+  it("refuses to be invoked, and says which mistake was made", async () => {
+    const model = replayModel("extract", NAMES);
+    await expect(call(model, cache())).rejects.toThrow(/never reaches a provider/);
   });
 });
 

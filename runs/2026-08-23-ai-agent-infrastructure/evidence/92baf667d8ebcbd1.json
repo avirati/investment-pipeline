@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "92baf667d8ebcbd1",
+  "url": "https://www.freestyle.sh/pricing",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T04:06:47.416Z",
+  "status": 200,
+  "title": "Pricing - Freestyle",
+  "text": "Simple, transparent pricing for Freestyle.\n\nFreestyle\nSearch⌘KDocsDSign InS\nEnterprise Ready\nCustom pricing, dedicated support, and advanced security features.\nContact Sales\nSimple, transparent pricing\nStart free, scale as you grow. No hidden fees, no surprises.\nFree\n$0forever\nPerfect for hobby projects and getting started.\nStart Building\nUp to 10\nConcurrent VMs\nUp to 10\nSaved VMs\nPopular\nHobby\n$50/month\n+ usage over $50/month\nFor growing projects that need more power.\nGet Started\nUp to 40\nConcurrent VMs\nUp to 200\nSaved VMs\nPro\n$500/month\n+ usage over $500/month\nFor teams and production applications.\nGet Started\nUp to 400\nConcurrent VMs\nUp to 4,000\nSaved VMs\nEnterprise\nCustom\nContact sales\nCritical security, performance, and platform SLAs.\nContact Sales\nAll Pro features, plus:\nCustom usage limits\nSAML SSO & SCIM\nAudit logs\n99.99% SLA\nDedicated support\nUsage-based pricing\nPay for what you use. Transparent, predictable VM pricing.\nVMs\nUsage pricing for virtual machines.\nResource\nPrice\nIncluded\nHour of vCPU\n$0.04032\n200 per month\nHour of GiB Memory\n$0.0129\n400 per month\nHour of GiB Storage\n$0.000086\n60,000 per month\nIncluded amounts reset monthly and apply on every plan — Free, Hobby, and Pro. Usage beyond them is billed at the rates above, and on paid plans your monthly fee covers that usage dollar for dollar before anything extra is charged.\nLimits\nFree\nHobby\nPro\nConcurrent VMs\n10\n40\n400\nSaved VMs\n10\n200\n4,000\nSnapshots\n10\n1,000\n12,000\nTotal vCPUs\n40\n800\n16,000\nTotal Memory\n80 GiB\n1,600 GiB\n32,000 GiB\nTotal Disk\n320 GiB\n3,125 GiB\n62,500 GiB\nPersistent Snapshots\n✗\n✓\n✓\nPersistent VMs\n✗\n✓\n✓\nCustom Sizing\n✗\n✓\n✓\nMax vCPUs per VM\n4 vCPUs\n8 vCPUs\n32 vCPUs\nMax Memory per VM\n8 GiB\n16 GiB\n64 GiB\nMax Disk per VM\n32 GiB\n64 GiB\n256 GiB\nNeed higher limits? Contact us\nFrequently Asked Questions\nWhat are the default VM specs?\nWhat happens if I exceed my plan limits?\nCan I switch plans at any time?\nDo you offer custom enterprise pricing?\nReady to get started?\nStart building for free, or talk to our team about your needs.\nStart Building FreeGet a Demo\nProducts\nFreestyle GitFreestyle VMs\nDocumentation\nFreestyle API DocumentationFreestyle API Reference\nOpen Source\nAdorable (AI App Builder)Freestyle CLICloudstate (JavaScript Database)\nCompany\nCareersStatusBlogDiscordPrivacy Policy\n© 2026 Freestyle\n❯\nsearch the docs\nesc\nStart typing to search the Freestyle docs.",
+  "meta": {
+    "og_title": "Pricing - Freestyle",
+    "og_description": "Simple, transparent pricing for Freestyle.",
+    "og_site_name": "Freestyle",
+    "og_type": "website",
+    "description": "Simple, transparent pricing for Freestyle.",
+    "canonical": "https://www.freestyle.sh/pricing",
+    "main_selector": "body",
+    "from_cache": false,
+    "attempts": 1,
+    "page_role": "pricing",
+    "empty_shell": false,
+    "text_chars": 2381,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 2381
+  }
+}

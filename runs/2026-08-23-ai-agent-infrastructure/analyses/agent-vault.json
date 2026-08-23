@@ -1,0 +1,248 @@
+{
+  "schema_version": 2,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "agent-vault",
+    "name": "Agent Vault",
+    "url": "https://github.com/Infisical/agent-vault",
+    "one_liner": "Open-source credential proxy and vault for agents",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T04:06:24.233Z",
+        "ref": "47865822",
+        "title": "Show HN: Agent Vault – Open-source credential proxy and vault for agents",
+        "posted_url": "https://github.com/Infisical/agent-vault",
+        "posted_at": "2026-04-22T16:25:28.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Agent Vault is an open-source HTTP credential proxy and vault for AI agents like Claude Code, OpenClaw, Hermes, custom agents + harnesses, and more.",
+      "value": "Open-source credential proxy and vault for AI agents",
+      "evidence_ids": [
+        "32a05cf075a05dec",
+        "f66d67234093b024"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Agent Vault brokers AI agents' access to target services by substituting dummy credentials with real ones in HTTP requests, preventing agents from holding any real credentials and eliminating credential exfiltration risk.",
+      "value": "brokering credentials for AI agents to securely access services without exposing credentials",
+      "evidence_ids": [
+        "dece46c356dfb9f3",
+        "f66d67234093b024",
+        "1f34bb918950de03"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "Agent Vault is positioned as a credential broker and vault for AI agents that provides secrets management by brokering credentials to agents through an HTTP proxy with MITM architecture.",
+      "value": "credential brokering vault for AI agents",
+      "evidence_ids": [
+        "dece46c356dfb9f3",
+        "f66d67234093b024",
+        "1f34bb918950de03"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.launch_date",
+      "statement": "Agent Vault was first publicly launched and announced around April 2026, with the GitHub repository created on March 27, 2026.",
+      "value": "2026-03-27",
+      "evidence_ids": [
+        "dece46c356dfb9f3",
+        "32a05cf075a05dec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.open_source",
+      "statement": "Agent Vault is open source and the repository is hosted publicly at https://github.com/Infisical/agent-vault.",
+      "value": true,
+      "evidence_ids": [
+        "dece46c356dfb9f3",
+        "32a05cf075a05dec",
+        "f66d67234093b024"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Agent Vault is implemented as a local forward HTTP proxy with a MITM architecture running as a single Go binary and can be deployed as a Docker container that the AI agent routes HTTPS traffic through via the HTTPS_PROXY environment variable.",
+      "value": "local HTTP proxy with MITM architecture",
+      "evidence_ids": [
+        "dece46c356dfb9f3",
+        "f66d67234093b024",
+        "1f34bb918950de03"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.self_serve",
+      "statement": "Users can install and run Agent Vault themselves as it is open source with installation instructions and a quickstart tutorial available on the project documentation site.",
+      "value": true,
+      "evidence_ids": [
+        "f66d67234093b024",
+        "1f34bb918950de03"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.github_stars",
+      "statement": "As of August 23, 2026, the Agent Vault GitHub repository has 2121 stars.",
+      "value": 2121,
+      "evidence_ids": [
+        "32a05cf075a05dec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.repo_activity",
+      "statement": "The Agent Vault GitHub repository had 293 commits in the last 52 weeks, with 80 commits in the last 12 weeks and 17 weeks with at least one commit as of August 23, 2026.",
+      "value": 293,
+      "evidence_ids": [
+        "eecc01471ca81562"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.contributors",
+      "statement": "The Agent Vault GitHub repository has 15 contributors on the first page, including 13 human contributors and 2 bot accounts, with dangtony98 being the most active contributor with 155 commits.",
+      "value": 15,
+      "evidence_ids": [
+        "b3896b61d8fdb5bc"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "org.github_account_type",
+      "statement": "The GitHub account 'Infisical' that owns the Agent Vault repository is an organization, not a personal account.",
+      "value": "Organization",
+      "evidence_ids": [
+        "32a05cf075a05dec",
+        "951273502b253a90"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "Dangtony98 is a key contributor and appears as the most active contributor on the Agent Vault repository with 155 commits.",
+      "value": "key contributor",
+      "evidence_ids": [
+        "b3896b61d8fdb5bc",
+        "dece46c356dfb9f3"
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "b3896b61d8fdb5bc",
+        "dece46c356dfb9f3",
+        "32a05cf075a05dec",
+        "951273502b253a90"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 15,
+      "max": 20,
+      "band": "11–15",
+      "evidence_ids": [
+        "dece46c356dfb9f3",
+        "f66d67234093b024",
+        "1f34bb918950de03",
+        "32a05cf075a05dec"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 25,
+      "max": 25,
+      "band": "20–25",
+      "evidence_ids": [
+        "32a05cf075a05dec",
+        "eecc01471ca81562",
+        "b3896b61d8fdb5bc"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 8,
+      "max": 15,
+      "band": "4–8",
+      "evidence_ids": [
+        "dece46c356dfb9f3",
+        "32a05cf075a05dec",
+        "f66d67234093b024",
+        "1f34bb918950de03"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "dece46c356dfb9f3",
+        "f66d67234093b024",
+        "1f34bb918950de03",
+        "32a05cf075a05dec",
+        "b3896b61d8fdb5bc"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 75,
+  "coverage": 1,
+  "disqualifiers": [],
+  "call": "TAKE_A_MEETING",
+  "unknowns": [],
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 8,
+    "evidence_usable": 8,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 12,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

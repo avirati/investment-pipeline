@@ -1,7 +1,13 @@
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import type { BaseMessage } from "@langchain/core/messages";
 import type { z } from "zod";
-import { type EnvSource, type LlmConfig, type LlmRole, requireLlmConfig } from "../config.js";
+import {
+  type EnvSource,
+  type LlmConfig,
+  type LlmRole,
+  requireLlmConfig,
+  requireLlmNames,
+} from "../config.js";
 import { type LlmCache, type LlmCallKey, type LlmUsage, llmCache, llmCacheKey } from "./cache.js";
 
 /**
@@ -127,6 +133,32 @@ export async function createModel(role: LlmRole, env: EnvSource = process.env): 
       // provider, and this re-parse is what makes the return typed as `T`
       // rather than a cast over `Record<string, any>`.
       return { value: schema.parse(reply.parsed), usage: tokenUsage(reply.raw) };
+    },
+  };
+}
+
+/**
+ * A handle that can address the cache and cannot make a call.
+ *
+ * `--replay` is answered entirely by `callModel`'s cache read, and the cache
+ * key holds the provider's and the model's *names* — nothing else about the
+ * adapter is consulted. So a replay resolves names only (`requireLlmNames`) and
+ * a fresh clone with a committed cache can re-run a stage without an API key.
+ *
+ * `invoke` throwing is not a failure mode a run can reach: reaching it means a
+ * caller built a replay model and then called without `replay: true`, which is
+ * a wiring bug and should read as one rather than as a provider error.
+ */
+export function replayModel(role: LlmRole, env: EnvSource = process.env): LlmModel {
+  const names = requireLlmNames(role, env);
+  return {
+    provider: names.provider,
+    model: names.model,
+    invoke: () => {
+      throw new Error(
+        `replay model for '${role}' was asked to call ${names.provider}/${names.model} — ` +
+          `a replay never reaches a provider. Pass replay: true, or build the model with createModel.`,
+      );
     },
   };
 }

@@ -10,6 +10,7 @@ import {
   LLM_ROLES,
   loadDotEnv,
   requireLlmConfig,
+  requireLlmNames,
 } from "../src/config.js";
 
 const FULL: EnvSource = {
@@ -95,6 +96,37 @@ describe("requireLlmConfig", () => {
       model: "gpt-cheap",
       api_key: "[redacted]",
     });
+  });
+});
+
+describe("requireLlmNames", () => {
+  it("resolves the provider and the model for the role", () => {
+    expect(requireLlmNames("extract", FULL)).toMatchObject({
+      provider: "openai",
+      role: "extract",
+      model: "gpt-cheap",
+    });
+  });
+
+  it("does not ask for the key of a call it will not make", () => {
+    const keyless: EnvSource = { ...FULL, OPENAI_API_KEY: undefined };
+    expect(() => requireLlmNames("extract", keyless)).not.toThrow();
+    expect(() => requireLlmConfig("extract", keyless)).toThrow(ConfigError);
+  });
+
+  it("still names the variables it does need", () => {
+    try {
+      requireLlmNames("extract", BLANK);
+      throw new Error("expected requireLlmNames to throw");
+    } catch (error) {
+      expect(error).toBeInstanceOf(ConfigError);
+      expect((error as ConfigError).variables).toEqual(["LLM_PROVIDER", "MODEL_EXTRACT"]);
+    }
+  });
+
+  it("rejects a provider with no adapter, the same way the full read does", () => {
+    const bogus: EnvSource = { ...FULL, LLM_PROVIDER: "mistral" };
+    expect(() => requireLlmNames("extract", bogus)).toThrow(/has no adapter/);
   });
 });
 

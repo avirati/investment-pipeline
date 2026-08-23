@@ -1,0 +1,12 @@
+{
+  "schema_version": 2,
+  "original_seed": "AI agent infrastructure",
+  "probe": {
+    "hits": 50,
+    "usable": 25
+  },
+  "clarified": false,
+  "options_offered": [],
+  "chosen": "AI agent infrastructure",
+  "chosen_by": "probe"
+}

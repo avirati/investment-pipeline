@@ -65,19 +65,19 @@ index of the same thing. Three values, and only three:
 | [0012](./0012-ticket-stage-1-wiring.md) | Stage 1 wiring | `./pipeline source` · manifest v1 | Done |
 | **[0013](./0013-ticket-gate-hand-check-candidates.md)** | **GATE — hand-check the candidates** | **Junk rate · D-5 · D-6** | Done — [worklog 0022](../worklog/0022-gate-hand-check.md) |
 | [0014](./0014-ticket-fixture-capture-script.md) | `pnpm capture-fixtures` | The suite stays offline | **Done** |
-| [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | **Ready** |
-| [0016](./0016-ticket-company-site-adapter.md) | Company site adapter | Founders, positioning, self-serve path | **Ready** |
+| [0015](./0015-ticket-github-adapter.md) | GitHub adapter | Evidence for D1/D3/D5 | Done — [worklog 0027](../worklog/0027-github-adapter.md) |
+| [0016](./0016-ticket-company-site-adapter.md) | Company site adapter | Founders, positioning, self-serve path | Done — [worklog 0028](../worklog/0028-company-site-adapter.md) |
 | [0017](./0017-ticket-evidence-gather.md) | Evidence gather (2a) | Bundles with ids, no LLM | Done — [worklog 0029](../worklog/0029-evidence-gather.md) |
 | [0018](./0018-ticket-llm-provider-and-cache.md) | LLM seam and response cache | Replay costs nothing | Done |
 | [0019](./0019-ticket-extraction-prompt.md) | Extraction prompt + CHANGELOG | Versioned, thesis-free | Done — [worklog 0030](../worklog/0030-extraction-prompt.md) |
 | [0020](./0020-ticket-fact-extraction.md) | Fact extraction (2b) | Facts only, ids enforced | **In review** — [worklog 0031](../worklog/0031-fact-extraction.md); the first live capture is outstanding |
-| [0021](./0021-ticket-rubric-scoring.md) | The rubric | The only place a score exists | Blocked · 0020 |
-| [0022](./0022-ticket-stage-2-wiring.md) | Stage 2 wiring | `./pipeline analyse` | Blocked · 0020, 0021 |
-| [0023](./0023-ticket-missing-data-path-tests.md) | Missing-data path tests | Robustness as behaviour | Blocked · 0022, 0026 |
-| [0024](./0024-ticket-memo-template-and-render.md) | Memo template and renderer | One page, no LLM · **D-2** | Blocked · 0022 |
+| [0021](./0021-ticket-rubric-scoring.md) | The rubric | The only place a score exists | **In review** — [worklog 0032](../worklog/0032-rubric-scoring.md) |
+| [0022](./0022-ticket-stage-2-wiring.md) | Stage 2 wiring | `./pipeline analyse` · `Analysis` v2 | **In review** — [worklog 0033](../worklog/0033-stage-2-wiring.md) |
+| [0023](./0023-ticket-missing-data-path-tests.md) | Missing-data path tests | Robustness as behaviour | Blocked · 0026 |
+| [0024](./0024-ticket-memo-template-and-render.md) | Memo template and renderer | One page, no LLM · **D-2** | **Ready** — carries STATE inconsistency 9 |
 | [0025](./0025-ticket-memo-validator.md) | Citation validator | The one hard fail | Blocked · 0024 |
 | [0026](./0026-ticket-stage-3-wiring.md) | Stage 3 wiring | `./pipeline memo`, offline | Blocked · 0024, 0025 |
-| [0027](./0027-ticket-run-command-and-replay.md) | `run` and replay | One command · full manifest | Blocked · 0012, 0022, 0026 |
+| [0027](./0027-ticket-run-command-and-replay.md) | `run` and replay | One command · full manifest | Blocked · 0026 |
 | [0028](./0028-ticket-committed-sample-run.md) | Committed sample run | `setup.sh` step 6 · no key needed | Blocked · 0013, 0023, 0027 |
 | [0029](./0029-ticket-docs-closeout.md) | Docs closeout | STATE, worklogs, checklist | Blocked · 0028 |
 | [0030](./0030-ticket-walkthrough-video.md) | Walkthrough video | The other half of the deliverable | Blocked · 0029 |

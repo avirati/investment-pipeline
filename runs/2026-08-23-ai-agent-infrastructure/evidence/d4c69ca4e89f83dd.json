@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "d4c69ca4e89f83dd",
+  "url": "https://klausai.com/klaus/subscribe",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T04:06:49.051Z",
+  "status": 200,
+  "title": "Klaus: OpenClaw For Your Business",
+  "text": "the page returned 200 with 164 characters of text and renders client-side (2 script tags, an empty mount element); this pipeline does not run a browser",
+  "meta": {
+    "og_title": "Klaus: OpenClaw For Your Business",
+    "og_description": "Your AI employee in five minutes. Secure OpenClaw in the cloud with every model, hundreds of integrations, and all your accounts. Trusted by hundreds of businesses.",
+    "og_type": "website",
+    "description": "Your AI employee in five minutes. Secure OpenClaw in the cloud with every model, hundreds of integrations, and all your accounts. Trusted by hundreds of businesses.",
+    "main_selector": "body",
+    "from_cache": false,
+    "attempts": 1,
+    "page_role": "pricing",
+    "empty_shell": true,
+    "text_chars": 164,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 151
+  }
+}

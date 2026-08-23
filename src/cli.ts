@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import { pathToFileURL } from "node:url";
 import { Command, InvalidArgumentError } from "commander";
+import { type AnalyseOutcome, runAnalyse } from "./analyse/index.js";
 import { ConfigError, loadDotEnv } from "./config.js";
 import { EXIT } from "./exit-codes.js";
-import { RunError } from "./run.js";
+import { RunError, validateRunId } from "./run.js";
 import { runSource, type SourceOutcome } from "./source/index.js";
 import { PlanError } from "./source/plan.js";
 
@@ -91,6 +92,13 @@ function exitFor(error: unknown): number | null {
   if (error instanceof RunError || error instanceof PlanError) return EXIT.USAGE;
   if (error instanceof ConfigError) return EXIT.USAGE;
   if (error instanceof Error && error.name === "SourceError") return EXIT.DATA_GAP;
+  // A replay with nothing cached, or a cache entry a moved schema left behind.
+  // Both are the operator's invocation rather than the world being thin, and
+  // both are fixed by re-issuing the command (`callModel`, rules 3 and 4).
+  if (error instanceof Error && error.name === "LlmCallError") return EXIT.USAGE;
+  if (error instanceof Error && error.name === "AnalyseError") {
+    return (error as { failure?: string }).failure === "no_candidates" ? EXIT.DATA_GAP : EXIT.USAGE;
+  }
   return null;
 }
 
@@ -181,6 +189,69 @@ async function sourceAction(flags: SourceFlags): Promise<void> {
   }
 }
 
+/**
+ * Stage 2's half of the same thing. It leads with what a partner asks first —
+ * how many companies, and how they landed — and keeps the failures visible
+ * rather than summarising them away: a run where four candidates went `partial`
+ * is a run whose memos will be thin, and that should be legible before anybody
+ * opens one.
+ */
+function analyseSummary(outcome: AnalyseOutcome): string {
+  const { stage } = outcome;
+  const pct = (share: number): string => `${Math.round(share * 100)}%`;
+  const lines = [`run ${outcome.run_id}`];
+
+  lines.push(
+    `  candidates  ${stage.counts.candidates} read` +
+      (stage.input.unparseable > 0 ? ` (${stage.input.unparseable} unreadable line(s))` : ""),
+  );
+  lines.push(
+    `  evidence    ${stage.budget.spent.site?.spent ?? 0} site · ` +
+      `${stage.budget.spent.github?.spent ?? 0} github · ${stage.budget.spent.hn?.spent ?? 0} hn requests`,
+  );
+  lines.push(
+    `  facts       ${stage.facts.kept} kept, ${stage.facts.dropped} dropped` +
+      (stage.facts.dropped > 0
+        ? ` (${Object.entries(stage.facts.dropped_by_kind)
+            .map(([kind, count]) => `${count} ${kind}`)
+            .join(", ")})`
+        : ""),
+  );
+  lines.push(
+    `  model       ${stage.llm.model} · ${stage.llm.calls} call(s), ` +
+      `${stage.llm.from_cache} from cache · ` +
+      `${stage.llm.cost_usd === null ? "cost unknown" : `$${stage.llm.cost_usd.toFixed(4)}`}`,
+  );
+  for (const row of stage.candidates) {
+    const head = `  ${row.slug.padEnd(20).slice(0, 20)}`;
+    lines.push(
+      row.score === null
+        ? `${head} ${row.status} — ${row.reason ?? "no analysis written"}`
+        : `${head} ${row.call} ${row.score}/100 · coverage ${pct(row.coverage ?? 0)}` +
+            (row.status === "ok" ? "" : ` · ${row.status}: ${row.reason ?? ""}`),
+    );
+  }
+  lines.push(
+    `  status      ${stage.counts.ok} ok · ${stage.counts.partial} partial · ${stage.counts.failed} failed`,
+  );
+  lines.push(`  analyses    ${stage.counts.analyses} → ${outcome.paths.analysesDir}/`);
+  lines.push(`  manifest    ${outcome.paths.manifest}`);
+  lines.push(`  next        ./pipeline memo --run ${outcome.run_id}`);
+  return `${lines.join("\n")}\n`;
+}
+
+async function analyseAction(flags: { run: string; replay?: boolean }): Promise<void> {
+  try {
+    const outcome = await runAnalyse({
+      runId: validateRunId(flags.run),
+      replay: flags.replay === true,
+    });
+    process.stdout.write(analyseSummary(outcome));
+  } catch (error) {
+    fail(error);
+  }
+}
+
 export function buildProgram(): Command {
   const program = new Command()
     .name("pipeline")
@@ -208,8 +279,8 @@ export function buildProgram(): Command {
     .command("analyse")
     .description("Stage 2 only — gather evidence, extract facts, score")
     .requiredOption("--run <id>", "run id to analyse — required")
-    .option("--replay", "reuse cached LLM responses; spends nothing")
-    .action(() => notImplemented("analyse", "TICKET-0022"));
+    .option("--replay", "answer from the caches; makes no request and spends nothing")
+    .action(analyseAction);
 
   // No --replay on memo: stage 3 makes no LLM calls, so there is nothing to
   // replay. See CLAUDE.md invariant 3.

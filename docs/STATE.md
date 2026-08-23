@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-23 · at commit `8ec661e` · **Phase: stage 2 runs. `./pipeline analyse --run <id>` joins `gatherRun` → `extractFacts` → `scoreCandidate`, writes one `Analysis` per candidate and a stage record in the manifest, and survives a candidate failing (30 tests, 913 total). `--replay` is structurally unable to make a request or spend a token, and needs no API key. Still nothing has ever been sent to a provider (inconsistency 72). Next: TICKET-0024, the memo renderer — and the decision about the `Analysis` fields SPEC §4 still wants (inconsistency 9)**
+Last updated: 2026-08-23 · at commit `9503aaa` · **Phase: stage 2 has run against live sources and a live provider.** Three candidates on `AI agent infrastructure`: 47 facts, 0 dropped, 117 citations all resolving, one TAKE_A_MEETING and two WATCHes. The first attempt failed entirely — `extractionSchema`'s optional fields are illegal under strict structured output (worklog 0034) — and the fix is `EXTRACTION_SCHEMA_VERSION` 2. Inconsistencies 69 and 72 are closed; five quality findings and two bookkeeping bugs are open as 85–88. Next: TICKET-0024, and the decision about the `Analysis` fields SPEC §4 still wants (inconsistency 9)**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -451,13 +451,43 @@ answer about from one there was nothing to find about, and stage 3 has no LLM to
 work it out (invariant 3). That half-closes inconsistency 9; the memo's own
 section lists are still owed.
 
+**Stage 2 has run for real** ([worklog
+0034](./worklog/0034-first-live-run.md)). `MODEL_EXTRACT=gpt-4.1-mini` — D-1's
+empty default is filled for the `extract` role — and three candidates on
+`AI agent infrastructure` went through live HN, live GitHub, live company sites
+and a live provider. **The first attempt got nothing**: every call was rejected
+with a 400 before a token was spent, because `extractionSchema` made its fields
+optional and OpenAI's strict structured output requires every property to appear
+in `required`. No offline test could have caught it — Zod accepts the schema;
+the validator that refuses it is the provider's. The fix is every field required
+and nullable, `EXTRACTION_SCHEMA_VERSION` 2, and a guard that asserts on the
+JSON schema actually sent rather than on Zod's acceptance of it.
+
+What the failure did right is worth as much as the fix: the run completed, wrote
+three analyses, recorded both attempts and the 400 verbatim per candidate, and
+the rubric still scored every candidate from mechanical signals alone.
+ARCHITECTURE §5 and invariant 4 behaved as written on a failure nobody had
+rehearsed. After the fix: 47 facts, **0 dropped**, 22,100 input and 3,223 output
+tokens, `cost_usd` still null (54), and **117 citations every one of which
+resolves to a record on disk** — ADR-0003 checked against real output for the
+first time. A replay with `.env` moved aside and only `LLM_PROVIDER` and
+`MODEL_EXTRACT` set answered all three calls from the cache with identical
+scores, which is `replayModel` demonstrated rather than asserted.
+
+The run's readings are the first evidence about *quality* this project has, and
+five of them are recorded as inconsistencies 85–88 plus a note on 79: an absence
+written as a cited fact, a fact citing all eight of its records at once, GitHub
+usernames scoring D1 as named people, two first names as a founder, and a
+TAKE_A_MEETING for a large funded company's side project. None is a bug in the
+code that produced it.
+
 | Area | State |
 |---|---|
 | Thesis and rubric | Implemented in `src/analyse/score.ts` (0021) and **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 913 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run), 46 evidence gather and run budget (0017), 22 prompt loading (0019), 10 fact vocabulary and 37 fact extraction (0020, all against a stub model and the committed model fixtures), 98 rubric (0021 — every band edge, each disqualifier, the coverage gate and four properties over 400 generated fact sets), 15 stage-2 wiring and 8 keyless-replay/contract cases (0022, all against a stub model and a stub transport). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0033 | Factual sections written; reflections pending (see D-4) |
+| Test strategy | Written; 915 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run), 46 evidence gather and run budget (0017), 22 prompt loading (0019), 10 fact vocabulary and 37 fact extraction (0020, all against a stub model and the committed model fixtures), 98 rubric (0021 — every band edge, each disqualifier, the coverage gate and four properties over 400 generated fact sets), 15 stage-2 wiring and 8 keyless-replay/contract cases (0022, all against a stub model and a stub transport). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0034 | Factual sections written; reflections pending (see D-4) |
 | Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 21 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 3 in review (0020 — one acceptance item outstanding; 0021; 0022), 1 Ready (0024), 5 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
@@ -473,22 +503,22 @@ section lists are still owed.
 | Candidate derivation | `src/source/candidate.ts` — `deriveName` (lift or fall back to the domain; never compose), `nameFromKey` drops a generic repo slug to its owner (the gate's F1), `slugFor`, `toCandidates`, and `candidatesFromUrls` for the `urls` seed form (0012, Done) |
 | Stage 1 wiring | `src/source/index.ts` — `runSource`: plan → search → dedup → rank → cut → resolve → candidates, the run-level failure decision, the thin-yield fallback (0012, Done) |
 | Run manifest | `src/manifest.ts` — git sha, flags, per-arm yields, per-candidate status; `writeStage` merges so later stages append (0012, Done) |
-| LLM response cache | `src/llm/cache.ts` — committed and content-addressed on the whole call (provider, model, prompt id, prompt version, output schema version, rendered input); a hit is verified against the fields it was keyed on; the first answer wins; a miss says why (0018, Done). **No entry is committed yet** |
+| LLM response cache | `src/llm/cache.ts` — committed and content-addressed on the whole call (provider, model, prompt id, prompt version, output schema version, rendered input); a hit is verified against the fields it was keyed on; the first answer wins; a miss says why (0018, Done). Three real entries exist in `.cache/llm/` from worklog 0034's run and are **uncommitted pending review** (see 53) |
 | GitHub adapter | `src/evidence/github.ts` — `parseGithubRef`, five API calls, tolerant schemas, evidence projections, dated `Signal`s, `defaultCalls(mode)` as the degraded-mode budget (0015, Done). Verified against the live API on three of the gate's own candidates |
 | Company-site adapter | `src/evidence/site.ts` — `discoverLinks` and the six link roles, `pickPages` against `SITE_PAGE_BUDGET`, `detectEmptyShell`, `detectLanguage`, `extractPeople` (a role beside every name, rejections with reasons), `gatherSite` (0016, Done). Verified live against seven of the gate's own candidates; two defects found and fixed |
 | Evidence gather (2a) | `src/analyse/gather.ts` — `gatherCandidate` (HN thread + site + GitHub → one bundle), the repo ↔ site join in both directions with `join.*.from` recording which, `bundleItems`/`bundleIds` as the closed world handed to extraction, `gatherRun` over a shared meter (0017, Done). No LLM, asserted against the transitive import graph. **Nothing calls it yet** |
 | Run request budget | `src/analyse/budget.ts` — `planRun(count, mode)` (uniform per-candidate allowance, planned before the loop), `requestMeter` (the wall, metered against GitHub's documented limit), `mapWithConcurrency` (0017, Done). Closes inconsistencies 60 and 66 |
 | Signal shape | `src/evidence/signal.ts` — `Signal`, `UnknownSignal`, `SignalSet` and the `collector` that makes invariant 4 structural. Shared by both stage-2 adapters, re-exported from `github.ts` (0016) |
-| LLM provider seam | `src/llm/provider.ts` — `createModel(role)` behind `await import`, `callModel` through the cache, `--replay` fails loudly on a cold cache, tokens recorded per call, `PRICES` ships empty so `cost_usd` is `null` (0018, Done). **Never run against a live provider** |
+| LLM provider seam | `src/llm/provider.ts` — `createModel(role)` behind `await import`, `callModel` through the cache, `--replay` fails loudly on a cold cache, tokens recorded per call, `PRICES` ships empty so `cost_usd` is `null` (0018, Done). Run live at worklog 0034 — 22,100 input and 3,223 output tokens recorded, cost still null (54) |
 | Fact vocabulary | `src/analyse/keys.ts` — 24 enumerated keys, `FactKeyEnum`, `renderKeys()` for `{{keys}}`. No dimension, no weights, no bands (invariant 7). **Unvalidated** — written from SPEC §1–2, not measured (0020) |
-| Stage 2 wiring | `src/analyse/index.ts` — `runAnalyse`: read candidates → `gatherRun` (barrier) → `extractFacts` (bounded, three at a time) → `scoreCandidate` → `analyses/<slug>.json`, per-candidate failures as manifest rows, `replayHttp` making a replay structurally offline (0022, in review). **Never run against a live provider** |
-| Fact extraction (2b) | `src/analyse/extract.ts` — `shownItems` (the closed world), `renderEvidence`/`renderCompany`, `extractionSchema(ids)` with the citable ids as an enum, `parseFacts` (per-fact drops with reasons), one retry then `partial`, `no_evidence` without a call (0020, in review). **Never run against a live provider** |
-| Prompts | `prompts/clarify-query.v1.md`, `prompts/extract.v1.md` and `prompts/CHANGELOG.md` — written and versioned; `extract.v1` is **rendered and sent by `extract.ts`** (0020), `clarify-query.v1` is still **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
+| Stage 2 wiring | `src/analyse/index.ts` — `runAnalyse`: read candidates → `gatherRun` (barrier) → `extractFacts` (bounded, three at a time) → `scoreCandidate` → `analyses/<slug>.json`, per-candidate failures as manifest rows, `replayHttp` making a replay structurally offline (0022, in review). **Run live** (worklog 0034), including a keyless `--replay` with `.env` moved aside |
+| Fact extraction (2b) | `src/analyse/extract.ts` — `shownItems` (the closed world), `renderEvidence`/`renderCompany`, `extractionSchema(ids)` with the citable ids as an enum and **every field required-and-nullable at `schema_version` 2** (strict structured output refuses optional properties — worklog 0034), `parseFacts` (per-fact drops with reasons), one retry then `partial`, `no_evidence` without a call (0020). Run live: 3 calls, 47 facts, 0 drops |
+| Prompts | `prompts/clarify-query.v1.md`, `prompts/extract.v1.md` and `prompts/CHANGELOG.md` — written and versioned; `extract.v1` has been **sent to a provider three times** and produced 47 facts with 0 drops (worklog 0034); a v2 is now justified by inconsistencies 85–86, `clarify-query.v1` is still **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
 | Fixture capture | `scripts/capture-fixtures.ts` and `scripts/fixtures.ts` — `pnpm capture-fixtures`, a secret scan that refuses rather than redacts, `--refresh` as a deliberate act, and a generated `tests/fixtures/capture.json` (0014, Done). Not wired into `pnpm test`, never in CI |
 | Fixtures | 20 recorded: 6 HN (4 hand-captured and adopted, 1 thin topic, 1 derived), 8 GitHub payloads (owner, repo, README, contributors, commit activity), 2 real company pages, 4 authored model outputs, plus the hand-written `company-site.html` (0008/0014). Two gaps recorded rather than filled: no empty-shell page and no 404 body |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | **Stage 1 runs and has been audited** (TICKET-0013, four live topics). **Stage 2 runs offline** (0022): `./pipeline analyse --run <id>` produces `analyses/<slug>.json` and the manifest's `analyse` record — but has never been run against a live provider, so no real output exists yet. Stage 3 still exits 70 (0026), and so does `run` (0027) |
-| Sample run, walkthrough video | Not started. Topic chosen (D-5): `AI agent infrastructure` |
+| Stages 1–3 | **Stages 1 and 2 both run against live sources.** Stage 1 audited at TICKET-0013 (four live topics); stage 2 first run at worklog 0034 (`AI agent infrastructure`, 3 candidates) — one defect found and fixed, real output on disk. Stage 3 still exits 70 (0026), and so does `run` (0027) |
+| Sample run, walkthrough video | Not started as a *committed* artifact (TICKET-0028). One live smoke run exists uncommitted in `runs/2026-08-23-ai-agent-infrastructure/` — 3 candidates, 47 facts, 117 resolving citations (worklog 0034). Topic chosen (D-5): `AI agent infrastructure` |
 
 ---
 
@@ -1317,6 +1347,13 @@ Real defects, listed rather than silently patched.
     exists. Recorded as a decision rather than an omission, and as the first
     time this project skipped the step that has paid off four times.
 
+    **Closed by worklog 0034.** The live pass happened at TICKET-0022 rather
+    than 0017, one ticket later than promised and four deferrals in, and it
+    found a defect in eight seconds that 915 offline tests could not
+    (inconsistency 88's neighbour, fixed in `9503aaa`). The pattern this
+    inconsistency was tracking is now measured rather than predicted: **every
+    module that has been run live has changed on the day it was run.**
+
 70. **The bundle is in-memory and is not an artifact.** Evidence records are on
     disk and committed; the `Bundle` that carries their ids to extraction is a
     handoff inside stage 2 and is never written. A reviewer can reconstruct
@@ -1337,6 +1374,10 @@ Real defects, listed rather than silently patched.
     in v1 (SCOPE) that is the honest state — but it means the prompts are, so
     far, prose reviewed only by their author. TICKET-0020's captured fixtures
     are the first real signal.
+
+    **Half closed by worklog 0034.** `extract.v1` has now been sent, three
+    times, and produced 47 facts with 0 drops. `clarify-query.v1` still has
+    not been sent by anything (0011 is reopened, and its v2 is still owed).
 
     **Still true after TICKET-0020, and now with a schema behind it.** The
     extraction schema, the 24-key vocabulary and the retry path are all tested
@@ -1461,6 +1502,54 @@ Real defects, listed rather than silently patched.
     that state. TICKET-0028 has to decide whether the committed sample run
     tolerates this, commits its HTTP cache too, or teaches stage 2 to rebuild a
     bundle from the evidence store instead of re-fetching.
+
+85. **An absence can be written as a fact.** The first live run produced
+    `funding.raised_usd: "There is no information about funding or capital
+    raised in the provided records."` — a negative finding filed under a key
+    whose hint asks for *an amount, round, date or investor the source states*.
+    It is invariant 4 broken in the one place the pipeline cannot see it:
+    unknown is supposed to be an **absent fact**, not a cited one. It moves no
+    score today, because no dimension reads that key — but it would reach a memo
+    as a bullet, and a key that *is* read would inflate a dimension's coverage
+    with the observation that there is nothing to observe. Neither the prompt
+    nor `parseFacts` forbids it. A prompt v2's problem (TICKET-0019's file), and
+    it wants a `CHANGELOG.md` entry saying what it did to the run above.
+
+86. **A citation list that names everything is a shrug.** The same fact cited
+    all eight records it had been shown. `parseFacts` checks that every id was
+    shown and nothing checks that the list is *discriminating*, so a fact
+    pointing at the whole bundle is as valid as one pointing at the sentence it
+    came from. A reviewer opening that citation learns nothing, which is the
+    thing ADR-0003 exists to prevent.
+
+87. **The HN request pool charges for requests it did not make.**
+    `gatherCandidate` runs `charge("hn", 1)` unconditionally after
+    `fetchEvidence`, so a warm HTTP cache and a `--replay` both report "3 hn
+    requests" having made none. Site and GitHub count correctly, from the
+    adapters' own totals. The pool is ungated so nothing is *enforced* on the
+    wrong number — but the manifest states something untrue, and the manifest is
+    the document a reviewer is asked to trust.
+
+88. **A provider 400 about our own schema is retried as if the model erred.**
+    `structureComplaint` matches `/parse|schema|json|invalid|expected/i`, so
+    `400 Invalid schema for response_format` reads as a shape complaint: the
+    retry appends it to the prompt and asks again, and the second attempt cannot
+    succeed because the schema is wrong, not the answer. The first live run made
+    six attempts for three candidates, three of which were guaranteed failures.
+    No tokens — the request is rejected before billing — but a real round trip
+    each. Distinguishing "the provider refused our request" from "the model
+    answered badly" needs the error's type rather than its text.
+
+89. **`pnpm lint` would have failed on the first committed run.** `biome.json`
+    excluded `runs` and `memos` and not `.cache`, and ADR-0006 commits
+    `.cache/llm/`. The pipeline writes its artifacts with
+    `JSON.stringify(value, null, 2)`, which biome's formatter disagrees with, so
+    the gate that is supposed to pass on a fresh clone would have failed on
+    machine-written files nobody should be formatting. Found by running lint
+    after the first live run, one commit before TICKET-0028 would have hit it.
+    Fixed by adding `!.cache` to the include list. The general shape is worth
+    keeping in mind: **three of this project's gates run over committed
+    artifacts, and artifacts are not source.**
 
 ---
 
@@ -1628,16 +1717,42 @@ offline. Five things a new session should carry out of it:
 5. **One dead branch was found by running the thing** — inconsistency 83, the
    `unknown_evidence_id` drop that the id enum already makes unreachable.
 
+**The first live run happened** ([worklog
+0034](./worklog/0034-first-live-run.md)) — `MODEL_EXTRACT=gpt-4.1-mini`, three
+candidates, one defect found and fixed. Four things a new session should carry
+out of it:
+
+1. **The defect was invisible to the whole offline suite.** `extractionSchema`'s
+   optional fields are legal Zod and illegal under strict structured output; the
+   validator that refuses them is the provider's, and no stub has one. Fixed at
+   `schema_version` 2, guarded by a test that asserts on the JSON schema
+   actually sent. **This is the fifth live run to change the code, and the fifth
+   out of five.**
+2. **The degradation path is real and it worked.** Three candidates whose model
+   call failed twice still produced analyses, scores from mechanical signals,
+   and a manifest naming the 400 verbatim. Nothing about that had been rehearsed
+   against anything but a stub.
+3. **The output's quality problems are the model's and the prompt's, not the
+   code's** — inconsistencies 85 and 86, and 79 arriving where it was predicted
+   (a GitHub username scoring D1 as a named person). A prompt v2 is justified and
+   needs a CHANGELOG entry measured against this run.
+4. **The run is uncommitted.** `runs/2026-08-23-ai-agent-infrastructure/` and
+   three `.cache/llm/` entries are on disk and not in git. Committing a run is
+   TICKET-0028's decision, and this one was a smoke test, not the sample. It did
+   flush out inconsistency 89 on the way — `pnpm lint` would have failed on the
+   first committed cache entry, because `biome.json` excluded `runs` and not
+   `.cache`.
+
 **Nothing is blocking. Three tickets in review, one Ready:**
 
 - [TICKET-0020](./tickets/0020-ticket-fact-extraction.md) — **in review**
-  ([worklog 0031](./worklog/0031-fact-extraction.md)). The vocabulary, the
-  rendering, the schema, the drops and the retry are in and tested offline. One
-  acceptance item is outstanding and it is the author's: **the first captured
-  model output**. It needs `MODEL_EXTRACT` filled in — D-1 left it empty on
-  purpose — and a live call that costs money. That capture is also the first
-  evidence any of the prompt's prose works (inconsistency 72), and it is the
-  natural moment to decide whether the 24 keys are the right 24.
+  ([worklog 0031](./worklog/0031-fact-extraction.md), and
+  [0034](./worklog/0034-first-live-run.md) for the live pass). **Its outstanding
+  acceptance item is now met**: three captured model outputs exist, 47 facts and
+  0 drops, and `MODEL_EXTRACT=gpt-4.1-mini` closes D-1 for the extract role. The
+  run also changed the module — `EXTRACTION_SCHEMA_VERSION` is 2 — and raised
+  the question the capture was meant to raise: whether the 24 keys are the right
+  24. Two of them misbehaved on first contact (85, 86).
 - [TICKET-0021](./tickets/0021-ticket-rubric-scoring.md) — **in review**
   ([worklog 0032](./worklog/0032-rubric-scoring.md)). `src/analyse/score.ts` and
   98 tests; the full TESTING §1 list is met offline. Two of its three open

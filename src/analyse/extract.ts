@@ -81,20 +81,32 @@ import { FactKeyEnum, renderKeys } from "./keys.js";
  * *shape* changes — including removing a key, which can make a stored answer
  * fail to parse rather than simply miss.
  */
-export const EXTRACTION_SCHEMA_VERSION = 1;
+/**
+ * **2** — every field is required and nullable, where 1 made them optional.
+ * OpenAI's strict structured-output mode refuses a schema whose `required` does
+ * not list every property, so v1 was rejected with a 400 before a token was
+ * spent — found by the first live run (worklog 0034). The *intent* is
+ * unchanged: a fact the model could not complete still arrives to be dropped
+ * with a reason rather than costing the whole response. It now arrives as a
+ * `null` rather than as an absent key.
+ */
+export const EXTRACTION_SCHEMA_VERSION = 2;
 
 /**
  * The response, as a type. The *schema* is built per bundle
  * (`extractionSchema`), because one of its fields depends on which records this
  * candidate was shown.
+ *
+ * `null`, not `undefined`: see the version note above. Every field is present
+ * in every answer and any of them may be empty.
  */
 export type ExtractionResponse = {
   facts: {
-    key?: string | undefined;
-    statement?: string | undefined;
-    value?: FactValue | undefined;
-    evidence_ids?: string[] | undefined;
-    confidence?: string | undefined;
+    key: string | null;
+    statement: string | null;
+    value: FactValue;
+    evidence_ids: string[] | null;
+    confidence: string | null;
   }[];
 };
 
@@ -109,31 +121,42 @@ export type ExtractionResponse = {
  * stays regardless: a provider that treats the schema as advice, and every
  * cached answer written before the schema moved, still reach us unconstrained.
  *
- * Everything *else* is permissive on purpose (rule 2): every field is optional,
+ * Everything *else* is permissive on purpose (rule 2): every field is nullable,
  * so a fact with an invented key or a missing statement arrives to be dropped
- * here with a reason instead of failing the whole response. The ids are the one
- * deliberate exception — an out-of-enum id fails the response and costs the
- * retry, which is the price of the constraint being real, and the complaint the
- * retry carries names the id and the allowed set.
+ * here with a reason instead of failing the whole response. Nullable rather than
+ * optional because strict structured output requires every property to be
+ * listed in `required` — v1 was optional and was rejected with a 400 by the
+ * first live run. The ids are the one deliberate exception — an out-of-enum id
+ * fails the response and costs the retry, which is the price of the constraint
+ * being real, and the complaint the retry carries names the id and the allowed
+ * set.
  *
  * The descriptions reach the provider as the JSON schema's documentation; the
  * prompt says the same things at length.
  */
 export function extractionSchema(ids: readonly string[]): z.ZodType<ExtractionResponse> {
   const evidenceId = ids.length === 0 ? z.string() : z.enum([...ids] as [string, ...string[]]);
-  const fact = z
-    .object({
-      key: z.string().describe("One of the keys listed in the prompt. Anything else is discarded."),
-      statement: z.string().describe("One observation, one sentence, true to the record it cites."),
-      value: FactValue.describe(
-        "The same observation as a scalar — number, boolean, short string or ISO date — or null when it has none.",
-      ),
-      evidence_ids: z
-        .array(evidenceId)
-        .describe("At least one id, each one the id of a record shown above."),
-      confidence: z.string().describe("high, medium or low — about the evidence, not the company."),
-    })
-    .partial();
+  const fact = z.object({
+    key: z
+      .string()
+      .nullable()
+      .describe("One of the keys listed in the prompt. Anything else is discarded."),
+    statement: z
+      .string()
+      .nullable()
+      .describe("One observation, one sentence, true to the record it cites."),
+    value: FactValue.describe(
+      "The same observation as a scalar — number, boolean, short string or ISO date — or null when it has none.",
+    ),
+    evidence_ids: z
+      .array(evidenceId)
+      .nullable()
+      .describe("At least one id, each one the id of a record shown above."),
+    confidence: z
+      .string()
+      .nullable()
+      .describe("high, medium or low — about the evidence, not the company."),
+  });
   return z.object({
     facts: z
       .array(fact)

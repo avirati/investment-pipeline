@@ -556,13 +556,51 @@ describe("extractFacts", () => {
 });
 
 describe("the requested schema", () => {
+  /** A fact with every field present, so a test can blank one at a time. */
+  const anyFact = (over: Record<string, unknown> = {}) => ({
+    key: "product.one_liner",
+    statement: "It says what it does.",
+    value: "observability",
+    evidence_ids: [home.id],
+    confidence: "high",
+    ...over,
+  });
+
   it("is permissive at the item level, so one bad fact survives transport", () => {
     // Rule 2: the strict check is ours, item by item. If the provider's schema
     // rejected the whole response, one malformed fact would cost the other ten.
+    // Blank is written as null rather than as an absent key — see the strict
+    // mode test below, which is why.
     const parsed = extractionSchema([home.id]).safeParse({
-      facts: [{ statement: "no key, no ids" }, { key: "product.one_liner" }],
+      facts: [
+        anyFact({ key: null, evidence_ids: null }),
+        anyFact({ statement: null, value: null }),
+      ],
     });
     expect(parsed.success).toBe(true);
+  });
+
+  // The regression guard for the defect the first live run found (worklog
+  // 0034). OpenAI's strict structured output refuses a schema whose `required`
+  // omits any property, so v1's `.partial()` was rejected with a 400 before a
+  // token was spent. Asserted on the JSON schema the provider is actually sent,
+  // because that is the artifact the rule is about.
+  it("lists every property as required, as strict structured output demands", () => {
+    const json = z.toJSONSchema(extractionSchema([home.id])) as unknown as {
+      properties: {
+        facts: { items: { properties: Record<string, unknown>; required?: string[] } };
+      };
+    };
+    const item = json.properties.facts.items;
+    expect(new Set(item.required ?? [])).toEqual(new Set(Object.keys(item.properties)));
+  });
+
+  it("expresses an empty field as a nullable type, not an absent key", () => {
+    const schema = extractionSchema([home.id]);
+    expect(schema.safeParse({ facts: [anyFact({ key: null })] }).success).toBe(true);
+    // `key` missing entirely is what v1 allowed and strict mode forbids.
+    const { key: _key, ...withoutKey } = anyFact();
+    expect(schema.safeParse({ facts: [withoutKey] }).success).toBe(false);
   });
 
   // The author's note on worklog 0030: the citable ids belong in the schema,
@@ -572,10 +610,10 @@ describe("the requested schema", () => {
   // advice and for answers cached before the schema moved.
   it("names the citable ids as an enum, and rejects one it was not shown", () => {
     const schema = extractionSchema([home.id, readme.id]);
-    expect(schema.safeParse({ facts: [{ evidence_ids: [home.id] }] }).success).toBe(true);
-    expect(schema.safeParse({ facts: [{ evidence_ids: ["0000000000000000"] }] }).success).toBe(
-      false,
-    );
+    expect(schema.safeParse({ facts: [anyFact({ evidence_ids: [home.id] })] }).success).toBe(true);
+    expect(
+      schema.safeParse({ facts: [anyFact({ evidence_ids: ["0000000000000000"] })] }).success,
+    ).toBe(false);
   });
 
   it("carries the ids into the JSON schema the provider is sent", () => {
@@ -584,7 +622,7 @@ describe("the requested schema", () => {
   });
 
   it("is versioned, and the version reaches the cache key", () => {
-    expect(EXTRACTION_SCHEMA_VERSION).toBe(1);
+    expect(EXTRACTION_SCHEMA_VERSION).toBe(2);
   });
 });
 

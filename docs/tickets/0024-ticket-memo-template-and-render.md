@@ -1,6 +1,6 @@
 # TICKET-0024 — Memo template and renderer
 
-Status: Blocked · 0022 · Depends on: 0022 · Blocks: 0025, 0026
+Status: **Ready** — 0022 is in review and `Analysis` v2 is in. One caveat before starting: the contract still lacks SPEC §4's Team/Product/Market/Risks lists, the "what would change my mind" list and the Watch upgrade trigger (STATE inconsistency 9) — deriving them is a decision this ticket inherits · Depends on: 0022 (In review) · Blocks: 0025, 0026
 Reads: [SPEC §4](../SPEC.md#4-memo-contract), [STATE](../STATE.md) D-2, [CLAUDE.md](../../CLAUDE.md) invariant 3
 
 ## Why

@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-23 · at commit `325bf98` · **Phase: the rubric exists. `src/analyse/score.ts` is SPEC §1–3 as behaviour — five dimensions at 25/20/25/15/15, four cited disqualifiers, the coverage gate — pure, offline and tested at every band edge (98 tests, 883 total). Nothing calls it yet and no stage 2 module has ever run against a provider (inconsistency 72). Next: TICKET-0022, the wiring, which is also the first live stage-2 run**
+Last updated: 2026-08-23 · at commit `8ec661e` · **Phase: stage 2 runs. `./pipeline analyse --run <id>` joins `gatherRun` → `extractFacts` → `scoreCandidate`, writes one `Analysis` per candidate and a stage record in the manifest, and survives a candidate failing (30 tests, 913 total). `--replay` is structurally unable to make a request or spend a token, and needs no API key. Still nothing has ever been sent to a provider (inconsistency 72). Next: TICKET-0024, the memo renderer — and the decision about the `Analysis` fields SPEC §4 still wants (inconsistency 9)**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -426,18 +426,43 @@ rubric uses are invented (82). And the discovery: **the coverage gate cannot
 fire** through `scoreCandidate` — two covered dimensions cannot reach 72 points
 — which is inconsistency 80 and is left honest rather than tuned.
 
+**Stage 2 is wired** ([worklog 0033](./worklog/0033-stage-2-wiring.md),
+TICKET-0022). `src/analyse/index.ts` reads a previous run's `candidates.jsonl`,
+gathers, extracts, scores and writes `runs/<id>/analyses/<slug>.json` plus the
+manifest's `analyse` record — per-candidate status, timings, token counts, the
+planned and spent request budget, and facts kept against facts dropped by kind
+(closing inconsistency 77). Gathering stays a barrier because the budget is
+divided by the candidate count before anything is fetched (60); extraction fans
+out behind it at a smaller width, three against gathering's four, because a
+gather is four small reads of a stranger's web server and an extraction is a
+billed call. A candidate that throws is a `failed` row and the run continues;
+the two errors that stop the run are the operator's — a cold cache under
+`--replay` and a cache entry a moved schema left behind.
+
+`--replay` now spends nothing in either currency: the LLM cache answers the
+calls, the HTTP cache answers the fetches with its staleness rule suspended, and
+the transport is replaced by one that refuses, so the zero-requests claim is
+structural rather than asserted. It also needs no API key — `requireLlmNames`
+and `replayModel` resolve the provider and model *names*, which is all the cache
+key holds, so a fresh clone with a committed cache can re-run the stage.
+`Analysis` moved to `schema_version` 2 to carry `status`, `status_reason` and an
+`inputs` record, because v1 could not tell a candidate the model failed to
+answer about from one there was nothing to find about, and stage 3 has no LLM to
+work it out (invariant 3). That half-closes inconsistency 9; the memo's own
+section lists are still owed.
+
 | Area | State |
 |---|---|
 | Thesis and rubric | Implemented in `src/analyse/score.ts` (0021) and **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 883 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run), 46 evidence gather and run budget (0017), 22 prompt loading (0019), 10 fact vocabulary and 37 fact extraction (0020, all against a stub model and the committed model fixtures), 98 rubric (0021 — every band edge, each disqualifier, the coverage gate and four properties over 400 generated fact sets). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0032 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 21 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 2 in review (0020 — one acceptance item outstanding; 0021), 1 Ready (0022), 6 Blocked. Status is in each ticket header |
+| Test strategy | Written; 913 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run), 46 evidence gather and run budget (0017), 22 prompt loading (0019), 10 fact vocabulary and 37 fact extraction (0020, all against a stub model and the committed model fixtures), 98 rubric (0021 — every band edge, each disqualifier, the coverage gate and four properties over 400 generated fact sets), 15 stage-2 wiring and 8 keyless-replay/contract cases (0022, all against a stub model and a stub transport). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0033 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 21 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 3 in review (0020 — one acceptance item outstanding; 0021; 0022), 1 Ready (0024), 5 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
-| Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005). `QueryPlan` is at `schema_version` 2 — `probe` is nullable (0011). `Candidate` is at `schema_version` 2 — `provenance` is a non-empty list, primary first, carrying `title`, `posted_url` and `posted_at` (0012) |
+| Stage contracts (code) | `src/contracts/` — six schemas, versioned, plus `parseOrDrop` (0005). `QueryPlan` is at `schema_version` 2 — `probe` is nullable (0011). `Candidate` is at `schema_version` 2 — `provenance` is a non-empty list, primary first, carrying `title`, `posted_url` and `posted_at` (0012). `Analysis` is at `schema_version` 2 — `status`, `status_reason` and `inputs` (0022) |
 | Config and model routing | `src/config.ts` — role-scoped LLM config, GitHub degraded mode, `.env` loading (0006) |
 | Evidence store | `src/evidence/store.ts` — content-addressed ids, truncation, typed misses (0007) |
 | Fetch layer | `src/evidence/fetch.ts` — cache, bounded retries, `fetch_failed` records, `cheerio` HTML→text, `fetchEvidence(url, type)` (0008, Done) |
@@ -456,12 +481,13 @@ fire** through `scoreCandidate` — two covered dimensions cannot reach 72 point
 | Signal shape | `src/evidence/signal.ts` — `Signal`, `UnknownSignal`, `SignalSet` and the `collector` that makes invariant 4 structural. Shared by both stage-2 adapters, re-exported from `github.ts` (0016) |
 | LLM provider seam | `src/llm/provider.ts` — `createModel(role)` behind `await import`, `callModel` through the cache, `--replay` fails loudly on a cold cache, tokens recorded per call, `PRICES` ships empty so `cost_usd` is `null` (0018, Done). **Never run against a live provider** |
 | Fact vocabulary | `src/analyse/keys.ts` — 24 enumerated keys, `FactKeyEnum`, `renderKeys()` for `{{keys}}`. No dimension, no weights, no bands (invariant 7). **Unvalidated** — written from SPEC §1–2, not measured (0020) |
+| Stage 2 wiring | `src/analyse/index.ts` — `runAnalyse`: read candidates → `gatherRun` (barrier) → `extractFacts` (bounded, three at a time) → `scoreCandidate` → `analyses/<slug>.json`, per-candidate failures as manifest rows, `replayHttp` making a replay structurally offline (0022, in review). **Never run against a live provider** |
 | Fact extraction (2b) | `src/analyse/extract.ts` — `shownItems` (the closed world), `renderEvidence`/`renderCompany`, `extractionSchema(ids)` with the citable ids as an enum, `parseFacts` (per-fact drops with reasons), one retry then `partial`, `no_evidence` without a call (0020, in review). **Never run against a live provider** |
 | Prompts | `prompts/clarify-query.v1.md`, `prompts/extract.v1.md` and `prompts/CHANGELOG.md` — written and versioned; `extract.v1` is **rendered and sent by `extract.ts`** (0020), `clarify-query.v1` is still **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
 | Fixture capture | `scripts/capture-fixtures.ts` and `scripts/fixtures.ts` — `pnpm capture-fixtures`, a secret scan that refuses rather than redacts, `--refresh` as a deliberate act, and a generated `tests/fixtures/capture.json` (0014, Done). Not wired into `pnpm test`, never in CI |
 | Fixtures | 20 recorded: 6 HN (4 hand-captured and adopted, 1 thin topic, 1 derived), 8 GitHub payloads (owner, repo, README, contributors, commit activity), 2 real company pages, 4 authored model outputs, plus the hand-written `company-site.html` (0008/0014). Two gaps recorded rather than filled: no empty-shell page and no 404 body |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
-| Stages 1–3 | **Stage 1 runs and has been audited** (TICKET-0013, four live topics): `./pipeline source` produces `candidates.jsonl`, `query_plan.json` and `manifest.json`, verified against the live API. Stages 2 and 3 still exit 70 (0022, 0026), and so does `run` (0027) |
+| Stages 1–3 | **Stage 1 runs and has been audited** (TICKET-0013, four live topics). **Stage 2 runs offline** (0022): `./pipeline analyse --run <id>` produces `analyses/<slug>.json` and the manifest's `analyse` record — but has never been run against a live provider, so no real output exists yet. Stage 3 still exits 70 (0026), and so does `run` (0027) |
 | Sample run, walkthrough video | Not started. Topic chosen (D-5): `AI agent infrastructure` |
 
 ---
@@ -581,6 +607,17 @@ Real defects, listed rather than silently patched.
    rest before any real analysis exists. Resolve at TICKET-0022, before
    TICKET-0024 needs it. Adding fields to `Analysis` then is a `schema_version`
    bump, which is cheap now and not later.
+
+   **Half closed at TICKET-0022.** `schema_version` 2 added `status`,
+   `status_reason` and `inputs` — how the analysis was produced, which is the
+   part stage 3 cannot re-derive. The four section lists, the "what would change
+   my mind" list and the Watch upgrade trigger are **still missing**, and they
+   are a design decision rather than a schema edit: all three have to be derived
+   mechanically (invariant 1 forbids the model writing them, invariant 3 forbids
+   stage 3 inventing them). The proposal on the table is sections by grouping
+   facts under the memo's headings, and the two derived lists from the rubric's
+   own next-band-up labels plus the arithmetic distance to the next threshold.
+   TICKET-0024 inherits it.
 10. **ADR-0006 names three providers; two ship.** Its sketch line reads
     `LLM_PROVIDER=openai | anthropic | ollama`, while its decision paragraph
     names `@langchain/openai` as the default adapter and `.env.example` — the
@@ -1339,6 +1376,10 @@ Real defects, listed rather than silently patched.
     a candidate and eleven were dropped reads, from the manifest, like a run
     with thin evidence. TICKET-0022 should sum them by kind into the manifest.
 
+    **Closed by TICKET-0022**, in both places: `Analysis.inputs.extraction`
+    carries the candidate's own count by kind, and the manifest's `analyse.facts`
+    carries the run-wide one.
+
 78. **`Fact.confidence` is extracted and nothing reads it.** The contract has
     carried it since TICKET-0005 and the prompt defines it carefully in terms of
     the evidence rather than the company. Whether a `low`-confidence fact should
@@ -1397,6 +1438,29 @@ Real defects, listed rather than silently patched.
     `COMMUNITY_CONTRIBUTORS` (5) and `LOOP_CONTRIBUTORS` (10) were chosen to
     make prose mechanical and measure nothing. Same class as inconsistency 59's
     list, one layer up, and unlike those these move a partner's call.
+
+83. **The `unknown_evidence_id` drop is a dead branch.** `extractionSchema`
+    makes the citable ids an enum, so an out-of-enum id fails the whole response
+    inside `createModel`'s own `schema.parse` and costs the retry —
+    `parseFacts`'s client-side check then has nothing left to catch. The two
+    routes its comment names are both closed: a provider that treats the schema
+    as advice cannot get past the adapter's re-parse, and a cached answer
+    written before the schema moved cannot be read either, because the ids are
+    part of the rendered input and therefore part of the cache key. A
+    hand-edited cache entry is the only surviving route. Found by a stub that
+    skipped the re-parse and wrote an entry no replay could read (TICKET-0022).
+    The check stays — it is cheap and it is ADR-0003's guarantee written down —
+    but it should be read as a dead branch, not as a live defence.
+
+84. **A replay with a cold HTTP cache writes new `fetch_failed` records.** The
+    refusing transport becomes evidence, which is the honest reading — *we did
+    not look* rather than *we looked and found nothing* — but it means replaying
+    a run whose `.cache/http/` has been cleared **adds** records to the run's
+    evidence directory instead of reproducing it. `.cache/http/` is not
+    committed (only `.cache/llm/` is, per ADR-0006), so a fresh clone is exactly
+    that state. TICKET-0028 has to decide whether the committed sample run
+    tolerates this, commits its HTTP cache too, or teaches stage 2 to rebuild a
+    bundle from the evidence store instead of re-fetching.
 
 ---
 
@@ -1538,7 +1602,33 @@ session should carry out of it:
    shape is absent here: `extract.v1` describes fields, and the structure comes
    from `withStructuredOutput` at the call site.
 
-**Nothing is blocking. One ticket in review, one Ready:**
+**TICKET-0022 is in review** ([worklog
+0033](./worklog/0033-stage-2-wiring.md)) — `src/analyse/index.ts`,
+`./pipeline analyse`, `Analysis` v2 and 30 tests. Every acceptance item is met
+offline. Five things a new session should carry out of it:
+
+1. **The live pass was deferred a fourth time, and this is the fourth time.**
+   Inconsistency 69 predicted it and the pattern held: every module that has
+   been run for real changed on the day it was run, twice each, and every module
+   that has not is still a guess. `./pipeline analyse` has never spent a token
+   and `MODEL_EXTRACT` is still empty. The first live run and TICKET-0020's
+   outstanding capture are now the **same action**.
+2. **`--replay` is offline by construction, not by expectation.** The transport
+   is replaced by one that refuses and the HTTP cache's age limit is suspended,
+   so the acceptance's "zero network calls, asserted" is a property of the code
+   path rather than of the test. Its price is inconsistency 84.
+3. **A replay needs no API key.** `requireLlmNames` and `replayModel` were added
+   to two Done modules for it, because the cache key holds only the provider's
+   and the model's names. Whether that was the right amount of rigour is a
+   question for the worklog's reflection.
+4. **`failed` has no natural cause.** Everything underneath returns failures as
+   data, so the only per-candidate throws left are a filesystem error and a bug.
+   The status is tested against an unwritable directory, and should be read as
+   "something we did not predict" rather than as a category with members.
+5. **One dead branch was found by running the thing** — inconsistency 83, the
+   `unknown_evidence_id` drop that the id enum already makes unreachable.
+
+**Nothing is blocking. Three tickets in review, one Ready:**
 
 - [TICKET-0020](./tickets/0020-ticket-fact-extraction.md) — **in review**
   ([worklog 0031](./worklog/0031-fact-extraction.md)). The vocabulary, the
@@ -1565,14 +1655,20 @@ session should carry out of it:
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
   does not, and `{{thesis}}` waits on 0021. `loadPrompt` is now what it will use.
 
-**[TICKET-0022](./tickets/0022-ticket-stage-2-wiring.md) is now Ready and is the
-next step**: it joins `gatherRun` → `extractFacts` → `scoreCandidate`, writes
-the `Analysis` artifact and the run manifest, and carries the live pass 0017
-deferred. Three things land on it — summing per-candidate drops into the
-manifest (inconsistency 77), the `Analysis` fields SPEC §4's memo needs and the
-contract still lacks (9), and distinguishing a candidate the model failed to
-answer about from one with nothing to find. Two things the gate hands
-forward into them:
+**[TICKET-0024](./tickets/0024-ticket-memo-template-and-render.md) is now Ready
+and is the next step**: the memo template and renderer, no LLM in the stage
+(invariant 3). **It inherits one decision that TICKET-0022 did not take** —
+`Analysis` still lacks SPEC §4's Team / Product / Market / Risks lists, the
+"what would change my mind" list and the checkable upgrade trigger every Watch
+owes (inconsistency 9). They cannot be model output and they cannot be invented
+by stage 3, so they have to be *derived* in stage 2; the proposal on the table
+is sections by grouping facts under the memo's headings, and the two derived
+lists from the rubric's own next-band-up labels plus the arithmetic distance to
+the next threshold. That is a `schema_version` bump and one new module, and it
+is the author's call before 0024 starts.
+[TICKET-0023](./tickets/0023-ticket-missing-data-path-tests.md) is unblocked
+except for 0026 and needs nothing decided. Two things the gate hands
+forward into stage 2:
 
 1. **`GET /users/<owner>` → `type: User | Organization`** separated all ten
    hobby projects from every real company in the gate's 48 (inconsistency 22).
@@ -1607,9 +1703,11 @@ The shape of the whole thing, unchanged:
    rubric, loaded from a versioned file by `src/llm/prompt.ts`. Nothing renders
    it yet.
 9. **Fact extraction and the rubric** — tickets 0020 and 0021, both **in
-   review**. The two stage-2 modules exist and neither has been wired or run.
-10. Then stage 2's wiring, stage 3, and the sample run on
-    `AI agent infrastructure`.
+   review**. Both are now wired; neither has been run against a provider.
+10. **Stage 2's wiring** — ticket 0022, **in review**. `./pipeline analyse`
+    runs offline end to end and has never made a live call.
+11. Then stage 3, and the sample run on `AI agent infrastructure` — which is
+    also where the first real stage-2 output will come from.
 
 ## Invariants a new session must not break
 

@@ -74,3 +74,4 @@ are unfinished, not delegated.
 | [0030](./0030-extraction-prompt.md) | 2026-08-22 | The extraction prompt and the prompt loader; TICKET-0019 closes |
 | [0031](./0031-fact-extraction.md) | 2026-08-22 | The 24-key fact vocabulary and stage 2b's call; TICKET-0020 to review |
 | [0032](./0032-rubric-scoring.md) | 2026-08-23 | The rubric: five dimensions, four cited disqualifiers, the call; TICKET-0021 to review |
+| [0033](./0033-stage-2-wiring.md) | 2026-08-23 | Stage 2 wired: `./pipeline analyse`, `Analysis` v2, a replay that cannot spend anything; TICKET-0022 to review |

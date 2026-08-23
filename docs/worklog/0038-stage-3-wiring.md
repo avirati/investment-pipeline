@@ -12,10 +12,10 @@ with reflection hints, ticket statuses updated.
 
 ## What landed
 
-| Commit    | Contents                                          | Tests |
-| --------- | ------------------------------------------------- | ----- |
-| `a734ce9` | `src/memo/index.ts` + `tests/memo-run.test.ts`   | +21   |
-| `81c914a` | `src/cli.ts` + `tests/cli.test.ts`                | +4    |
+| Commit    | Contents                                       | Tests |
+| --------- | ---------------------------------------------- | ----- |
+| `a734ce9` | `src/memo/index.ts` + `tests/memo-run.test.ts` | +21   |
+| `81c914a` | `src/cli.ts` + `tests/cli.test.ts`             | +4    |
 
 **1031 tests** (1006 at the start: +25), typecheck and lint clean, offline and
 with no `.env`. No token was spent, and this time that is structural rather than
@@ -48,7 +48,7 @@ hundred records pay for the two a memo needed. This is also the seam where
 and this file is now the place that decides so.
 
 **4 — An unreadable analysis costs its own memo and no others**, the same
-treatment stage 2 gives a bad line in `candidates.jsonl`. A run where *nothing*
+treatment stage 2 gives a bad line in `candidates.jsonl`. A run where _nothing_
 parses stops with `no_analyses`, which is a data gap (exit 2) rather than a bug.
 Arguable: a file in `analyses/` that is not an `Analysis` was written by stage 2
 and could be read as a broken contract, i.e. exit 3. It is not, because the
@@ -60,13 +60,13 @@ and the operator's move there is to re-run `analyse`, not to file a bug.
 `exitFor` gained stage 3's two errors and `EXIT.UNIMPLEMENTED` is now down to
 one caller (`run`, TICKET-0027):
 
-| Error                            | Exit | Means                                      |
-| -------------------------------- | ---- | ------------------------------------------ |
-| `MemoError · no_run`             | 1    | `--run` names no finished stage-2 run      |
-| `MemoError · no_analyses`        | 2    | the run is there and has nothing to render |
-| `MemoValidationError`            | 3    | a memo cites a record that does not resolve |
+| Error                     | Exit | Means                                       |
+| ------------------------- | ---- | ------------------------------------------- |
+| `MemoError · no_run`      | 1    | `--run` names no finished stage-2 run       |
+| `MemoError · no_analyses` | 2    | the run is there and has nothing to render  |
+| `MemoValidationError`     | 3    | a memo cites a record that does not resolve |
 
-The 3 is the first exit code in this repo that means *file a bug*. It carries
+The 3 is the first exit code in this repo that means _file a bug_. It carries
 its own number on the error, as TICKET-0025 left it, so the CLI branch is
 `return error.exit` rather than a second opinion about severity.
 
@@ -84,7 +84,7 @@ The acceptance items, literally:
   `MODEL_*`, `ANTHROPIC_*`, `OPENAI_*` and `GITHUB_*` variable from the
   environment and renders both goldens.
 - **The network is down** — `globalThis.fetch` is replaced by a function that
-  *throws*, not one that counts. An assertion that stage 3 made no request is
+  _throws_, not one that counts. An assertion that stage 3 made no request is
   worth having only if the path could not have made one; `replayHttp` in stage 2
   takes the same position.
 - **Snapshot** — the file stage 3 writes to disk is compared byte-for-byte with
@@ -102,7 +102,7 @@ this was written. Two things only that pass showed:
 - The summary prints a path per memo rather than the directory, because the
   thing an operator does next is open one and a terminal makes a path clickable.
 - `unchanged` earns its place in the summary. Stage 3 is the command that gets
-  re-run after a template change, and a pass reporting *fifteen unchanged memos*
+  re-run after a template change, and a pass reporting _fifteen unchanged memos_
   is the one that says the change did nothing. That is the failure this stage
   would otherwise hide.
 
@@ -123,33 +123,14 @@ input was two committed artifacts rather than the world.
 
 ## Reflection
 
-TODO(author). Hints, from what actually happened this session rather than from
-what would read well:
-
-- Decision 1 traded an operator's ability to *see* a broken memo for the
-  guarantee that a broken memo never exists on disk. That is the strictest
-  reading of ADR-0003 available. Is it the right one for a tool whose user is a
-  partner at a small firm, or is it a purity that will be annoying the first
-  time it fires for real? What would change your mind — and would a `--force`
-  or a `.rejected/` directory be a fix or a hole?
-- This is the first module in seven whose behaviour did not change on contact
-  with real output. Two readings: the inputs were committed artifacts rather
-  than the world, so there was no world to be surprised by; or the seam is
-  genuinely simpler than the six before it. Which one, and does it say anything
-  about where the remaining risk in this pipeline sits?
-- The suite grew by 25 for a module of roughly 300 lines that mostly joins two
-  finished ones. Was that proportionate, or is some of it testing `renderMemo`
-  and `validateMemo` a second time through a wider door?
-- Stage 3 is now the only command a reviewer can run end to end, and it will be
-  the first thing anybody grading this repo executes. Worth asking whether the
-  summary it prints is the thing you would want to be judged on.
+Stage 3 complete, the tool should be ready for a proper run.
 
 ## Next
 
 **TICKET-0026 is Done.** Two tickets unblock:
 
 - [TICKET-0027](../tickets/0027-ticket-run-command-and-replay.md) — `./pipeline
-  run`, which is now three function calls and one manifest, and the ticket that
+run`, which is now three function calls and one manifest, and the ticket that
   retires `EXIT.UNIMPLEMENTED`.
 - [TICKET-0023](../tickets/0023-ticket-missing-data-path-tests.md) — the
   missing-data paths, which need nothing decided and can be done in either

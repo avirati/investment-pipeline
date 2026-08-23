@@ -9,8 +9,8 @@
   "text": "repository: freestyle-sh/Adorable\nurl: https://github.com/freestyle-sh/Adorable\ndescription: Open Source Lovable\nhomepage: unknown\nowner: freestyle-sh\nowner type: Organization\nprimary language: TypeScript\nlicense: MIT\ntopics: agents, ai, code-generation\nstars: 800\nforks: 312\nwatchers: 16\nopen issues: 12\ncreated at: 2025-04-10T04:35:37Z\nlast pushed at: 2026-03-19T20:05:56Z\narchived: false\nis a fork: false",
   "meta": {
     "call": "repo",
-    "from_cache": false,
-    "attempts": 1,
+    "from_cache": true,
+    "attempts": 0,
     "projection": "github_repo.v1",
     "full_name": "freestyle-sh/Adorable",
     "text_truncated": false,

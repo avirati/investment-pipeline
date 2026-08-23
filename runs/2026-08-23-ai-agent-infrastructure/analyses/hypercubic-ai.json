@@ -1,0 +1,359 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "hypercubic-ai",
+    "name": "hypercubic.ai",
+    "url": "https://hypercubic.ai/hopper",
+    "one_liner": "Agentic interface for mainframes and COBOL",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48111143",
+        "title": "Show HN: Agentic interface for mainframes and COBOL",
+        "posted_url": "https://www.hypercubic.ai/hopper",
+        "posted_at": "2026-05-12T17:10:22.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Hypercubic describes its product Hopper as an \"agentic TN3270 terminal emulator\" that uses AI agents to navigate and operate inside mainframe z/OS environments.",
+      "value": "Agentic TN3270 terminal emulator leveraging AI agents to operate inside mainframes",
+      "evidence_ids": [
+        "57a43da0df4373ec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Hopper is designed for z/OS engineers to help them navigate ISPF, write column-strict JCL, debug failed jobs, and query VSAM datasets using AI agents in a modern development environment.",
+      "value": "z/OS engineers aid for mainframe navigation, JCL, debugging, and querying",
+      "evidence_ids": [
+        "57a43da0df4373ec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "Hypercubic claims Hopper is the first agentic development environment for mainframes, combining TN3270 terminal, datasets and jobs browsers, and an AI agent capable of operating across multiple mainframe subsystems.",
+      "value": "First agentic development environment for mainframes",
+      "evidence_ids": [
+        "6999fae9c793c7e8",
+        "57a43da0df4373ec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Hopper runs entirely on the user's laptop and connects to the mainframe over standard TN3270 and optional FTP protocols without requiring any installation on the mainframe itself.",
+      "value": "Client-side application connecting via TN3270 and FTP, no mainframe installation",
+      "evidence_ids": [
+        "57a43da0df4373ec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "Hopper depends on the existence of standard mainframe protocols TN3270 (required) and FTP (optional but recommended) to connect and operate within z/OS environments.",
+      "value": "Depends on TN3270 (required) and FTP (optional) mainframe protocols",
+      "evidence_ids": [
+        "57a43da0df4373ec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.launch_date",
+      "statement": "Hypercubic launched Hopper as of at least May 2026, publicly announcing it on Hacker News in May 2026.",
+      "value": "2026-05",
+      "evidence_ids": [
+        "6999fae9c793c7e8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.self_serve",
+      "statement": "Users can download Hopper for Windows, macOS, and Linux without needing to talk to the company first, including a free Hobby tier that requires no credit card.",
+      "value": true,
+      "evidence_ids": [
+        "57a43da0df4373ec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "Hypercubic offers a free Hobby pricing tier for Hopper with no credit card required, and an Enterprise tier with custom pricing and additional features.",
+      "value": "Free Hobby tier; Enterprise custom pricing",
+      "evidence_ids": [
+        "57a43da0df4373ec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.sales_gate",
+      "statement": "To access enterprise features such as SAML SSO, on-premises deployment, or SOC 2 compliance reports, customers must contact sales for custom plans.",
+      "value": true,
+      "evidence_ids": [
+        "57a43da0df4373ec"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "Hypercubic is co-founded by Aayush Naik and Sai Gurrapu, as stated on the company website.",
+      "value": "Co-founder Aayush Naik",
+      "evidence_ids": [
+        "03cd1dadb6fe7937"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "Sai Gurrapu is a co-founder of Hypercubic, according to the company website.",
+      "value": "Co-founder Sai Gurrapu",
+      "evidence_ids": [
+        "03cd1dadb6fe7937"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "03cd1dadb6fe7937"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 15,
+      "max": 20,
+      "band": "11–15",
+      "evidence_ids": [
+        "57a43da0df4373ec",
+        "6999fae9c793c7e8"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 6,
+      "max": 25,
+      "band": "uncovered · floor of 6–12",
+      "evidence_ids": [],
+      "covered": false
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "57a43da0df4373ec",
+        "6999fae9c793c7e8"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 12,
+      "max": 15,
+      "band": "9–12",
+      "evidence_ids": [
+        "57a43da0df4373ec"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 60,
+  "coverage": 0.8,
+  "disqualifiers": [
+    {
+      "id": "D-1",
+      "statement": "The team is named and nothing any of them is stated to have built appears in the evidence, and the company has no public repository.",
+      "evidence_ids": [
+        "03cd1dadb6fe7937"
+      ]
+    }
+  ],
+  "call": "PASS",
+  "unknowns": [
+    "D3 Evidence of pull: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12"
+  ],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Pass — disqualifier D-1 fired, and a cited disqualifier forces a pass whatever the score (60/100, 80% coverage).",
+      "evidence_ids": [
+        "03cd1dadb6fe7937"
+      ]
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D1 Founder–market fit & technical depth at 12/25 (band 6–12).",
+      "evidence_ids": [
+        "03cd1dadb6fe7937"
+      ]
+    },
+    {
+      "kind": "summary",
+      "text": "1 of 5 dimensions had no primary source behind them; they are listed under what we could not verify.",
+      "evidence_ids": []
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Hypercubic is co-founded by Aayush Naik and Sai Gurrapu, as stated on the company website.",
+          "evidence_ids": [
+            "03cd1dadb6fe7937"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Sai Gurrapu is a co-founder of Hypercubic, according to the company website.",
+          "evidence_ids": [
+            "03cd1dadb6fe7937"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Hypercubic describes its product Hopper as an \"agentic TN3270 terminal emulator\" that uses AI agents to navigate and operate inside mainframe z/OS environments.",
+          "evidence_ids": [
+            "57a43da0df4373ec"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Hopper is designed for z/OS engineers to help them navigate ISPF, write column-strict JCL, debug failed jobs, and query VSAM datasets using AI agents in a modern development environment.",
+          "evidence_ids": [
+            "57a43da0df4373ec"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Hypercubic claims Hopper is the first agentic development environment for mainframes, combining TN3270 terminal, datasets and jobs browsers, and an AI agent capable of operating across multiple mainframe subsystems.",
+          "evidence_ids": [
+            "6999fae9c793c7e8",
+            "57a43da0df4373ec"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Hopper runs entirely on the user's laptop and connects to the mainframe over standard TN3270 and optional FTP protocols without requiring any installation on the mainframe itself.",
+          "evidence_ids": [
+            "57a43da0df4373ec"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Users can download Hopper for Windows, macOS, and Linux without needing to talk to the company first, including a free Hobby tier that requires no credit card.",
+          "evidence_ids": [
+            "57a43da0df4373ec"
+          ]
+        }
+      ],
+      "omitted": 2
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Hopper depends on the existence of standard mainframe protocols TN3270 (required) and FTP (optional but recommended) to connect and operate within z/OS environments.",
+          "evidence_ids": [
+            "57a43da0df4373ec"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Hypercubic launched Hopper as of at least May 2026, publicly announcing it on Hacker News in May 2026.",
+          "evidence_ids": [
+            "6999fae9c793c7e8"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Risks",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Disqualifier D-1 — The team is named and nothing any of them is stated to have built appears in the evidence, and the company has no public repository.",
+          "evidence_ids": [
+            "03cd1dadb6fe7937"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "Disqualifier D-1: find a stated prior role for somebody they name, something one of them is stated to have built, or a public repository. It would then no longer hold, and the call would no longer be forced to Pass.",
+      "evidence_ids": [
+        "03cd1dadb6fe7937"
+      ]
+    },
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find a prior employer, role or period stated for somebody the company names. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a named customer, design partner or user, stated to be using it for that job. That moves it from 11–15 to 16–20 (+5).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": null,
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 4,
+    "evidence_usable": 4,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 11,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

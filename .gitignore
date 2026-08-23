@@ -11,9 +11,10 @@ dist/
 .env.local
 
 # Caches: raw HTTP bodies are bulky and re-fetchable, so they stay local.
-# Normalised evidence records (runs/*/evidence/*.json) and the LLM response
-# cache (.cache/llm/) ARE committed — they are what makes a run replayable
-# and claims spot-checkable without re-running. See docs/ARCHITECTURE.md.
+# Normalised evidence records (runs/*/evidence/*.json), the gathered bundles
+# (runs/*/bundles/*.json) and the LLM response cache (.cache/llm/) ARE
+# committed — together they are what makes a run replayable and claims
+# spot-checkable without re-running. See docs/ARCHITECTURE.md and ADR-0009.
 .cache/http/
 
 # os

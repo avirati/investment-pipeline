@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 
 REQUIRED_NODE_MAJOR=22
 
-step() { printf '\n[%s/5] %s\n' "$1" "$2"; }
+step() { printf '\n[%s/6] %s\n' "$1" "$2"; }
 info() { printf '      %s\n' "$1"; }
 fail() { printf '\nsetup.sh: %s\n' "$1" >&2; exit 1; }
 
@@ -61,13 +61,19 @@ pnpm typecheck
 info "typecheck clean"
 
 # --- 6. offline self-verification -------------------------------------------
-# TODO(0028): ARCHITECTURE §7.1 step 6 re-renders the committed sample run —
-# `./pipeline memo --run <committed_sample>` — to prove the toolchain works with
-# no network and no API key. The command itself works as of TICKET-0026; what is
-# missing is a run to point it at. TICKET-0028 commits one, adds this step, and
-# is what closes the SCOPE #11 promise.
+# ARCHITECTURE §7.1 step 6. Re-renders the committed sample run from the
+# artifacts in the repo: no network, no API key, no model call. It is the last
+# step because it is the only one that exercises the pipeline rather than the
+# toolchain — if this passes on a fresh clone, SCOPE #11's promise holds.
+SAMPLE_RUN='2026-08-23-ai-agent-infrastructure'
+step 6 "Offline self-verification (./pipeline memo --run ${SAMPLE_RUN})"
+if [ ! -d "runs/${SAMPLE_RUN}" ]; then
+  fail "runs/${SAMPLE_RUN} is missing — the committed sample run should be in this clone."
+fi
+./pipeline memo --run "${SAMPLE_RUN}" >/dev/null || fail "the committed sample run did not re-render."
+info "12 memos re-rendered from committed artifacts — no network, no key"
+
 printf '\nSetup complete. Next:\n'
 printf "  ./pipeline --help\n"
 printf "  pnpm test          # offline, no API key needed\n"
-printf '\nNote: the offline self-verification step (ARCHITECTURE §7.1 step 6) is not\n'
-printf 'wired up yet — it arrives with the committed sample run (TICKET-0028).\n'
+printf "  open memos/${SAMPLE_RUN}/     # the committed sample run\n"

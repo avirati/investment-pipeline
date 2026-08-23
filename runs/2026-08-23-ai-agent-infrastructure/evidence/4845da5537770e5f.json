@@ -9,8 +9,8 @@
   "text": "account: freestyle-sh\ntype: Organization\nname: freestyle.sh\nbio: Freestyle is a cloud platform for managing AI code. We are the best play to run, deploy, and store code your AI writes.\ncompany: unknown\nlocation: unknown\nwebsite: https://www.freestyle.sh\npublic repositories: 47\nfollowers: 94\naccount created at: 2024-04-15T21:42:19Z",
   "meta": {
     "call": "owner",
-    "from_cache": false,
-    "attempts": 1,
+    "from_cache": true,
+    "attempts": 0,
     "projection": "github_user.v1",
     "login": "freestyle-sh",
     "account_type": "Organization",

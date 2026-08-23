@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "4b23444ac2b8ba6b",
+  "url": "https://bitboard.work/pricing",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:29:59.482Z",
+  "status": 200,
+  "title": "Pricing — BitBoard",
+  "text": "Flat-rate plans with no usage billing. Free for individuals, $49 per seat for teams, and custom plans for enterprises.\n\nPricing\nChoose the plan that fits you or your team. Not sure which?\nTalk to us.\nIndividual\nFree\nFor individuals building on their own.\nUnlimited access to BitBoard\nAsk included with daily usage limits\nFree hosting\nNo credit card required\nTry for free\nTeams\n$49 per seat / month\nFor teams collaborating in a shared workspace.\nEverything in Individual\nGenerous monthly Ask usage\nShared team workspace\nCentralized billing\nContact us\nEnterprise\nCustom\nFor organizations that need security, control, and support.\nEverything in Teams\nCustom Ask usage limits\nCentralized admin controls\nAdvanced security features\nPriority support\nContact us\nQuestions\nMore questions?\nTalk to us →\nWhich plan is right for me?\nIndividual is for working on your own. Teams adds a shared workspace, higher Ask limits, and centralized billing. Enterprise adds custom usage limits, administration, security, and support.\nWhat are my payment options?\nPlans support all major credit and debit cards.\nWill I be charged for usage?\nWe do not currently bill for usage. All plans are a flat rate to keep your bills predictable.",
+  "meta": {
+    "og_title": "Pricing — BitBoard",
+    "og_description": "Flat-rate plans with no usage billing. Free for individuals, $49 per seat for teams, and custom plans for enterprises.",
+    "og_site_name": "BitBoard",
+    "og_type": "website",
+    "description": "Flat-rate plans with no usage billing. Free for individuals, $49 per seat for teams, and custom plans for enterprises.",
+    "canonical": "https://bitboard.work/pricing/",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "pricing",
+    "empty_shell": false,
+    "text_chars": 1210,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 1210
+  }
+}

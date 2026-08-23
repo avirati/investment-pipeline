@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "freestyle",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "freestyle",
+    "name": "Freestyle",
+    "url": "https://freestyle.sh",
+    "one_liner": "Sandboxes for Coding Agents",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "47663147",
+        "title": "Launch HN: Freestyle – Sandboxes for Coding Agents",
+        "posted_url": "https://www.freestyle.sh/",
+        "posted_at": "2026-04-06T16:32:11.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://freestyle.sh",
+      "from": "candidate_url"
+    },
+    "github": {
+      "ref": {
+        "owner": "freestyle-sh",
+        "repo": "adorable",
+        "from": "github.com"
+      },
+      "from": "site_link"
+    }
+  },
+  "evidence_ids": [
+    "ed4f7345ba83d9b7",
+    "e945f7b05e79ab56",
+    "92baf667d8ebcbd1",
+    "67838102087e4058",
+    "bc96df27d722a38e",
+    "4845da5537770e5f"
+  ],
+  "signals": [
+    {
+      "key": "site.url",
+      "value": "https://www.freestyle.sh/",
+      "as_of": "2026-08-22T10:19:39.822Z",
+      "evidence_id": "e945f7b05e79ab56"
+    },
+    {
+      "key": "site.title",
+      "value": "Freestyle - VMs and Git for AI Agents",
+      "as_of": "2026-08-22T10:19:39.822Z",
+      "evidence_id": "e945f7b05e79ab56"
+    },
+    {
+      "key": "site.description",
+      "value": "Give your agents real VMs and Git-backed filesystems. Freestyle provides powerful Linux VMs and Git repos for code you didn't write.",
+      "as_of": "2026-08-22T10:19:39.822Z",
+      "evidence_id": "e945f7b05e79ab56"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-22T10:19:39.822Z",
+      "evidence_id": "e945f7b05e79ab56"
+    },
+    {
+      "key": "site.pricing_url",
+      "value": "https://www.freestyle.sh/pricing",
+      "as_of": "2026-08-22T10:19:39.822Z",
+      "evidence_id": "e945f7b05e79ab56"
+    },
+    {
+      "key": "site.docs_url",
+      "value": "https://www.freestyle.sh/docs",
+      "as_of": "2026-08-22T10:19:39.822Z",
+      "evidence_id": "e945f7b05e79ab56"
+    },
+    {
+      "key": "site.repo_url",
+      "value": "https://github.com/freestyle-sh/adorable",
+      "as_of": "2026-08-22T10:19:39.822Z",
+      "evidence_id": "e945f7b05e79ab56"
+    },
+    {
+      "key": "github.repo",
+      "value": "freestyle-sh/Adorable",
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.stars",
+      "value": 800,
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.forks",
+      "value": 312,
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.watchers",
+      "value": 16,
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.open_issues",
+      "value": 12,
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.created_at",
+      "value": "2025-04-10T04:35:37Z",
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.age_days",
+      "value": 499,
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e",
+      "derived_from": "created_at → retrieval"
+    },
+    {
+      "key": "github.pushed_at",
+      "value": "2026-03-19T20:05:56Z",
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.days_since_push",
+      "value": 156,
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e",
+      "derived_from": "pushed_at → retrieval"
+    },
+    {
+      "key": "github.stars_per_day_lifetime",
+      "value": 1.6,
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e",
+      "derived_from": "stars ÷ age_days — a lifetime average, not a current rate"
+    },
+    {
+      "key": "github.license",
+      "value": "MIT",
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.topics",
+      "value": "agents, ai, code-generation",
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.language",
+      "value": "TypeScript",
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.archived",
+      "value": false,
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.is_fork",
+      "value": false,
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.owner",
+      "value": "freestyle-sh",
+      "as_of": "2026-08-23T04:06:48.381Z",
+      "evidence_id": "bc96df27d722a38e"
+    },
+    {
+      "key": "github.owner_type",
+      "value": "Organization",
+      "as_of": "2026-08-23T04:06:48.909Z",
+      "evidence_id": "4845da5537770e5f"
+    },
+    {
+      "key": "github.owner_name",
+      "value": "freestyle.sh",
+      "as_of": "2026-08-23T04:06:48.909Z",
+      "evidence_id": "4845da5537770e5f"
+    },
+    {
+      "key": "github.owner_public_repos",
+      "value": 47,
+      "as_of": "2026-08-23T04:06:48.909Z",
+      "evidence_id": "4845da5537770e5f"
+    },
+    {
+      "key": "github.owner_followers",
+      "value": 94,
+      "as_of": "2026-08-23T04:06:48.909Z",
+      "evidence_id": "4845da5537770e5f"
+    },
+    {
+      "key": "github.owner_created_at",
+      "value": "2024-04-15T21:42:19Z",
+      "as_of": "2026-08-23T04:06:48.909Z",
+      "evidence_id": "4845da5537770e5f"
+    },
+    {
+      "key": "github.owner_age_days",
+      "value": 859,
+      "as_of": "2026-08-23T04:06:48.909Z",
+      "evidence_id": "4845da5537770e5f",
+      "derived_from": "account created_at → retrieval"
+    },
+    {
+      "key": "github.owner_site",
+      "value": "https://www.freestyle.sh/",
+      "as_of": "2026-08-23T04:06:48.909Z",
+      "evidence_id": "4845da5537770e5f",
+      "derived_from": "the account's own `blog` field — the repository's `homepage` is the stronger route"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "site.team_url",
+      "reason": "the home page links to no team page"
+    },
+    {
+      "key": "site.signup_url",
+      "reason": "the home page links to no signup page"
+    },
+    {
+      "key": "site.contact_url",
+      "reason": "the home page links to no contact page"
+    },
+    {
+      "key": "site.team_page",
+      "reason": "no team page was linked or fetched"
+    },
+    {
+      "key": "site.people_named",
+      "reason": "no person was named with a role beside them on any page read"
+    },
+    {
+      "key": "github.readme",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.contributors",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.commit_activity",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.homepage",
+      "reason": "the repository declares no homepage — the repo ↔ site join has to come from elsewhere"
+    },
+    {
+      "key": "github.owner_company",
+      "reason": "the account names no company"
+    },
+    {
+      "key": "github.owner_location",
+      "reason": "the account gives no location"
+    }
+  ],
+  "people": [],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "hoplite",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "hoplite",
+    "name": "Hoplite",
+    "url": "https://hoplite.sh",
+    "one_liner": "Effortlessly deploy cloud coding agents",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "49157997",
+        "title": "Launch HN: Hoplite (YC S26) – Effortlessly deploy cloud coding agents",
+        "posted_url": "https://hoplite.sh",
+        "posted_at": "2026-08-03T16:32:06.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://hoplite.sh",
+      "from": "candidate_url"
+    },
+    "github": null
+  },
+  "evidence_ids": [
+    "7e282a5d0403fd7b",
+    "70aa9c6ceeff88d6",
+    "271d289a102b6b87",
+    "d95e657309709819"
+  ],
+  "signals": [
+    {
+      "key": "site.url",
+      "value": "https://hoplite.sh/",
+      "as_of": "2026-08-22T10:19:48.900Z",
+      "evidence_id": "70aa9c6ceeff88d6"
+    },
+    {
+      "key": "site.title",
+      "value": "Hoplite",
+      "as_of": "2026-08-22T10:19:48.900Z",
+      "evidence_id": "70aa9c6ceeff88d6"
+    },
+    {
+      "key": "site.description",
+      "value": "Effortless cloud coding agents that feel good to use.",
+      "as_of": "2026-08-22T10:19:48.900Z",
+      "evidence_id": "70aa9c6ceeff88d6"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-22T10:19:48.900Z",
+      "evidence_id": "70aa9c6ceeff88d6"
+    },
+    {
+      "key": "site.pricing_url",
+      "value": "https://hoplite.sh/pricing",
+      "as_of": "2026-08-22T10:19:48.900Z",
+      "evidence_id": "70aa9c6ceeff88d6"
+    },
+    {
+      "key": "site.docs_url",
+      "value": "https://hoplite.sh/docs",
+      "as_of": "2026-08-22T10:19:48.900Z",
+      "evidence_id": "70aa9c6ceeff88d6"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "site.team_url",
+      "reason": "the home page links to no team page"
+    },
+    {
+      "key": "site.signup_url",
+      "reason": "the home page links to no signup page"
+    },
+    {
+      "key": "site.contact_url",
+      "reason": "the home page links to no contact page"
+    },
+    {
+      "key": "site.repo_url",
+      "reason": "the home page links to no repo page"
+    },
+    {
+      "key": "site.team_page",
+      "reason": "no team page was linked or fetched"
+    },
+    {
+      "key": "site.people_named",
+      "reason": "no person was named with a role beside them on any page read"
+    },
+    {
+      "key": "github",
+      "reason": "candidate url is not a GitHub account and the site links to no code host"
+    }
+  ],
+  "people": [],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

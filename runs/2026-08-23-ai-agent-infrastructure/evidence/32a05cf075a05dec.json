@@ -9,8 +9,8 @@
   "text": "repository: Infisical/agent-vault\nurl: https://github.com/Infisical/agent-vault\ndescription: A HTTP credential proxy and vault for AI agents like Claude Code, OpenClaw, Hermes, custom agents + harnesses, and more.\nhomepage: https://docs.agent-vault.dev\nowner: Infisical\nowner type: Organization\nprimary language: Go\nlicense: unknown\ntopics: agents, ai-agents, secrets-management\nstars: 2121\nforks: 136\nwatchers: 2\nopen issues: 70\ncreated at: 2026-03-27T21:47:17Z\nlast pushed at: 2026-08-23T01:53:21Z\narchived: false\nis a fork: false",
   "meta": {
     "call": "repo",
-    "from_cache": false,
-    "attempts": 1,
+    "from_cache": true,
+    "attempts": 0,
     "projection": "github_repo.v1",
     "full_name": "Infisical/agent-vault",
     "text_truncated": false,

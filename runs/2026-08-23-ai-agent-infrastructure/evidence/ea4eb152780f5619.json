@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "ea4eb152780f5619",
+  "url": "https://tester.army/about",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:29:55.584Z",
+  "status": 200,
+  "title": "TesterArmy: About us",
+  "text": "TesterArmy is built by Szymon Rybczak and Oskar Kwaśniewski. Our mission: AI-powered QA testing that lets teams ship faster and break nothing.\n\nabout\nThe team behind TesterArmy\nWe’re two engineers who got tired of QA being the slowest part of shipping. So we built an army of AI testers that never sleeps.\nOur mission\nEvery team wants to ship fast. Nobody wants to break production. Traditional QA forces you to pick one: manual testing is slow, and test scripts rot the moment your UI changes.\nTesterArmy replaces brittle scripts with AI agents that test your web and mobile apps the way real users do - clicking, typing, and verifying flows in plain language. Our mission is simple: make world-class QA available to every team, so you can ship faster and break nothing.\nBacked byCombinator\nSzymon Rybczak\nCo-founder & CEO\nReact Native contributor and conference speaker. Szymon has spent years in the open-source ecosystem building developer tools used by thousands of teams.\nGitHubLinkedIn\nOskar Kwaśniewski\nCo-founder & CTO\nReact Native core contributor with 100+ merged PRs. Creator of React Native visionOS, Bottom Tabs, and Liquid Glass. Focused on bridging JavaScript with native platforms.\nGitHubLinkedIn\nChat with us\nBOOK A CALL",
+  "meta": {
+    "og_title": "TesterArmy: About us",
+    "og_description": "TesterArmy is built by Szymon Rybczak and Oskar Kwaśniewski. Our mission: AI-powered QA testing that lets teams ship faster and break nothing.",
+    "og_site_name": "TesterArmy",
+    "og_type": "website",
+    "description": "TesterArmy is built by Szymon Rybczak and Oskar Kwaśniewski. Our mission: AI-powered QA testing that lets teams ship faster and break nothing.",
+    "canonical": "https://tester.army/about",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "team",
+    "empty_shell": false,
+    "text_chars": 1238,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 1238
+  }
+}

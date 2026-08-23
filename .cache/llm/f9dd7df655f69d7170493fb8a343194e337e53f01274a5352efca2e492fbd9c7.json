@@ -1,0 +1,157 @@
+{
+  "schema_version": 2,
+  "key": "f9dd7df655f69d7170493fb8a343194e337e53f01274a5352efca2e492fbd9c7",
+  "call": {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "prompt_id": "extract",
+    "prompt_version": "1",
+    "schema_version": "2"
+  },
+  "input": "You are reading a small set of documents about one company and writing down what\nthey say about it.\n\nEverything you produce is a **fact**: one observation, in one sentence, attached\nto the record it came from. You are not assessing the company. Something else\ndoes that, from your facts, against criteria you have not been shown and should\nnot try to guess. A fact that says *\"strong technical team\"* is unusable to it. A\nfact that says *\"the two founders were on the Kubernetes networking team at\nGoogle until March 2025\"*, citing the page that says so, is the whole job.\n\n## The company\n\nname: Kampala\nurl: https://zatanna.ai\none_liner: Reverse-Engineer Apps into APIs\nfound_via: hn — Launch HN: Kampala (YC W26) – Reverse-Engineer Apps into APIs (posted 2026-04-16T15:19:54.000Z)\n\n## The evidence\n\nEvery record below has an `id`, the url it came from, what kind of page it is,\nand the date **we retrieved it**. The text is what we fetched, and it may be\ntruncated mid-sentence. These records are the only sources that exist for this\ntask.\n\n--- BEGIN RECORD 10a1dfcf5cbe933f ---\nid: 10a1dfcf5cbe933f\nurl: https://news.ycombinator.com/item?id=47794514\ntype: hn_item\ntitle: Launch HN: Kampala (YC W26) – Reverse-Engineer Apps into APIs | Hacker News\nretrieved_at: 2026-08-23T06:29:54.530Z\n\nHacker Newsnew | past | comments | ask | show | jobs | submit\nlogin\nLaunch HN: Kampala (YC W26) – Reverse-Engineer Apps into APIs (zatanna.ai)\n100 points by alexblackwell_ 4 months ago | hide | past | favorite | 84 comments\nHey! I am Alex and together with my co-founder Tarun built Kampala (https://www.zatanna.ai/kampala). It’s a man-in-the-middle (MITM) style proxy that allows you to agentically reverse engineer existing workflows without brittle browser automation or computer use agents. It works for websites, mobile apps, desktop apps.\nDemo: https://www.youtube.com/watch?v=z_PeostC-b4.\nMany people spend hours per day in legacy dashboards and on-prem solutions reconciling data across platforms. Current attempts at automation use browser automations or computer use agents which are brittle, slow, and nondeterministic.\nI come from a web reverse engineering background and spent the last 7-8 years building integrations by hand for sneaker/ticket releases, sportsbooks logins, and everything in\\ between. During that time I consulted for several companies and brought them off of browser based infrastructure into the requests layer.\nWhen we started Zatanna (that’s our company name) we worked in dental tech, which meant we had to deal with tons of insurance payer dashboards and legacy dental-practice solutions. Our superpower (as a fairly undifferentiated voice agent/front desk assistant company) was that we could integrate with nearly any system requested. During this time we built extensive tooling (including what we’re now calling Kampala) to allow us to spin up these integrations quickly.\nExisting MITM proxies and tooling didn’t work for a few reasons: (1) They manipulated the TLS and HTTP2 fingerprint over the wire which was detected by strict anti-bots. (2) They had bad MCPs which did not adequately expose necessary features like scripts/replay. (3) They did not allow for building workflows or actions given a sample or sequence of requests.\nAs the tools we built got more powerful, we began to use them internally to scrape conference attendees, connect to external PMS systems, and interact with slack apps. I even sent it to my property manager mom, who (with a lot of help from me lol), automated 2-3 hours of billing information entry in Yardi. At that point we realized that this wasn’t really about dentistry :)\nBecause Kampala is a MITM, it is able to leverage existing session tokens/anti-bot cookies and automate things deterministically in seconds. You can either use our agent harness that directly creates scripts/apis by prompting you with what actions to make, or our MCP by manually doing a workflow once, and asking your preferred coding agent to use Kampala to make a script/API to replicate it. Once you have an API/script, you can export, run, or even have us host it for you.\nWe think the future of automation does not consist of sending screenshots of webpages to LLMs, but instead using the layer below that computers actually understand. Excited to hear your thoughts/questions/feedback!\nksri 4 months ago | next [–]\nRelated. We have several third party web apps in use. These apps don't expose a public api, but they are all single page web apps. We wanted to connect claude code to these web apps for our limited use case.\nWe opened chrome, navigated the entire website, the downloaded the network tab as an har file. The asked claude to analyze and document the apis as an openapi json. Worked amazing.\nNext step - we wrote a small python script. On one side, this script implements stdio mcp. On the other side, it calls the Internal apis exposed by the 3rd party app. Only thing missing is the auth headers..\nThis is the best part. When claude connects to the mcp, the mcp launches a playwright controlled browser and opens the target web apication. It detects if the user is logged in. Then it extracts the auth credentials using playwright, saves them to a local cache file and closes the browser. Then it accesses the apis directly - no browser needed thereafter.\nIn about an hour worth of tokens with claude, we get a mcp server that works locally with each users credentials in a fairly reliable manner. We have been able to get this working in otherwise locked down corporate environments.\nalexblackwell_ 4 months ago | parent | next [–]\nSuper cool. I think this is where most automation is heading . Would be curious if you could one-shot the auth flow using Kampala and completely ditch the browser. Also FWIW you can import HAR into Kampala and we have a few nice tools (like being able to a/b test payloads/replay requests) that meaningfully reduce integration time.\njackjayd 4 months ago | parent | prev | next [–]\n5 years ago I used a similar approach for one of GCPs internal APIs (I think they've since released a public API that covers the use case I had). Was a bit of a pain to do manually, so it's cool to see how trivial this has become for models now.\nnamanyayg 4 months ago | parent | prev | next [–]\nSmart! That's what I do as well for customers when they ask me to build a vibe coding layer on top of their SaaS platform.\nTakes very little time and tokens and I get to plug into their platform in seconds.\nIMTDb 4 months ago | prev | next [–]\nCongratulations.\nHow do you handle SSL pinning ? Most of the apps I interact with have some sort of SSL pinning, which is the hard part to circumvent. I tried Kampala but got stuck at the usual place; as soon as I enable it, chatGPT stops working. Most of my iPhone apps stop responding etc.\nI would love to try using this tool to build an agent that can simply subscribe me to my gym lessons instead of me having to go on the horrible app. But even that relatively simple (iOS) app stopped working as soon as I enabled the proxy.\nalexblackwell_ 4 months ago | parent | next [–]\nUnfortunately we can’t do much around SSL pinning yet. Not sure how deep you want to go, but there are several Frida scripts that patch common pinning implementations.\nI also think mitmproxy (open source) has an option to spin up a virtual Android device that can bypass pinning via AVD. I have not tested how reliable it is though.\nFWIW, it could also be a cert trust issue. I would try a quick Safari search to confirm the cert is fully trusted. ChatGPT is pinned, but the gym app makes me think it might be a trust or config issue on your device.\nHappy to take a look as well. Email me at alex at zatanna dot ai.\ntelecuda 4 months ago | prev | next [–]\nCongrats. You may want to consider dropping the \"reverse engineer\" language though, since most every application's ToS is clear on that being prohibited. Perhaps just \"replay any application\" or similar.\nalexblackwell_ 4 months ago | parent | next [–]\nYeah agreed this messaging is a bit confusing. Our focus is on helping people build automations, not do any mass-scale scraping.\navaer 4 months ago | root | parent | next [–]\nAutomations are also often prohibited by TOS.\naleksiy123 4 months ago | prev | next [–]\nPrety cool, are you able to output a openapi or similar spec?\nI tried my hand at this once from har file, build a DAG of the requests and responses and how their parameters map into each other, and then try to build a spec.\nBut it was very brittle. I imagine now with LLMs its much more viable. I always thought generating clients and load tests would be a cool use case.\nalexblackwell_ 4 months ago | parent | next [–]\nYou can prompt the mcp to do this. Honestly considering adding this as a skill in the agent chat. Internally we do this all of the time for our white glove integrations.\nmadradavid 4 months ago | prev | next [–]\nCongratulations on the launch.\nTotally unrelated, I am just curious about why you chose the name, as someone who is Ugandan and was born in raised in Kampala (which is the Capital City of Uganda BTW).\nCongratulations again.\nalexblackwell_ 4 months ago | parent | next [–]\nIt was the (generated) name of the Conductor workspace when I started the project. We were going to renam\n… [truncated]\n--- END RECORD 10a1dfcf5cbe933f ---\n\n--- BEGIN RECORD 57e56375ca5acaaa ---\nid: 57e56375ca5acaaa\nurl: https://zatanna.ai\ntype: company_site\ntitle: Zatanna — Turn software workflows into reliable APIs for AI agents |\nretrieved_at: 2026-08-23T06:29:55.603Z\n\nZatanna maps human-only software workflows and exposes them as reliable APIs your AI agents and internal tools can call in production. No browser automation scripts to maintain.\n\nUIs are for humans, not agents\nAPIs for\nany EHR\nAny portal becomes a fast, stable API your agents call in production — even the ones with no public API. No browser bots to babysit.\n4,829,385,502Modeled total requests processed since March 1, 2026, based on an average of 1.22 million requests per hourtotal requests processed\nBook a 15-min demoSee how it works→\nYBacked by Y Combinator\nTrusted by some of the fastest-growing startups in healthcare, logistics, hospitality, and more\nWhat we do\nThe real API was always there. We just expose it.\nCapture the real API\nWe observe the actual network traffic behind your portal workflows and reconstruct the exact request flow — auth, sessions, sequencing, everything.\nOne stable endpoint\nYour agents call a single, clean API. We manage auth, retries, anti-bot detection, and session handling underneath.\nMilliseconds, not seconds\nDirect API calls instead of browser automation. No UI dependencies, no fragile selectors, no headless Chrome overhead.\nHow we do it\nFrom one recorded workflow to a production API\n01\nRecord\nWalk through the workflow once\nWe capture every underlying network request — login flows, API calls, session tokens, and sequencing — while a human completes the task.\n02\nGenerate\nReconstruct the optimal request flow\nWe model the real calls, auth behavior, retry logic, and edge cases. No UI layer involved.\n03\nIntegrate\nCall one stable endpoint\nYour agents call a clean, parameterized API. We own the auth, retries, and maintenance below the surface.\nReliability layer\nSelf-maintaining by design\nSessions expire. Portals update. Auth flows change. Zatanna detects when tools break and repairs them automatically — so you integrate once and treat workflows like stable infrastructure.\nStateful auth & session management\nRequest sequencing & replay\nAutomatic retry & re-authentication\nAnti-bot & TLS fingerprint hardening\nPortal change detection & auto-repair\nUse cases\nWorks with any portal that has a login\nIf a human can reach it through a browser login, your agents can reach it through one API call.\nBack-office & ops portals\nERP systems, freight carrier portals, insurance platforms, and internal tools with no public API\nDocument & form workflows\nClaim submissions, permit applications, record lookups, and structured data entry at scale\nAI agent actions\nAgents that need to do real work in third-party software, not just read it\nBring one blocked workflow. We'll turn it into a production API.\nBook a workflow review\n30-minute working session\nFAQ\nCommon questions\nHow is this different from browser automation or computer use?+\nBrowser automation renders full pages and clicks through UIs — it breaks when anything changes, is slow, and fails at scale. Zatanna works at the network layer. We reverse-engineer the underlying API calls behind any portal and deploy them as direct endpoints. That means milliseconds instead of seconds, structured data instead of scraped HTML, and integrations that don't break when a button moves.\nWhat does Zatanna do?+\nZatanna reverse-engineers the network traffic behind any web portal and turns it into a stable, callable API. Walk through a workflow once — we capture the underlying request behavior and deploy it as an endpoint your agents can call in production.\nCan Zatanna handle MFA and login flows?+\nYes. We handle stateful auth, MFA, cookie management, and session refresh automatically. Your agents call the API endpoint — we manage everything below the authentication layer.\nWhat if the portal changes?+\nWe work at the API layer, so frontend changes like UI redesigns or layout updates rarely affect your integrations. When backend behavior does change, our observability layer detects it and we repair the integration automatically.\nHow long does it take to get started?+\nBook a 30-minute workflow review. We walk the workflow once, reconstruct the request flow, and deploy an endpoint. Most integrations are live within days.\n--- END RECORD 57e56375ca5acaaa ---\n\n## What to look for\n\nEach observation you record is filed under a `key` from this list. The list is\nwhat the reader downstream knows how to read; a key outside it goes nowhere.\n\n- `founder.name_role` — A person named on the company's own pages, with the role it gives them.\n- `founder.prior_role` — A prior employer, role or period a named person is stated to have held.\n- `founder.prior_exit` — A company a named person is stated to have founded, sold, or left after building.\n- `founder.prior_artifact` — Something a named person is stated to have built or shipped before this — a project, library, paper or talk.\n- `team.size_visible` — How many people the source names or states, and where it names them.\n- `org.github_account_type` — Whether the GitHub owner is an organisation or a personal account, as the payload states it.\n- `product.one_liner` — How the company describes what the product does, in its own words.\n- `product.job` — The specific task, and the person doing it, that the source says the product is for.\n- `product.category_claim` — The category, platform or scope the company claims for itself — its own framing, quoted or closely paraphrased.\n- `product.capability_dependency` — A technology, model or cost change the source says the product depends on, and when the source says it arrived.\n- `product.launch_date` — A date the source gives for the company, the product, or a first release.\n- `product.open_source` — A licence or public repository the source states for the product itself.\n- `product.runtime_position` — Where the source says the product sits — agent, sidecar, proxy, kernel module, build step, hosted service.\n- `product.data_accumulated` — Data the source says the product collects, stores or builds up as it is used.\n- `adoption.self_serve` — A stated way to start using it without speaking to anyone — sign-up, free tier, download, install command.\n- `adoption.pricing_public` — Whether prices are published, and what the page states them to be.\n- `adoption.sales_gate` — A stated requirement to contact sales, book a demo, or request access before using it.\n- `traction.github_stars` — A star count, with the date the record carries for it.\n- `traction.repo_activity` — Commit, release or issue activity, with whatever dates the record gives.\n- `traction.contributors` — How many people have contributed, as the payload states it.\n- `traction.named_user` — A named customer, design partner or user the source states — a logo wall counts only if the page says they use it.\n- `traction.integration` — A named third-party product or project the source says this works with.\n- `traction.hn_engagement` — Points, comment count or dates on the Hacker News thread.\n- `funding.raised_usd` — An amount, round, date or investor the source states.\n\nNo bundle answers all of these. Most answer a minority. A key with no answer in\nthe evidence is simply not reported — see rule 6.\n\n## Rules\n\n1. **Cite everything.** Every fact carries `evidence_ids` with at least one id,\n   and every id must be one of the ids listed above. A fact citing an id that is\n   not in that list is discarded unread, as is a fact citing nothing. If an\n   observation genuinely rests on two records, cite both.\n\n2. **Only what these records say.** Not what you know about this company from\n   anywhere else, and not what is usually true of companies like it. You may\n   well have seen this company before. That is the single most likely way this\n   output becomes wrong in a way nobody catches, because a recalled fact arrives\n   wearing a citation and looks checked.\n\n3. **One observation per fact.** Two claims in one sentence cannot be verified\n   separately, and the second one is the one that turns out to be wrong.\n\n4. **Statements are checkable.** A reader opens the cited record and decides\n   whether your sentence is supported by it. Quote or paraphrase closely. Do not\n   blend several records into a summary that no single one of them supports.\n\n5. **Dates are the source's, not ours.** `retrieved_at` is when we read the\n   page. If the text states when something happened — a launch, a release, a\n   funding round, a commit, a job that ended — put that date in the statement and\n   use it. \"Recently\" and \"last year\" are not dates; write what the source wrote.\n\n6. **Omission is how you say \"unknown\".** There is no penalty for a short\n   answer, and a bundle that supports four facts should produce four. Missing\n   information is handled honestly further down the pipeline; a filled-in guess\n   is not recoverable, because by then it is indistinguishable from something\n   that was read.\n\n7. **No number you did not read.** Counts, stars, dates, headcount, funding,\n   customers: taken from the text or left out. Never rounded up, never\n   estimated, never carried across from a similar company.\n\n8. **No scoring, ranking, or recommending.** Do not rate the company, compare it\n   to another, or say whether it is a good investment, a good fit, or promising.\n   If you are writing an adjective that ranks — strong, impressive, thin,\n   weak, promising — you are writing a judgement, and the sentence needs to go\n   back to being an observation or be dropped.\n\n## The fields\n\n- `key` — one of the keys listed above.\n- `statement` — the sentence a partner reads. Plain, specific, one observation,\n  and true to the cited record.\n- `value` — the same observation in machine-readable form: a number for a count\n  or an amount (bare, no units or commas), `true`/`false` for a yes-or-no, a\n  short string for a name or a label or an ISO date, and `null` when the\n  observation is the sentence itself and has no scalar to reduce to.\n- `evidence_ids` — the ids this rests on.\n- `confidence` — how firmly *the cited text* supports the statement:\n  - `high` — the record states it outright.\n  - `medium` — the record clearly implies it; one short step, and any careful\n    reader would take the same one.\n  - `low` — the record is consistent with it and it is the most reasonable\n    reading, but a careful reader could read it another way.\n\n  Confidence is about the evidence, never about the company. Anything you would\n  want to mark below `low` is an omission, not a fact.\n\nReturn the facts and nothing else. No preamble, no summary of the company, no\nclosing assessment.\n",
+  "output": {
+    "facts": [
+      {
+        "key": "founder.name_role",
+        "statement": "Alex is a co-founder of Kampala.",
+        "value": "Alex",
+        "evidence_ids": [
+          "10a1dfcf5cbe933f"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "founder.name_role",
+        "statement": "Tarun is a co-founder of Kampala.",
+        "value": "Tarun",
+        "evidence_ids": [
+          "10a1dfcf5cbe933f"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.one_liner",
+        "statement": "Kampala is a man-in-the-middle (MITM) style proxy that allows you to agentically reverse engineer existing workflows without brittle browser automation or computer use agents and works for websites, mobile apps, and desktop apps.",
+        "value": "Reverse-Engineer Apps into APIs via a MITM style proxy for websites, mobile and desktop apps",
+        "evidence_ids": [
+          "10a1dfcf5cbe933f"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.runtime_position",
+        "statement": "Kampala functions as a man-in-the-middle (MITM) proxy.",
+        "value": "MITM proxy",
+        "evidence_ids": [
+          "10a1dfcf5cbe933f"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.job",
+        "statement": "Kampala automates interactions deterministically in seconds using existing session tokens and anti-bot cookies.",
+        "value": "automate interactions deterministically using session tokens and anti-bot cookies",
+        "evidence_ids": [
+          "10a1dfcf5cbe933f"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.category_claim",
+        "statement": "Kampala is used to reverse-engineer existing workflows into APIs without brittle browser automation or computer use agents.",
+        "value": "reverse-engineer workflows into APIs without browser automation",
+        "evidence_ids": [
+          "10a1dfcf5cbe933f"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.launch_date",
+        "statement": "Kampala was publicly launched approximately in April 2026 as part of Y Combinator W26 batch.",
+        "value": "2026-04",
+        "evidence_ids": [
+          "10a1dfcf5cbe933f"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.hn_engagement",
+        "statement": "The Hacker News Launch HN post for Kampala received 100 points and 84 comments as of 4 months ago from August 2026.",
+        "value": 100,
+        "evidence_ids": [
+          "10a1dfcf5cbe933f"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.data_accumulated",
+        "statement": "Since March 1, 2026, Zatanna has modeled a total of 4,829,385,502 requests processed based on an average of 1.22 million requests per hour.",
+        "value": 4829385502,
+        "evidence_ids": [
+          "57e56375ca5acaaa"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.one_liner",
+        "statement": "Zatanna maps human-only software workflows and exposes them as reliable APIs your AI agents and internal tools can call in production, without browser automation scripts to maintain.",
+        "value": "Turn software workflows into reliable APIs for AI agents without browser automation",
+        "evidence_ids": [
+          "57e56375ca5acaaa"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.category_claim",
+        "statement": "Zatanna works at the network layer to reverse-engineer the underlying API calls behind any portal and deploy them as direct endpoints, offering milliseconds latency instead of seconds, with structured data and stable integrations.",
+        "value": "network layer reverse-engineering of API calls for stable API integration",
+        "evidence_ids": [
+          "57e56375ca5acaaa"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.capability_dependency",
+        "statement": "Zatanna depends on observing actual network traffic behind portal workflows and reconstructing the exact request flow including auth, sessions, and sequencing.",
+        "value": "network traffic observation and reconstruction of request flow",
+        "evidence_ids": [
+          "57e56375ca5acaaa"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.runtime_position",
+        "statement": "Zatanna provides a single stable endpoint API that manages authentication, retries, anti-bot detection and session handling underneath.",
+        "value": "single stable API endpoint managing auth and retries",
+        "evidence_ids": [
+          "57e56375ca5acaaa"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.job",
+        "statement": "Zatanna is designed to enable AI agents to call APIs that perform real work in third-party software portals, even ones without public APIs.",
+        "value": "enable AI agents to perform work in third-party portals without public APIs",
+        "evidence_ids": [
+          "57e56375ca5acaaa"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "adoption.sales_gate",
+        "statement": "To start using Zatanna, users can book a 30-minute workflow review where the workflow is walked through once and an endpoint deployed; most integrations go live within days.",
+        "value": "book a 30-minute workflow review before integration",
+        "evidence_ids": [
+          "57e56375ca5acaaa"
+        ],
+        "confidence": "high"
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5015,
+    "output_tokens": 981,
+    "cost_usd": null
+  },
+  "created_at": "2026-08-23T06:32:36.223Z"
+}

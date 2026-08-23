@@ -1,0 +1,248 @@
+{
+  "schema_version": 2,
+  "key": "2a7d2e4593bc00220ca923515d176ac3bfd3688d057b384067ede8bdc46485d0",
+  "call": {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "prompt_id": "extract",
+    "prompt_version": "1",
+    "schema_version": "2"
+  },
+  "input": "You are reading a small set of documents about one company and writing down what\nthey say about it.\n\nEverything you produce is a **fact**: one observation, in one sentence, attached\nto the record it came from. You are not assessing the company. Something else\ndoes that, from your facts, against criteria you have not been shown and should\nnot try to guess. A fact that says *\"strong technical team\"* is unusable to it. A\nfact that says *\"the two founders were on the Kubernetes networking team at\nGoogle until March 2025\"*, citing the page that says so, is the whole job.\n\n## The company\n\nname: Intuned\nurl: https://intunedhq.com\none_liner: Build and run reliable browser automations as code\nfound_via: hn — Launch HN: Intuned (YC S22) – Build and run reliable browser automations as code (posted 2026-06-08T13:35:27.000Z)\n\n## The evidence\n\nEvery record below has an `id`, the url it came from, what kind of page it is,\nand the date **we retrieved it**. The text is what we fetched, and it may be\ntruncated mid-sentence. These records are the only sources that exist for this\ntask.\n\n--- BEGIN RECORD 7172399fb3eb408c ---\nid: 7172399fb3eb408c\nurl: https://news.ycombinator.com/item?id=48445171\ntype: hn_item\ntitle: Launch HN: Intuned (YC S22) – Build and run reliable browser automations as code | Hacker News\nretrieved_at: 2026-08-23T06:29:54.507Z\n\nHacker Newsnew | past | comments | ask | show | jobs | submit\nlogin\nLaunch HN: Intuned (YC S22) – Build and run reliable browser automations as code (intunedhq.com)\n117 points by fkilaiwi 75 days ago | hide | past | favorite | 58 comments\nHey HN, we're Faisal and Ahmad from Intuned (https://intunedhq.com). We’re building a platform for building, deploying, and maintaining browser automations.\nCustomers primarily use the Intuned AI agent to automate websites that don't expose APIs. Common use-cases include scraping data, pulling reports, and submitting forms. As the website changes, our agent also helps automatically heal the automation.\nOn Intuned, browser automations are created by an AI agent and run as code. Our infra captures the context of every run, allowing our agent to debug and maintain the underlying code - to keep the automations working over time. This way, we’re able to offer the predictability, speed, and cost of code, without the painful parts of writing and maintaining it.\nHere’s a demo of building a scraper on Intuned: https://youtu.be/ruZP73bK4FU\nHere’s a demo of using AI to maintain a project: https://youtu.be/e4R4hLdHBro\nBackstory: we were accepted into YC for a completely different idea. During the batch, because of Faisal's background at UiPath, several batchmates asked us whether RPA tools could fill API gaps in their products by automating websites without APIs. When it was time to pivot, we went back to those founders to dig deeper. (RPA in this context is referring to using UI automation to do complete non-testing tasks)\nWe discovered that the actual hard problem in browser automation is maintenance. Websites change, selectors break, and failures can be painful to reproduce and fix. So in early 2024, we decided to take a crack at this problem with a handful of customers. It needed a fair number of iterations before we landed on our current code-first approach.\nHow it works: Intuned is infra + agent, deeply integrated.\nOn the infrastructure side, Intuned is a managed runtime for browser automation code. Projects are usually Playwright-based TypeScript or Python. Users can write them directly in our online IDE, or hand the work off to the agent. Either way, once deployed, the platform runs each project in its own isolated machine and handles auth/session reuse, scheduling, batch execution, concurrency, observability, and the other plumbing around running browser code.\nOn the agent side, it took us a few iterations to get to the current approach. Our initial attempts were rigid pipelines: collect requirements, inspect the site, generate code, then try to patch whatever broke. It looked reasonable on paper, but real websites are too messy for fixed paths. Late last year, we were planning to ship that version when stronger models landed and harnesses like Claude Code and Codex showed what a more open-ended coding agent could do. We built a prototype on the Claude Agent SDK, it felt much better than what we had, and we scrapped the release and decided to rebuild the agent.\nThe rebuild came down to three pieces around the SDK: an execution environment for running long agent sessions reliably, a CLI that exposes the platform to the agent so it operates Intuned the way engineers do, and a custom plugin (skills + MCP) built around what we've learned building browser automations.\nThe infra-agent integration is where the product gets more interesting. The runtime doesn't just run the automation; it captures the context needed to debug it when it fails: params, results, traces, logs. That enables features like Fix with AI, where you can open a failed run and have the agent investigate and prepare a fix.\nThe same integration powers a feature called self-healing. For configured projects, the platform detects failures, starts an agent session with the relevant context, and either proposes a fix for review or deploys it automatically. Demo: https://youtu.be/IVHIXw0lYMs\nWe recently also packaged the infra and agent as an API called Web Task API, here is a demo: https://youtu.be/1olRn3l95vw\nWe strongly believe that browser automations can and should be faster, cheaper and more predictable. Check us out at https://app.intuned.io/, we have a free tier with trial credits for your first few automations. Excited to hear your thoughts, questions, and feedback!\nbronco21016 75 days ago | next [–]\nReally cool!\nI was reading the blog post about bot detection with browsers. The first layer being the IP address of the browser.\nOne rather unique scenario I've been trying to work out for a scraper is eliminating network latency. My use of the site is enhanced by the request from the browser having the lowest RTT latency to the webserver as possible. This means being in the same cloud provider.\nTo do this right now I manually navigate to the site and have a browser extension that clicks at just the right time.\nI'd really like to eliminate that manual navigation but every time I've tried adding browser automation outside of the single click from the extension, I'm immediately met with bot detection.\nObviously adding a residential proxy step completely defeats the purpose of the RTT latency optimization.\nDo modified browsers drive the overall bot detection heuristic low enough that the cloud IP address itself isn't a red flag? I've seen Camoufox and will try it at some point. What other options are available to drive down the overall \"score\" so I can still automate the browser but keep the latency low?\nomarbish 75 days ago | parent | next [–]\nHi Bronco, Omar here, a Lead Platform Engineer at Intuned.\n> I've tried adding browser automation outside of the single click from the extension, and I'm immediately met with bot detection.\nCan you explain how you write your automation? How do you do the click from the extension? Do you use CDP input commands to perform the click (`Input.dispatchMouseEvent`), or do you execute JS code and click the button using `element.click`?\nusing CDP will give you much better score than Executing JS to click a captcha button.\nJS Execution can be easily detected by any bot detection provider. On the other hand, using CDP to click can mimic actual mouse movement and will make it much harder to detect abnormalities. and the click event will have `isTrusted=true` and handle detection methods related to monitoring JS executions on page.\n> Do modified browsers drive the overall bot detection heuristic low enough that the cloud IP address itself isn't a red flag? I've seen Camoufox and will try it at some point. What other options are available to drive down the overall \"score\" so I can still automate the browser but keep the latency low?\nModified browsers reduce your bot score a lot, and Camoufox is a great option to test out. Will it work? It depends on how the website has set up their bot detection. using modified browser is a must for use case.\nAt Intuned, we use our own internal forked Chrome to hide the most popular signals, and a lot of the time, the browser alone without a residential proxy can help us bypass most websites, but not all of them(IP reputation has very high heuristic value).\nI can't give exact recommendation on what will work with you for sure since each website has it's own ways to handle bot detection , one recommendation I can give is to try to use packages like patchright they can help alot and hide alot of popular signals.\nAnother recommendation I can make is to try using intuned agent and ask it to help you find a way to bypass bot detection on that website. If you can handle it using network interception or some other scraping technique, the agent is really good in these cases and knows most of the used scraping techniques.\nbobbiechen 75 days ago | root | parent | next [–]\nHey Omar, do you have any plan to add support for Web Bot Auth? https://datatracker.ietf.org/wg/webbotauth/about/\nWhile I understand that not every business wants automation on their site, I know some businesses are totally open\n… [truncated]\n--- END RECORD 7172399fb3eb408c ---\n\n--- BEGIN RECORD f5c960628e30a767 ---\nid: f5c960628e30a767\nurl: https://intunedhq.com\ntype: company_site\ntitle: Reliable Integrations for Services with No APIs | Intuned\nretrieved_at: 2026-08-22T10:19:44.780Z\n\nBuild reliable integrations for services with no APIs. Intuned Agent generates and maintains the integration code - reverse-engineered network calls or browser automation - and runs it at scale with auth, captcha solving, and observability.\n\nBuild integrations for services with no APIs\nIntuned Agent builds and runs integrations for services that don't have APIs. It does this by either copying the service's network calls or automating a browser - whatever works best. Its platform then runs these integrations at scale and handles logins, captchas, and monitoring for you.\nStart for freeTalk to us\nQuestions? Watch a demo or\nChat with AI\nAuthenticated Integrations\nBack Office Automation\nData Migration\nAI Automation\nManaged Integrations\nSomething Else\nScrapers\nCreate a scraper for any website - e-commerce, government portals, job boards, or anything else. Intuned Agent is the first AI Agent designed to build and maintain Scrapers. Intuned Agent generates playwright code that will be fast, cheap and predictable when it runs.\nKey Features:\nIntuned Agent - Generate any scraper from a prompt and schema, fix issues with AI when sites change.\nEnable self-healing and Intuned will monitor and fix your scrapers when they break.\nSupport for authenticated scrapers - Scrape any website even if its behind authentication. Intuned Infra support helps you manage the authentication state as needed.\nUse Jobs to schedule the scraper runs and send the data to your backend, can be done via webhooks or another sink.\nIntuned observability saves records and traces for all your runs so you can debug them when something goes wrong.\nTry Intuned AgentGet Demo\nCrawlers\nDiscover, navigate, and collect data across thousands of pages. Build crawlers that follow links, parse sitemaps, and index content - with built-in stealth, scheduling, and scale.\nKey Features:\nUse TypeScript or Python, use any framework you want. With Intuned, you can deploy any code you want.\nCrawl4AI support - First-class support for Crawl4AI - deploy and scale your crawlers without managing infrastructure\nStealth mode - Anti-detection, proxies, and captcha solving built in\nScheduled jobs & monitoring - Recurring crawls with full logs and session recordings\nScalable infrastructure - Control how many machines to run on, we handle the rest\nStart for FreeView Examples\nBack Office Automation\nAutomate internal operations in back-office systems that have no APIs. Intuned runs reliable browser automations for data entry, status checks, form submissions, report downloads, and account updates - with auth, stealth, concurrency, and monitoring built in.\nKey Features:\nBack-office workflows - Automate repetitive work inside CRMs, vendor portals, admin panels, and legacy systems.\nAuthenticated operations - Intuned manages login sessions and auth state for systems your team already uses.\nRead, write, and submit - Download reports, update records, submit forms, reconcile data, and trigger operational workflows.\nReliable execution - Queue jobs, control concurrency, retry failures, and monitor each run with logs and traces.\nRPA-style automation, modern infrastructure - Keep the browser workflow flexibility without running fragile desktop bots.\nGet Demo\nAI Automation\nBuild AI-powered automations that can navigate, interact, and extract from any website. Whether you're building AI agents as a product or using AI to automate scraping and workflows - deploy with built-in stealth, auth, and scale.\nKey Features:\nWorks with any AI browser library or API - Anthropic Computer Use, OpenAI CUA, Stagehand, Browser-use, Gemini Computer Use, Intuned/Browser SDKs, and more\nMix code and AI - Combine deterministic Playwright logic with AI-driven steps in a single automation\nStealth mode - Anti-detection, proxies, and captcha solving built in\nBuilt-in authentication support - Write create.ts and check.ts (or .py), Intuned manages the session lifecycle - you can use AI for that too\nAI usage controls - Monitor and limit AI credit usage across your automations\nScalable infrastructure - Deploy as an API or schedule jobs, control concurrency, we handle the rest\nStart for FreeGet Demo\nManaged Integrations\nNeed to support dozens of integrations with services that have no API? Our team builds, runs, and maintains those automations for you, then exposes one reliable API your product can use. You focus on your customer experience; Intuned handles auth, browser flows, site changes, monitoring, and scale.\nKey Features:\nOne API for your team - Intuned wraps every no-API service behind a consistent endpoint your product can call.\nWe build and maintain - Solution engineers powered by Intuned Agent create the automations and keep them working as sites change.\nAuthenticated services - Intuned manages login sessions, auth state, captchas, and multi-step portal flows.\nRuns at scale - Queue requests, control concurrency, retry failures, and operate dozens of integrations without managing browser infrastructure.\nObservable by default - Every integration run includes logs, traces, saved records, and monitoring so issues are easy to debug.\nGet Demo\nData Migration\nMove data out of legacy portals, vendor dashboards, and authenticated systems even when there is no export API. Intuned runs reliable browser and network automations that sign in, collect the right records, transform them, and deliver them into your target system.\nKey Features:\nAuthenticated systems - Intuned manages login sessions, reuses valid auth state, and recreates sessions when credentials or cookies expire.\nBrowser and network automation - Use UI actions, in-browser network calls, or both depending on what the source system allows.\nReliable migration runs - Schedule jobs, control concurrency, retry failures, and monitor every run with logs, records, and traces.\nTransform and deliver - Normalize records before sending data to your warehouse, app, API endpoint, webhook, or custom destination.\nBuilt for messy sources - Handle portals with captchas, multi-step flows, rate limits, dynamic pages, and partial exports.\nGet Demo\nAI Automation\nUse AI agents to get data from anywhere - websites, portals, dashboards, documents, and workflows that need judgment. Intuned lets you build these automations with the AI framework you already use, then deploy them with browser infrastructure, auth, stealth, scheduling, and observability built in.\nKey Features:\nUse any AI framework - Bring Anthropic Computer Use, OpenAI CUA, Stagehand, Browser-use, Gemini Computer Use, or your own agent loop.\nGet data from anywhere - Combine browser actions, model reasoning, Playwright code, and network calls to collect data from messy sources.\nAuthenticated workflows - Intuned manages sessions and auth state so AI automations can work inside logged-in products and portals.\nDeploy AI automations at scale - Run on a schedule or behind an API, control concurrency, and monitor each job with logs, traces, and saved records.\nMix AI with deterministic code - Use models for judgment-heavy steps and code for the parts that need to be fast, cheap, and predictable.\nView ExamplesGet Demo\nSomething Else\nHave a unique use case? We support custom browser automation solutions tailored to your specific needs.\nAuthenticated Integrations\nBuild product integrations with services that do not have APIs. Your users connect their account, Intuned manages authenticated browser sessions, and your product gets a reliable API for reading data, taking actions, and keeping workflows in sync.\nKey Features:\nUser-connected auth - Let customers securely connect accounts for services that do not expose APIs.\nSession lifecycle - Intuned creates, validates, reuses, and refreshes authenticated sessions as needed.\nAPI for your product - Wrap browser and network automation behind a stable endpoint your app can call.\nRead and act - Pull data, submit forms, update records, download reports, or trigger workflows on behalf of users.\nProduction operations - Handle captchas\n… [truncated]\n--- END RECORD f5c960628e30a767 ---\n\n--- BEGIN RECORD cac01e855a783577 ---\nid: cac01e855a783577\nurl: https://intunedhq.com/pricing\ntype: company_site\ntitle: Pricing - Intuned\nretrieved_at: 2026-08-23T06:29:55.533Z\n\nA code-first browser automation platform with an AI agent that builds and maintains your automations as deterministic, production-ready code.\n\nPricing Plans\nChoose the plan that bestfits your needs\nFree\nFor individuals exploring web automation\n$0/mo\n3 compute hours included\n5 API machines (1 per project)\n10 job runs included\nUnlimited standalone runs\n$5 trial AI credit\nAdvanced stealth mode\n7-day data retention\nStart for free\nDeveloper\nFor developers building at scale\n$25/mo\n100 compute hours included\n25 API machines (5 per project)\n100 job runs included\nUnlimited standalone runs\n$10/mo AI credit\nLarge & XL machines available\n30-day data retention\nStart building\nMost Popular\nStartup\nFor teams with production workloads\n$120/mo\n500 compute hours included\n100 API machines (15 per project)\n400 job runs included\nUnlimited standalone runs\n$40/mo AI credit\nLarge & XL machines available\n30-day data retention\nStart building\nEnterprise\nFor teams with custom scale, security, and support needs\nCustom\nCustom compute and machine limits\nVolume pricing for runs and AI usage\nUnlimited standalone runs\nDedicated solutions and onboarding support\nSSO / SAML and advanced access controls\nCustom retention, regions, and compliance setup\nPriority architecture reviews and escalation paths\nTalk to sales\nFree\nFor individuals exploring web automation\n$0/mo\n3 compute hours included\n5 API machines (1 per project)\n10 job runs included\nUnlimited standalone runs\n$5 trial AI credit\nAdvanced stealth mode\n7-day data retention\nStart for free\nDeveloper\nFor developers building at scale\n$25/mo\n100 compute hours included\n25 API machines (5 per project)\n100 job runs included\nUnlimited standalone runs\n$10/mo AI credit\nLarge & XL machines available\n30-day data retention\nStart building\nMost Popular\nStartup\nFor teams with production workloads\n$120/mo\n500 compute hours included\n100 API machines (15 per project)\n400 job runs included\nUnlimited standalone runs\n$40/mo AI credit\nLarge & XL machines available\n30-day data retention\nStart building\nEnterprise\nFor teams with custom scale, security, and support needs\nCustom\nCustom compute and machine limits\nVolume pricing for runs and AI usage\nUnlimited standalone runs\nDedicated solutions and onboarding support\nSSO / SAML and advanced access controls\nCustom retention, regions, and compliance setup\nPriority architecture reviews and escalation paths\nTalk to sales\nDetailed comparison of plans\nCompare pricing, limits, and support across every plan.\nFeatures List\nUsage, limits, and included support\nFree PlanFor individuals exploring web automationStart for free\nDeveloper PlanFor developers building at scaleStart a free trial\nStartup PlanFor teams with production workloadsStart a free trial\nEnterprise PlanFor teams with custom scale, security, and support needsTalk to sales\nMonthly price\n$0\n$25\n$120\nCustom\nIncluded compute hours\n3\n100\n500 (standard)\nCustom\nCompute overage rate\n--\n$0.12 / hour\n$0.10 / hour\nVolume pricing\nAPI Machines (workspace total)\n5\n25\n100\nCustom\nMax API machines per project/app\n1\n5\n15\nCustom\nJob Runs included\n10\n100\n400\nCustom\nJob Run overage rate\n--\n$0.12 / run\n$0.10 / run\nVolume pricing\nMonthly AI credit\n$5 (trial credit)\n$5\n$40\nCustom\nLarge machine surcharge\nNot available\n+$0.18 / hour\n$0.15 / hour\nCustom\nX-Large machine surcharge\nNot available\n+$0.48 / hour\n$0.40 / hour\nCustom\nAccess to Large/XL machines\nNo\nYes\nYes\nYes\nData retention\n7 days\n30 days\n30 days\nCustom\nAdvanced stealth mode\n--\nIncluded\nIncluded\nIncluded\nSSO / SAML\n--\n--\n--\nIncluded\nSupport\nCommunity\nEmail\nPriority email\nDedicated team\nFreeFor individuals exploring web automation\nMonthly price$0\nIncluded compute hours3\nCompute overage rate--\nAPI Machines (workspace total)5\nMax API machines per project/app1\nJob Runs included10\nJob Run overage rate--\nMonthly AI credit$5 (trial credit)\nLarge machine surchargeNot available\nX-Large machine surchargeNot available\nAccess to Large/XL machinesNo\nData retention7 days\nAdvanced stealth mode--\nSSO / SAML--\nSupportCommunity\nStart for free\nDeveloperFor developers building at scale\nMonthly price$25\nIncluded compute hours100\nCompute overage rate$0.12 / hour\nAPI Machines (workspace total)25\nMax API machines per project/app5\nJob Runs included100\nJob Run overage rate$0.12 / run\nMonthly AI credit$5\nLarge machine surcharge+$0.18 / hour\nX-Large machine surcharge+$0.48 / hour\nAccess to Large/XL machinesYes\nData retention30 days\nAdvanced stealth modeIncluded\nSSO / SAML--\nSupportEmail\nStart a free trial\nStartupFor teams with production workloads\nMonthly price$120\nIncluded compute hours500 (standard)\nCompute overage rate$0.10 / hour\nAPI Machines (workspace total)100\nMax API machines per project/app15\nJob Runs included400\nJob Run overage rate$0.10 / run\nMonthly AI credit$40\nLarge machine surcharge$0.15 / hour\nX-Large machine surcharge$0.40 / hour\nAccess to Large/XL machinesYes\nData retention30 days\nAdvanced stealth modeIncluded\nSSO / SAML--\nSupportPriority email\nStart a free trial\nEnterpriseFor teams with custom scale, security, and support needs\nMonthly priceCustom\nIncluded compute hoursCustom\nCompute overage rateVolume pricing\nAPI Machines (workspace total)Custom\nMax API machines per project/appCustom\nJob Runs includedCustom\nJob Run overage rateVolume pricing\nMonthly AI creditCustom\nLarge machine surchargeCustom\nX-Large machine surchargeCustom\nAccess to Large/XL machinesYes\nData retentionCustom\nAdvanced stealth modeIncluded\nSSO / SAMLIncluded\nSupportDedicated team\nTalk to sales\nFAQs\nQuestions, answered.\nTry for free\nWhat do I get on the free plan?+\nHow do AI credits work on the free plan?+\nWhat are compute hours and how are they metered?+\nCan I bring my own API key instead of using AI credits?+\nWhat happens if I go over my plan's included usage?+\nI have a question not answered here. Who can I talk to?+\nFAQs\nQuestions, answered.\nTry for free\nWhat do I get on the free plan?+\nHow do AI credits work on the free plan?+\nWhat are compute hours and how are they metered?+\nCan I bring my own API key instead of using AI credits?+\nWhat happens if I go over my plan's included usage?+\nI have a question not answered here. Who can I talk to?+\n--- END RECORD cac01e855a783577 ---\n\n--- BEGIN RECORD 283fbcf555627d5a ---\nid: 283fbcf555627d5a\nurl: https://intunedhq.com/docs\ntype: company_site\ntitle: Introduction - Intuned\nretrieved_at: 2026-08-23T06:29:56.019Z\n\nGetting started\nIntroduction\nCopy pageCopy page\nCode-first browser automation platform with an AI agent that builds and maintains your automations\nCopy pageCopy page\n​\nWhat is Intuned?\nIntuned is a code-first browser automation platform for developers, with two parts:\nA platform for deploying and running browser automations as code—with built-in authentication, stealth, monitoring, scheduling, and scale.\nAn AI agent that builds, edits, and maintains those automations autonomously.\nBuild automations by hand or let AI build them for you. What deploys is always code you can read, debug, and own. Because the agent runs inside the platform—with access to browser traces, run history, and project configuration—it can do more than generate code. It can test against live pages, diagnose failures, and maintain your automations after deployment.\n​\nTwo ways to use Intuned\nProjects\nBuild, deploy, and run browser automations as code. Full platform:\nAuthSessions, Jobs, the IDE, the CLI, and Intuned Agent. Best when you want\nto own and maintain the automation.\nWeb Tasks\nDescribe a web task in plain English and call an API. No project to create\nor maintain. Best for repeatable tasks with a clear starting URL—runs get\ncheaper and faster over time.\n​\nWhat you can build\nBrowser automation covers any task where software controls a browser to interact with websites. Common use cases include:\nScrapers — Extract structured data from websites. Product prices, job listings, public records, news articles. Write the extraction logic once, run it on a schedule, and get results delivered to your systems.\nRPA automations — Interact with websites on behalf of users. Form submissions, data entry, account actions, report downloads. Useful when a service doesn’t offer an API or you need to automate legacy web apps.\nCrawlers — Discover and collect data across many pages. Follow links, parse sitemaps, index content. Build crawlers that process hundreds or thousands of pages per run.\nAI-powered automations — Use LLMs to navigate, interact, and extract from websites. Build AI agents that adapt to different sites or combine AI with deterministic code for reliability where it matters.\n​\nIntuned Agent\nIntuned Agent is an AI agent that builds, edits, and maintains browser automation Projects. It runs inside the Intuned platform with a real browser, full access to the platform, and works in the background as long as needed.\nBuild from a conversation — Describe your scraper or automation in natural language. The agent creates a plan, controls a real browser in the background, validates against live pages, and delivers working code with sample data. Typically takes 30–60 minutes.\nEdit existing projects — Select a project, describe the change. Add fields, fix selectors, change pagination, modify formatting. The agent shows a diff, tests it, and delivers results.\nFix failed runs — Click “Fix with AI” on any failed run. Error context is pre-filled—the agent diagnoses and generates a fix without back-and-forth.\nSelf-healing projects — Enable self-healing on any project. Intuned detects issues automatically—not just pass/fail, but anomalies in response size, output patterns, and run behavior. The agent can fix issues, merge changes, and redeploy, with the level of autonomy you choose.\nRun it locally — Prefer your own setup? The External agent (private preview) runs the same agent in Claude Code or Codex to build, edit, and debug automations locally.\nTry Intuned Agent\nStart building with Intuned Agent\nLearn more\nSee what the agent can do\n​\nPlatform features\nBuilt-in authentication — Handle login flows with AuthSessions. You define how to log in and verify sessions—Intuned manages the rest.\nStealth and anti-detection — Proxies, stealth mode, and CAPTCHA solving help your automations avoid detection.\nMonitoring and traces — Full logs, browser traces, and session recordings for every Run.\nJobs and scheduling — Run automations on a schedule or in batches. Configure retries, concurrency, and result delivery.\nFlexible automations — Write deterministic scripts, AI-driven automations, crawlers, or any combination. Use any library or pattern.\n​\nQuickstarts\nBuild a scraper with AI\nGenerate a scraper from a prompt and schema.\nBuild an RPA with AI\nAutomate browser workflows using the agent.\nBuild a scraper manually\nExtract data from a website with code.\nBuild an RPA manually\nAutomate browser workflows with code.\nAuthenticated RPA\nAutomate login-protected workflows with AuthSessions.\n​\nContinue reading\nHow the platform works\nUnderstand Projects, Runs, Jobs, and the execution model\nIntuned vs other approaches\nSee how Intuned compares to other browser automation tools\nNeed managed automations? Our solution engineers—powered by Intuned\nAgent—build and maintain automations for you. Tell us what you need, and we\nhandle the rest. Get in touch.\n⌘I\n--- END RECORD 283fbcf555627d5a ---\n\n--- BEGIN RECORD cc6b0a5e7b16e22d ---\nid: cc6b0a5e7b16e22d\nurl: https://api.github.com/repos/intuned/cookbook\ntype: github_repo\ntitle: Intuned/cookbook\nretrieved_at: 2026-08-23T06:29:57.401Z\n\nrepository: Intuned/cookbook\nurl: https://github.com/Intuned/cookbook\ndescription: A cookbook of examples for building browser automations with Intuned\nhomepage: https://intunedhq.com\nowner: Intuned\nowner type: Organization\nprimary language: Python\nlicense: unknown\ntopics: automation, crawlers, intuned, playwright, python, rpa, scrapers, typescript, web\nstars: 30\nforks: 3\nwatchers: 0\nopen issues: 16\ncreated at: 2025-12-02T09:10:53Z\nlast pushed at: 2026-08-21T15:13:54Z\narchived: false\nis a fork: false\n--- END RECORD cc6b0a5e7b16e22d ---\n\n--- BEGIN RECORD 21fa9b13ba57ce46 ---\nid: 21fa9b13ba57ce46\nurl: https://api.github.com/users/intuned\ntype: github_user\ntitle: Intuned\nretrieved_at: 2026-08-23T06:29:57.860Z\n\naccount: Intuned\ntype: Organization\nname: Intuned\nbio: unknown\ncompany: unknown\nlocation: United States of America\nwebsite: https://intunedhq.com\npublic repositories: 15\nfollowers: 19\naccount created at: 2022-07-03T03:02:08Z\n--- END RECORD 21fa9b13ba57ce46 ---\n\n## What to look for\n\nEach observation you record is filed under a `key` from this list. The list is\nwhat the reader downstream knows how to read; a key outside it goes nowhere.\n\n- `founder.name_role` — A person named on the company's own pages, with the role it gives them.\n- `founder.prior_role` — A prior employer, role or period a named person is stated to have held.\n- `founder.prior_exit` — A company a named person is stated to have founded, sold, or left after building.\n- `founder.prior_artifact` — Something a named person is stated to have built or shipped before this — a project, library, paper or talk.\n- `team.size_visible` — How many people the source names or states, and where it names them.\n- `org.github_account_type` — Whether the GitHub owner is an organisation or a personal account, as the payload states it.\n- `product.one_liner` — How the company describes what the product does, in its own words.\n- `product.job` — The specific task, and the person doing it, that the source says the product is for.\n- `product.category_claim` — The category, platform or scope the company claims for itself — its own framing, quoted or closely paraphrased.\n- `product.capability_dependency` — A technology, model or cost change the source says the product depends on, and when the source says it arrived.\n- `product.launch_date` — A date the source gives for the company, the product, or a first release.\n- `product.open_source` — A licence or public repository the source states for the product itself.\n- `product.runtime_position` — Where the source says the product sits — agent, sidecar, proxy, kernel module, build step, hosted service.\n- `product.data_accumulated` — Data the source says the product collects, stores or builds up as it is used.\n- `adoption.self_serve` — A stated way to start using it without speaking to anyone — sign-up, free tier, download, install command.\n- `adoption.pricing_public` — Whether prices are published, and what the page states them to be.\n- `adoption.sales_gate` — A stated requirement to contact sales, book a demo, or request access before using it.\n- `traction.github_stars` — A star count, with the date the record carries for it.\n- `traction.repo_activity` — Commit, release or issue activity, with whatever dates the record gives.\n- `traction.contributors` — How many people have contributed, as the payload states it.\n- `traction.named_user` — A named customer, design partner or user the source states — a logo wall counts only if the page says they use it.\n- `traction.integration` — A named third-party product or project the source says this works with.\n- `traction.hn_engagement` — Points, comment count or dates on the Hacker News thread.\n- `funding.raised_usd` — An amount, round, date or investor the source states.\n\nNo bundle answers all of these. Most answer a minority. A key with no answer in\nthe evidence is simply not reported — see rule 6.\n\n## Rules\n\n1. **Cite everything.** Every fact carries `evidence_ids` with at least one id,\n   and every id must be one of the ids listed above. A fact citing an id that is\n   not in that list is discarded unread, as is a fact citing nothing. If an\n   observation genuinely rests on two records, cite both.\n\n2. **Only what these records say.** Not what you know about this company from\n   anywhere else, and not what is usually true of companies like it. You may\n   well have seen this company before. That is the single most likely way this\n   output becomes wrong in a way nobody catches, because a recalled fact arrives\n   wearing a citation and looks checked.\n\n3. **One observation per fact.** Two claims in one sentence cannot be verified\n   separately, and the second one is the one that turns out to be wrong.\n\n4. **Statements are checkable.** A reader opens the cited record and decides\n   whether your sentence is supported by it. Quote or paraphrase closely. Do not\n   blend several records into a summary that no single one of them supports.\n\n5. **Dates are the source's, not ours.** `retrieved_at` is when we read the\n   page. If the text states when something happened — a launch, a release, a\n   funding round, a commit, a job that ended — put that date in the statement and\n   use it. \"Recently\" and \"last year\" are not dates; write what the source wrote.\n\n6. **Omission is how you say \"unknown\".** There is no penalty for a short\n   answer, and a bundle that supports four facts should produce four. Missing\n   information is handled honestly further down the pipeline; a filled-in guess\n   is not recoverable, because by then it is indistinguishable from something\n   that was read.\n\n7. **No number you did not read.** Counts, stars, dates, headcount, funding,\n   customers: taken from the text or left out. Never rounded up, never\n   estimated, never carried across from a similar company.\n\n8. **No scoring, ranking, or recommending.** Do not rate the company, compare it\n   to another, or say whether it is a good investment, a good fit, or promising.\n   If you are writing an adjective that ranks — strong, impressive, thin,\n   weak, promising — you are writing a judgement, and the sentence needs to go\n   back to being an observation or be dropped.\n\n## The fields\n\n- `key` — one of the keys listed above.\n- `statement` — the sentence a partner reads. Plain, specific, one observation,\n  and true to the cited record.\n- `value` — the same observation in machine-readable form: a number for a count\n  or an amount (bare, no units or commas), `true`/`false` for a yes-or-no, a\n  short string for a name or a label or an ISO date, and `null` when the\n  observation is the sentence itself and has no scalar to reduce to.\n- `evidence_ids` — the ids this rests on.\n- `confidence` — how firmly *the cited text* supports the statement:\n  - `high` — the record states it outright.\n  - `medium` — the record clearly implies it; one short step, and any careful\n    reader would take the same one.\n  - `low` — the record is consistent with it and it is the most reasonable\n    reading, but a careful reader could read it another way.\n\n  Confidence is about the evidence, never about the company. Anything you would\n  want to mark below `low` is an omission, not a fact.\n\nReturn the facts and nothing else. No preamble, no summary of the company, no\nclosing assessment.\n",
+  "output": {
+    "facts": [
+      {
+        "key": "product.one_liner",
+        "statement": "Intuned is a platform for building, deploying, and maintaining browser automations as code.",
+        "value": "Build and run reliable browser automations as code",
+        "evidence_ids": [
+          "7172399fb3eb408c"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.job",
+        "statement": "Customers primarily use Intuned AI agent to automate websites that don't expose APIs for tasks like scraping data, pulling reports, and submitting forms.",
+        "value": null,
+        "evidence_ids": [
+          "7172399fb3eb408c"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.capability_dependency",
+        "statement": "In late 2024, stronger AI models like Claude Code and Codex enabled Intuned to pivot from rigid pipelines to a more open-ended coding agent approach.",
+        "value": null,
+        "evidence_ids": [
+          "7172399fb3eb408c"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.runtime_position",
+        "statement": "Intuned is a managed runtime platform running browser automation code with an integrated AI agent that debug and maintain the automation code.",
+        "value": null,
+        "evidence_ids": [
+          "7172399fb3eb408c"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.data_accumulated",
+        "statement": "The Intuned platform captures context of every automation run including parameters, results, traces, and logs for debugging and self-healing.",
+        "value": true,
+        "evidence_ids": [
+          "7172399fb3eb408c"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.one_liner",
+        "statement": "Intuned Agent generates and maintains integration code via reverse-engineered network calls or browser automation and runs it at scale with authentication, captcha solving, and observability.",
+        "value": "Build reliable integrations for services with no APIs",
+        "evidence_ids": [
+          "f5c960628e30a767"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.job",
+        "statement": "Intuned builds integrations for services that do not have APIs by either copying the service's network calls or automating a browser, running these integrations at scale with handling of login, captchas, and monitoring.",
+        "value": null,
+        "evidence_ids": [
+          "f5c960628e30a767"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.category_claim",
+        "statement": "Intuned supports use cases including scrapers to extract data from websites, crawlers to navigate and collect data across many pages, back-office automation for data entry and form submissions, AI-powered automations, managed integrations, data migration, and AI agents using various AI frameworks.",
+        "value": null,
+        "evidence_ids": [
+          "f5c960628e30a767"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.job",
+        "statement": "Intuned Agent is the first AI agent designed to build and maintain scrapers generating Playwright code, with features to enable self-healing and support authenticated scrapers managing authentication state.",
+        "value": null,
+        "evidence_ids": [
+          "f5c960628e30a767"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.category_claim",
+        "statement": "Intuned offers stealth mode featuring anti-detection, proxies, and captcha solving built in for crawlers and AI automations.",
+        "value": null,
+        "evidence_ids": [
+          "f5c960628e30a767"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.job",
+        "statement": "Intuned automates back-office workflows in CRMs, vendor portals, admin panels, and legacy systems with authenticated operations, reliable execution, and monitoring.",
+        "value": null,
+        "evidence_ids": [
+          "f5c960628e30a767"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.runtime_position",
+        "statement": "Intuned runs browser and network automations as deterministic scripts, AI-driven automations, crawlers, or any combination, using any framework in TypeScript or Python.",
+        "value": null,
+        "evidence_ids": [
+          "f5c960628e30a767"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.open_source",
+        "statement": "Intuned maintains a GitHub repository called 'cookbook' with examples for building browser automations using Intuned, primarily in Python.",
+        "value": "https://github.com/Intuned/cookbook",
+        "evidence_ids": [
+          "cc6b0a5e7b16e22d"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "org.github_account_type",
+        "statement": "The Intuned GitHub account is an organization account.",
+        "value": "Organization",
+        "evidence_ids": [
+          "21fa9b13ba57ce46"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.github_stars",
+        "statement": "The Intuned/cookbook GitHub repository has 30 stars as of 2026-08-23.",
+        "value": 30,
+        "evidence_ids": [
+          "cc6b0a5e7b16e22d"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.repo_activity",
+        "statement": "The Intuned/cookbook GitHub repository was last pushed to on 2026-08-21.",
+        "value": "2026-08-21",
+        "evidence_ids": [
+          "cc6b0a5e7b16e22d"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.repo_activity",
+        "statement": "The Intuned/cookbook GitHub repository was created on 2025-12-02.",
+        "value": "2025-12-02",
+        "evidence_ids": [
+          "cc6b0a5e7b16e22d"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "adoption.self_serve",
+        "statement": "Intuned offers a free tier with trial credits for initial automations, enabling self-service sign-up and usage without requiring contact with sales.",
+        "value": true,
+        "evidence_ids": [
+          "7172399fb3eb408c",
+          "f5c960628e30a767"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "adoption.pricing_public",
+        "statement": "Intuned publishes pricing plans on their website including a Free plan at $0/month, Developer at $25/month, Startup at $120/month, and an Enterprise plan with custom pricing.",
+        "value": true,
+        "evidence_ids": [
+          "cac01e855a783577"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "adoption.pricing_public",
+        "statement": "The Free plan includes 3 compute hours, 5 API machines, 10 job runs, $5 trial AI credit, advanced stealth mode, and 7-day data retention.",
+        "value": null,
+        "evidence_ids": [
+          "cac01e855a783577"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "adoption.pricing_public",
+        "statement": "The Developer plan includes 100 compute hours, 25 API machines, 100 job runs, $5 AI credit, access to large and XL machines, advanced stealth mode, and 30-day data retention for $25 per month.",
+        "value": null,
+        "evidence_ids": [
+          "cac01e855a783577"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "adoption.pricing_public",
+        "statement": "The Startup plan includes 500 compute hours, 100 API machines, 400 job runs, $40 AI credit, access to large and XL machines, advanced stealth mode, and 30-day data retention for $120 per month.",
+        "value": null,
+        "evidence_ids": [
+          "cac01e855a783577"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "adoption.pricing_public",
+        "statement": "The Enterprise plan offers custom compute and machine limits, volume pricing, SSO/SAML, advanced access controls, dedicated support, custom data retention and regions.",
+        "value": null,
+        "evidence_ids": [
+          "cac01e855a783577"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "founder.name_role",
+        "statement": "Faisal and Ahmad are founders of Intuned, as stated by themselves on Hacker News.",
+        "value": null,
+        "evidence_ids": [
+          "7172399fb3eb408c"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "founder.prior_role",
+        "statement": "Faisal has a background at UiPath, contributing to the product pivot in early 2024.",
+        "value": null,
+        "evidence_ids": [
+          "7172399fb3eb408c"
+        ],
+        "confidence": "high"
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8711,
+    "output_tokens": 1586,
+    "cost_usd": null
+  },
+  "created_at": "2026-08-23T06:32:32.613Z"
+}

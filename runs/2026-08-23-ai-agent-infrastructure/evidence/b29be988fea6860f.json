@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "b29be988fea6860f",
+  "url": "https://docs.tryardent.com/",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:29:58.567Z",
+  "status": 200,
+  "title": "Ardent: Git for your data infrastructure - Ardent",
+  "text": "Getting started\nArdent: Git for your data infrastructure\nCopy pageCopy page\nCopy pageCopy page\nArdent creates instant, isolated copies of your production Postgres database — in seconds, right from your terminal.\nTest migrations, run schema changes, and let coding agents like Claude Code and Cursor actually verify their database work — all against real data, without touching production.\nNo more shared staging databases. No more hand-maintained fixtures. An instant database for every task.\nInstant copies\nFull database copies in under 6 seconds.\nReal data\nTest against production data, not stale fixtures.\nAny Postgres\nSupabase, RDS, PlanetScale, or self-hosted.\n​\nGet started\nQuickstart\nBranch your Postgres database in a few commands.\nUsing Claude Code or Cursor? It can set Ardent up for you\nWith the ardent-cli skill installed, a short ask is enough — the skill fetches the current docs and works through setup:\nSet up Ardent for database branching on this project.\nMy connection string: [paste here]\nWithout the skill, paste the full directions:\nSet up Ardent for database branching. Act like a teammate at my keyboard:\nrun the commands yourself, stop only when you need me to do something\nonly I can do (browser sign-up, paste a credential, run source-database SQL).\nBefore each step, give me one short line on what's happening and why.\nRun these in order:\n1. Install the CLI: npm install -g ardent-cli\n2. ardent login → opens a browser to authenticate. Tell me to finish\nsign-up or login and ping you when done.\n3. Tell me to export my Postgres connection string in this shell:\nexport ARDENT_DB_URL='postgres://...'\nThen run:\nardent connector preflight postgresql \"$ARDENT_DB_URL\"\nIf preflight prints a Grant script, stop and ask me to run it on the\nsource database, then re-run preflight until it passes.\n4. After preflight passes, run:\nardent connector create postgresql \"$ARDENT_DB_URL\"\nSetup runs server-side and may take minutes or longer depending on\ndatabase size. If it's interrupted, resume with:\nardent connector retry-setup <name>\n5. ardent branch create my-feature → an isolated copy of my database\nI can use however I want without touching prod.\n6. ardent branch info → hand me the connection URL. I connect to it\nlike any Postgres database.\nIf a command errors, fix it. Docs: https://docs.tryardent.com/quickstart\n​\nHow it works\nArdent replicates your database into a read replica, then creates isolated branches from that replica in seconds. Each branch is a full Postgres database with your real data — like branches in git.\nProduction DB → Replication → Read replica → Many branches (each in seconds)\nThe workflow mirrors git:\nardent branch create — spin up an isolated database copy\nardent branch switch — move between branches\nardent branch info — see the connection URL and status\nardent branch delete — clean up when you’re done\nBranches suspend after 5 minutes of inactivity and wake instantly on reconnect. You pay storage only for the changes you make on a branch — so create as many as you need and throw them away freely.\n​\nNext steps\nConnectors\nSupabase, RDS, PlanetScale, and self-hosted Postgres.\nCLI Reference\nCommands, flags, and automation output.\nFAQ\nCommon questions answered.\n⌘I",
+  "meta": {
+    "og_title": "Ardent: Git for your data infrastructure - Ardent",
+    "og_site_name": "Ardent",
+    "og_type": "website",
+    "canonical": "https://docs.tryardent.com",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "docs",
+    "empty_shell": false,
+    "text_chars": 3223,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 3223
+  }
+}

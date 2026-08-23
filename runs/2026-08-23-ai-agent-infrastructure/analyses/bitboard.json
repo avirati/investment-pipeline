@@ -1,0 +1,306 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "bitboard",
+    "name": "BitBoard",
+    "url": "https://bitboard.work",
+    "one_liner": "Analytics Workspace for Agents",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48506545",
+        "title": "Launch HN: BitBoard (YC P25) – Analytics Workspace for Agents",
+        "posted_url": "https://bitboard.work/",
+        "posted_at": "2026-06-12T16:58:03.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "BitBoard is an agentic analytics workspace that provides infrastructure and a visualization layer to analyze data with AI.",
+      "value": "agentic analytics workspace providing infrastructure and visualization to analyze data with AI",
+      "evidence_ids": [
+        "903a6898a725afd9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "BitBoard enables users and their agents to work together on dashboards to analyze data and build live reporting.",
+      "value": "dashboard collaboration for data analysis and live reporting",
+      "evidence_ids": [
+        "903a6898a725afd9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "BitBoard builds on recent advances in large language models to enable analysis and collaboration with AI agents on business data.",
+      "value": "large language models (LLMs)",
+      "evidence_ids": [
+        "903a6898a725afd9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "BitBoard describes itself as an analytics workspace designed for humans and AI agents to interact with shared data primitives and build dashboards collaboratively.",
+      "value": "analytics workspace for human and AI collaboration",
+      "evidence_ids": [
+        "903a6898a725afd9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.launch_date",
+      "statement": "BitBoard's launch was announced on Hacker News on 2026-06-12.",
+      "value": "2026-06-12",
+      "evidence_ids": [
+        "903a6898a725afd9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "BitBoard offers a hosted service accessible at https://app.bitboard.work.",
+      "value": "hosted service",
+      "evidence_ids": [
+        "903a6898a725afd9",
+        "6a0ffcffab1be320"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.data_accumulated",
+      "statement": "BitBoard accumulates data, queries, transforms, charts, and controls together at a shareable URL so teammates can inspect and rerun the analysis.",
+      "value": "data, queries, transforms, charts, controls stored in shareable URLs",
+      "evidence_ids": [
+        "6a0ffcffab1be320"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.self_serve",
+      "statement": "Users can try BitBoard for free by signing up with an email at https://app.bitboard.work without requiring a credit card.",
+      "value": true,
+      "evidence_ids": [
+        "903a6898a725afd9",
+        "345c4df22f307c7f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "BitBoard offers flat-rate pricing plans publicly: free for individuals, $49 per seat per month for teams, and custom pricing for enterprises.",
+      "value": "flat-rate plans: free individual, $49/seat team, custom enterprise",
+      "evidence_ids": [
+        "4b23444ac2b8ba6b"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.sales_gate",
+      "statement": "Enterprise-level plans require contacting sales for custom proposals, but individuals and teams can start without a sales gate.",
+      "value": false,
+      "evidence_ids": [
+        "4b23444ac2b8ba6b"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 6,
+      "max": 25,
+      "band": "uncovered · floor of 6–12",
+      "evidence_ids": [],
+      "covered": false
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 15,
+      "max": 20,
+      "band": "11–15",
+      "evidence_ids": [
+        "903a6898a725afd9",
+        "6a0ffcffab1be320"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 6,
+      "max": 25,
+      "band": "uncovered · floor of 6–12",
+      "evidence_ids": [],
+      "covered": false
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "903a6898a725afd9",
+        "6a0ffcffab1be320"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 12,
+      "max": 15,
+      "band": "9–12",
+      "evidence_ids": [
+        "6a0ffcffab1be320",
+        "903a6898a725afd9"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 54,
+  "coverage": 0.6,
+  "disqualifiers": [],
+  "call": "PASS",
+  "unknowns": [
+    "D1 Founder–market fit & technical depth: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12",
+    "D3 Evidence of pull: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12"
+  ],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Pass — 54/100 is below the 55 a watch needs, at 60% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D2 Wedge specificity at 15/20 (band 11–15).",
+      "evidence_ids": [
+        "903a6898a725afd9",
+        "6a0ffcffab1be320"
+      ]
+    },
+    {
+      "kind": "summary",
+      "text": "2 of 5 dimensions had no primary source behind them; they are listed under what we could not verify.",
+      "evidence_ids": []
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "BitBoard is an agentic analytics workspace that provides infrastructure and a visualization layer to analyze data with AI.",
+          "evidence_ids": [
+            "903a6898a725afd9"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "BitBoard enables users and their agents to work together on dashboards to analyze data and build live reporting.",
+          "evidence_ids": [
+            "903a6898a725afd9"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "BitBoard describes itself as an analytics workspace designed for humans and AI agents to interact with shared data primitives and build dashboards collaboratively.",
+          "evidence_ids": [
+            "903a6898a725afd9"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "BitBoard offers a hosted service accessible at https://app.bitboard.work.",
+          "evidence_ids": [
+            "903a6898a725afd9",
+            "6a0ffcffab1be320"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "BitBoard accumulates data, queries, transforms, charts, and controls together at a shareable URL so teammates can inspect and rerun the analysis.",
+          "evidence_ids": [
+            "6a0ffcffab1be320"
+          ]
+        }
+      ],
+      "omitted": 3
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "BitBoard builds on recent advances in large language models to enable analysis and collaboration with AI agents on business data.",
+          "evidence_ids": [
+            "903a6898a725afd9"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "BitBoard's launch was announced on Hacker News on 2026-06-12.",
+          "evidence_ids": [
+            "903a6898a725afd9"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a named customer, design partner or user, stated to be using it for that job. That moves it from 11–15 to 16–20 (+5).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D5 Path to defensibility: find a named third-party product it works with, or 10 or more human contributors, beside the thing it accumulates. That moves it from 9–12 to 13–15 (+3).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find any primary source that names who is behind this — a team page, an about page, or a repository owner. Nothing was read for this dimension — it is scored at uncovered · floor of 6–12 and drags coverage down.",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": null,
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 4,
+    "evidence_usable": 4,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 10,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

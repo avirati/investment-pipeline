@@ -10,7 +10,7 @@
       {
         "source": "hn",
         "query": "AI agent infrastructure",
-        "at": "2026-08-23T04:06:24.233Z",
+        "at": "2026-08-23T06:32:03.067Z",
         "ref": "47663147",
         "title": "Launch HN: Freestyle – Sandboxes for Coding Agents",
         "posted_url": "https://www.freestyle.sh/",
@@ -21,18 +21,8 @@
   "facts": [
     {
       "schema_version": 1,
-      "key": "founder.name_role",
-      "statement": "The cofounders of Freestyle are Ben and Jacob.",
-      "value": null,
-      "evidence_ids": [
-        "ed4f7345ba83d9b7"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
       "key": "product.one_liner",
-      "statement": "Freestyle describes its product as \"Sandboxes for Coding Agents.\"",
+      "statement": "Freestyle provides sandboxes for coding agents as a cloud platform for managing AI code.",
       "value": "Sandboxes for Coding Agents",
       "evidence_ids": [
         "ed4f7345ba83d9b7"
@@ -41,19 +31,20 @@
     },
     {
       "schema_version": 1,
-      "key": "product.capability_dependency",
-      "statement": "Freestyle states that the current generation of AI coding agents can utilize the full power of a computer sandbox, enabled by advances beyond minimal tools and basic serverless apps.",
-      "value": null,
+      "key": "product.job",
+      "statement": "Freestyle's product is built for coding agents that run complex tasks and workflows in Linux virtual machines.",
+      "value": "coding agents running complex tasks and workflows",
       "evidence_ids": [
-        "ed4f7345ba83d9b7"
+        "ed4f7345ba83d9b7",
+        "67838102087e4058"
       ],
       "confidence": "high"
     },
     {
       "schema_version": 1,
       "key": "product.capability_dependency",
-      "statement": "Freestyle moved to its own bare metal racks because cloud providers' bare metal nodes were too costly and did not meet performance requirements for moving VMs across nodes.",
-      "value": null,
+      "statement": "The product depends on improvements in AI enabling agents to utilize the full power of a computer sandbox rather than minimal tools, a shift occurring around 2 years before 2026.",
+      "value": "AI advances allowing full sandbox utilization circa 2024",
       "evidence_ids": [
         "ed4f7345ba83d9b7"
       ],
@@ -62,27 +53,42 @@
     {
       "schema_version": 1,
       "key": "product.runtime_position",
-      "statement": "Freestyle provides sandboxes that are interchangeable with EC2 virtual machines from an agent's perspective, running full Debian with systemd init instead of runc.",
-      "value": null,
+      "statement": "Freestyle's offering is full Linux virtual machines with systemd init, not sandbox-shaped containers, providing real root access and multi-user isolation.",
+      "value": "full Linux VMs with systemd init and root access",
       "evidence_ids": [
-        "ed4f7345ba83d9b7"
+        "ed4f7345ba83d9b7",
+        "e945f7b05e79ab56",
+        "67838102087e4058"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "The product features live forking of running VMs without pausing, cloning full memory state in under 400ms.",
+      "value": "live forking VMs without pause",
+      "evidence_ids": [
+        "ed4f7345ba83d9b7",
+        "e945f7b05e79ab56"
       ],
       "confidence": "high"
     },
     {
       "schema_version": 1,
       "key": "product.capability_dependency",
-      "statement": "Freestyle sandboxes support full Linux capabilities including hardware virtualization, eBPF, FUSE, multiple users, and systemd services.",
-      "value": null,
+      "statement": "They support full Linux + hardware virtualization, eBPF, Fuse, and full networking stack with nested virtualization capabilities.",
+      "value": "full Linux with hardware virtualization, eBPF, Fuse, networking",
       "evidence_ids": [
-        "ed4f7345ba83d9b7"
+        "ed4f7345ba83d9b7",
+        "e945f7b05e79ab56",
+        "67838102087e4058"
       ],
       "confidence": "high"
     },
     {
       "schema_version": 1,
       "key": "product.launch_date",
-      "statement": "Freestyle was publicly launching on Hacker News in April 2026.",
+      "statement": "Freestyle was publicly launched or announced around April 2026 as indicated by a Hacker News post dated 2026-04-06.",
       "value": "2026-04-06",
       "evidence_ids": [
         "ed4f7345ba83d9b7"
@@ -91,103 +97,19 @@
     },
     {
       "schema_version": 1,
-      "key": "product.one_liner",
-      "statement": "Freestyle provides powerful Linux VMs and Git repos for code agents did not write, enabling real VMs with sandbox environments and Git-backed filesystems.",
-      "value": "Powerful Linux VMs and Git repos for code you didn't write",
-      "evidence_ids": [
-        "e945f7b05e79ab56"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "product.capability_dependency",
-      "statement": "Freestyle VMs provision in under 600 milliseconds from API request to ready machine.",
-      "value": 600,
-      "evidence_ids": [
-        "e945f7b05e79ab56",
-        "67838102087e4058"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "product.capability_dependency",
-      "statement": "Freestyle VMs can live fork, cloning a running VM without pausing it, providing full copies in milliseconds.",
-      "value": true,
-      "evidence_ids": [
-        "e945f7b05e79ab56"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "product.capability_dependency",
-      "statement": "Freestyle VMs support pause and resume, hibernating VMs and resuming exactly where left off, with customers paying nothing while VMs are paused.",
-      "value": true,
-      "evidence_ids": [
-        "e945f7b05e79ab56"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "product.capability_dependency",
-      "statement": "Freestyle Git provides every agent a branchable filesystem with commits, diffs, rollback, and review capabilities.",
-      "value": true,
-      "evidence_ids": [
-        "e945f7b05e79ab56"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "product.capability_dependency",
-      "statement": "Freestyle supports bidirectional sync between Freestyle Git repositories and GitHub repositories.",
-      "value": true,
-      "evidence_ids": [
-        "e945f7b05e79ab56"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "product.capability_dependency",
-      "statement": "Freestyle's VMs are full Linux VMs with real root access, supporting nested virtualization including running VMs inside VMs and Docker.",
-      "value": null,
-      "evidence_ids": [
-        "e945f7b05e79ab56",
-        "67838102087e4058"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "product.capability_dependency",
-      "statement": "Freestyle VMs provide features like sealed Linux users, systemd services, groups, multi-user isolation, and the full Linux networking stack with real root access.",
-      "value": null,
-      "evidence_ids": [
-        "e945f7b05e79ab56",
-        "67838102087e4058"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
       "key": "adoption.self_serve",
-      "statement": "Freestyle offers a free-to-start plan with no credit card required to get started.",
+      "statement": "Users can start using Freestyle immediately via a public API to create and run VMs without contacting sales.",
       "value": true,
       "evidence_ids": [
-        "e945f7b05e79ab56",
-        "92baf667d8ebcbd1"
+        "e945f7b05e79ab56"
       ],
       "confidence": "high"
     },
     {
       "schema_version": 1,
       "key": "adoption.pricing_public",
-      "statement": "Freestyle's pricing plans include Free (up to 10 concurrent VMs), Hobby ($50/month, up to 40 concurrent VMs), Pro ($500/month, up to 400 concurrent VMs), and Enterprise with custom pricing.",
-      "value": null,
+      "statement": "Freestyle publishes transparent pricing plans online, including a free forever tier with up to 10 concurrent VMs and a Hobby plan at $50/month.",
+      "value": true,
       "evidence_ids": [
         "92baf667d8ebcbd1"
       ],
@@ -195,45 +117,18 @@
     },
     {
       "schema_version": 1,
-      "key": "adoption.pricing_public",
-      "statement": "Freestyle charges $0.04032 per hour of vCPU beyond included amounts, $0.0129 per hour of GiB memory beyond included amounts, and $0.000086 per hour of GiB storage beyond included amounts.",
-      "value": null,
+      "key": "traction.hn_engagement",
+      "statement": "The launch Hacker News post about Freestyle received 322 points and 158 comments four months before the record retrieval date in August 2026.",
+      "value": 322,
       "evidence_ids": [
-        "92baf667d8ebcbd1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "adoption.pricing_public",
-      "statement": "Freestyle pricing features include limits per plan such as maximum concurrent VMs, saved VMs, snapshots, total vCPUs, total memory, total disk, and max vCPUs, memory, and disk per VM.",
-      "value": null,
-      "evidence_ids": [
-        "92baf667d8ebcbd1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "funding.raised_usd",
-      "statement": "There is no information about funding or capital raised in the provided records.",
-      "value": null,
-      "evidence_ids": [
-        "ed4f7345ba83d9b7",
-        "e945f7b05e79ab56",
-        "92baf667d8ebcbd1",
-        "67838102087e4058",
-        "4845da5537770e5f",
-        "deafd64ac3b2452f",
-        "bc96df27d722a38e",
-        "660e7d9724fef129"
+        "ed4f7345ba83d9b7"
       ],
       "confidence": "high"
     },
     {
       "schema_version": 1,
       "key": "traction.github_stars",
-      "statement": "The 'freestyle-sh/Adorable' GitHub repository had 800 stars as of 2026-08-23.",
+      "statement": "The open source repository 'freestyle-sh/Adorable' has 800 stars as of 2026-08-23.",
       "value": 800,
       "evidence_ids": [
         "bc96df27d722a38e"
@@ -242,28 +137,28 @@
     },
     {
       "schema_version": 1,
-      "key": "traction.contributors",
-      "statement": "The 'freestyle-sh/Adorable' GitHub repository has 4 human contributors and 1 bot, with the most active contributor being JacobZwang with 147 commits.",
-      "value": 4,
+      "key": "traction.repo_activity",
+      "statement": "The 'freestyle-sh/Adorable' repository was most recently pushed to on 2026-03-19.",
+      "value": "2026-03-19",
       "evidence_ids": [
-        "660e7d9724fef129"
+        "bc96df27d722a38e"
       ],
       "confidence": "high"
     },
     {
       "schema_version": 1,
-      "key": "traction.named_user",
-      "statement": "Freestyle is trusted by companies including vly.ai, Rork, and Vibeflow, as shown on its website.",
-      "value": null,
+      "key": "traction.contributors",
+      "statement": "The 'freestyle-sh/Adorable' repository has 16 watchers, 312 forks and 12 open issues as of the last retrieval date.",
+      "value": 312,
       "evidence_ids": [
-        "e945f7b05e79ab56"
+        "bc96df27d722a38e"
       ],
       "confidence": "high"
     },
     {
       "schema_version": 1,
       "key": "org.github_account_type",
-      "statement": "The freestlye-sh GitHub account is an organization account.",
+      "statement": "The GitHub account freestyle-sh is an organization, not a personal account.",
       "value": "Organization",
       "evidence_ids": [
         "4845da5537770e5f"
@@ -272,22 +167,31 @@
     },
     {
       "schema_version": 1,
-      "key": "product.open_source",
-      "statement": "Freestyle maintains an open-source project called 'Adorable' under the MIT license that is an AI app builder using Freestyle cloud VMs with git-backed persistence.",
-      "value": true,
+      "key": "traction.named_user",
+      "statement": "Freestyle lists vly.ai, Rork, and Vibeflow as customers or users of its platform.",
+      "value": "vly.ai, Rork, Vibeflow",
       "evidence_ids": [
-        "bc96df27d722a38e",
-        "deafd64ac3b2452f"
+        "e945f7b05e79ab56"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.data_accumulated",
+      "statement": "Freestyle Git backs every agent with branchable filesystems featuring commits, diffs, rollback, and review, accumulating code data per agent.",
+      "value": "Git-backed filesystems with branch and commit history",
+      "evidence_ids": [
+        "e945f7b05e79ab56"
       ],
       "confidence": "high"
     },
     {
       "schema_version": 1,
       "key": "team.size_visible",
-      "statement": "The Adorable repository's four human contributors include named individuals JacobZwang, theswerd, willothy, and bhaktatejas922.",
-      "value": 4,
+      "statement": "There are two cofounders named Ben and Jacob as stated on the Hacker News launch post.",
+      "value": 2,
       "evidence_ids": [
-        "660e7d9724fef129"
+        "ed4f7345ba83d9b7"
       ],
       "confidence": "high"
     }
@@ -296,12 +200,11 @@
     {
       "id": "D1",
       "name": "Founder–market fit & technical depth",
-      "score": 12,
+      "score": 5,
       "max": 25,
-      "band": "6–12",
+      "band": "0–5",
       "evidence_ids": [
         "ed4f7345ba83d9b7",
-        "660e7d9724fef129",
         "4845da5537770e5f"
       ],
       "covered": true
@@ -309,13 +212,13 @@
     {
       "id": "D2",
       "name": "Wedge specificity",
-      "score": 4,
+      "score": 20,
       "max": 20,
-      "band": "0–4",
+      "band": "16–20",
       "evidence_ids": [
         "ed4f7345ba83d9b7",
-        "e945f7b05e79ab56",
-        "67838102087e4058"
+        "67838102087e4058",
+        "e945f7b05e79ab56"
       ],
       "covered": true
     },
@@ -327,8 +230,8 @@
       "band": "6–12",
       "evidence_ids": [
         "bc96df27d722a38e",
-        "660e7d9724fef129",
-        "e945f7b05e79ab56"
+        "e945f7b05e79ab56",
+        "ed4f7345ba83d9b7"
       ],
       "covered": true
     },
@@ -353,16 +256,15 @@
       "max": 15,
       "band": "9–12",
       "evidence_ids": [
-        "ed4f7345ba83d9b7",
-        "bc96df27d722a38e",
-        "deafd64ac3b2452f",
         "e945f7b05e79ab56",
-        "660e7d9724fef129"
+        "ed4f7345ba83d9b7",
+        "67838102087e4058",
+        "bc96df27d722a38e"
       ],
       "covered": true
     }
   ],
-  "score": 55,
+  "score": 64,
   "coverage": 1,
   "disqualifiers": [],
   "call": "WATCH",
@@ -370,16 +272,15 @@
   "why_this_call": [
     {
       "kind": "summary",
-      "text": "Watch — 55/100 meets the 55 a watch needs and is below the 72 a meeting needs, at 100% coverage.",
+      "text": "Watch — 64/100 meets the 55 a watch needs and is below the 72 a meeting needs, at 100% coverage.",
       "evidence_ids": []
     },
     {
       "kind": "summary",
-      "text": "The largest shortfall is D2 Wedge specificity at 4/20 (band 0–4).",
+      "text": "The largest shortfall is D1 Founder–market fit & technical depth at 5/25 (band 0–5).",
       "evidence_ids": [
         "ed4f7345ba83d9b7",
-        "e945f7b05e79ab56",
-        "67838102087e4058"
+        "4845da5537770e5f"
       ]
     }
   ],
@@ -389,21 +290,14 @@
       "bullets": [
         {
           "kind": "fact",
-          "text": "The cofounders of Freestyle are Ben and Jacob.",
+          "text": "There are two cofounders named Ben and Jacob as stated on the Hacker News launch post.",
           "evidence_ids": [
             "ed4f7345ba83d9b7"
           ]
         },
         {
           "kind": "fact",
-          "text": "The Adorable repository's four human contributors include named individuals JacobZwang, theswerd, willothy, and bhaktatejas922.",
-          "evidence_ids": [
-            "660e7d9724fef129"
-          ]
-        },
-        {
-          "kind": "fact",
-          "text": "The freestlye-sh GitHub account is an organization account.",
+          "text": "The GitHub account freestyle-sh is an organization, not a personal account.",
           "evidence_ids": [
             "4845da5537770e5f"
           ]
@@ -416,96 +310,98 @@
       "bullets": [
         {
           "kind": "fact",
-          "text": "Freestyle describes its product as \"Sandboxes for Coding Agents.\"",
+          "text": "Freestyle provides sandboxes for coding agents as a cloud platform for managing AI code.",
           "evidence_ids": [
             "ed4f7345ba83d9b7"
           ]
         },
         {
           "kind": "fact",
-          "text": "Freestyle provides powerful Linux VMs and Git repos for code agents did not write, enabling real VMs with sandbox environments and Git-backed filesystems.",
+          "text": "Freestyle's product is built for coding agents that run complex tasks and workflows in Linux virtual machines.",
           "evidence_ids": [
+            "ed4f7345ba83d9b7",
+            "67838102087e4058"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Freestyle's offering is full Linux virtual machines with systemd init, not sandbox-shaped containers, providing real root access and multi-user isolation.",
+          "evidence_ids": [
+            "ed4f7345ba83d9b7",
+            "e945f7b05e79ab56",
+            "67838102087e4058"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The product features live forking of running VMs without pausing, cloning full memory state in under 400ms.",
+          "evidence_ids": [
+            "ed4f7345ba83d9b7",
             "e945f7b05e79ab56"
           ]
         },
         {
           "kind": "fact",
-          "text": "Freestyle maintains an open-source project called 'Adorable' under the MIT license that is an AI app builder using Freestyle cloud VMs with git-backed persistence.",
+          "text": "Freestyle Git backs every agent with branchable filesystems featuring commits, diffs, rollback, and review, accumulating code data per agent.",
           "evidence_ids": [
-            "bc96df27d722a38e",
-            "deafd64ac3b2452f"
-          ]
-        },
-        {
-          "kind": "fact",
-          "text": "Freestyle provides sandboxes that are interchangeable with EC2 virtual machines from an agent's perspective, running full Debian with systemd init instead of runc.",
-          "evidence_ids": [
-            "ed4f7345ba83d9b7"
-          ]
-        },
-        {
-          "kind": "fact",
-          "text": "Freestyle offers a free-to-start plan with no credit card required to get started.",
-          "evidence_ids": [
-            "e945f7b05e79ab56",
-            "92baf667d8ebcbd1"
+            "e945f7b05e79ab56"
           ]
         }
       ],
-      "omitted": 3
+      "omitted": 2
     },
     {
       "heading": "Market",
       "bullets": [
         {
           "kind": "fact",
-          "text": "Freestyle states that the current generation of AI coding agents can utilize the full power of a computer sandbox, enabled by advances beyond minimal tools and basic serverless apps.",
+          "text": "The product depends on improvements in AI enabling agents to utilize the full power of a computer sandbox rather than minimal tools, a shift occurring around 2 years before 2026.",
           "evidence_ids": [
             "ed4f7345ba83d9b7"
           ]
         },
         {
           "kind": "fact",
-          "text": "Freestyle moved to its own bare metal racks because cloud providers' bare metal nodes were too costly and did not meet performance requirements for moving VMs across nodes.",
+          "text": "They support full Linux + hardware virtualization, eBPF, Fuse, and full networking stack with nested virtualization capabilities.",
           "evidence_ids": [
-            "ed4f7345ba83d9b7"
-          ]
-        },
-        {
-          "kind": "fact",
-          "text": "Freestyle sandboxes support full Linux capabilities including hardware virtualization, eBPF, FUSE, multiple users, and systemd services.",
-          "evidence_ids": [
-            "ed4f7345ba83d9b7"
-          ]
-        },
-        {
-          "kind": "fact",
-          "text": "Freestyle VMs provision in under 600 milliseconds from API request to ready machine.",
-          "evidence_ids": [
+            "ed4f7345ba83d9b7",
             "e945f7b05e79ab56",
             "67838102087e4058"
           ]
         },
         {
           "kind": "fact",
-          "text": "Freestyle VMs can live fork, cloning a running VM without pausing it, providing full copies in milliseconds.",
+          "text": "Freestyle was publicly launched or announced around April 2026 as indicated by a Hacker News post dated 2026-04-06.",
           "evidence_ids": [
-            "e945f7b05e79ab56"
+            "ed4f7345ba83d9b7"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The open source repository 'freestyle-sh/Adorable' has 800 stars as of 2026-08-23.",
+          "evidence_ids": [
+            "bc96df27d722a38e"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The 'freestyle-sh/Adorable' repository was most recently pushed to on 2026-03-19.",
+          "evidence_ids": [
+            "bc96df27d722a38e"
           ]
         }
       ],
-      "omitted": 10
+      "omitted": 3
     },
     {
       "heading": "Risks",
       "bullets": [
         {
           "kind": "gap",
-          "text": "D2 Wedge specificity scored in its lowest band (0–4): nothing in the evidence read met 5–10, which asks for a stated job — the specific task the product is for, and the person doing it.",
+          "text": "D1 Founder–market fit & technical depth scored in its lowest band (0–5): nothing in the evidence read met 6–12, which asks for anybody named with a role beside them — on a team or about page, or as the repository's top contributor.",
           "evidence_ids": [
             "ed4f7345ba83d9b7",
-            "e945f7b05e79ab56",
-            "67838102087e4058"
+            "4845da5537770e5f"
           ]
         }
       ],
@@ -515,7 +411,7 @@
   "what_would_change_my_mind": [
     {
       "kind": "check",
-      "text": "D1 Founder–market fit & technical depth: find a prior employer, role or period stated for somebody the company names. That moves it from 6–12 to 13–19 (+7).",
+      "text": "D1 Founder–market fit & technical depth: find anybody named with a role beside them — on a team or about page, or as the repository's top contributor. That moves it from 0–5 to 6–12 (+7).",
       "evidence_ids": []
     },
     {
@@ -525,21 +421,21 @@
     },
     {
       "kind": "check",
-      "text": "D2 Wedge specificity: find a stated job — the specific task the product is for, and the person doing it. That moves it from 0–4 to 5–10 (+6).",
+      "text": "D5 Path to defensibility: find a named third-party product it works with, or 10 or more human contributors, beside the thing it accumulates. That moves it from 9–12 to 13–15 (+3).",
       "evidence_ids": []
     }
   ],
-  "upgrade_trigger": "17 points short of 72 (score 55); no single dimension covers it, but these together do: D1 Founder–market fit & technical depth from 6–12 to 13–19 (+7), by finding a prior employer, role or period stated for somebody the company names; D3 Evidence of pull from 6–12 to 13–19 (+7), by finding a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days; D2 Wedge specificity from 0–4 to 5–10 (+6), by finding a stated job — the specific task the product is for, and the person doing it.",
+  "upgrade_trigger": "8 points short of 72 (score 64); no single dimension covers it, but these together do: D1 Founder–market fit & technical depth from 0–5 to 6–12 (+7), by finding anybody named with a role beside them — on a team or about page, or as the repository's top contributor; D3 Evidence of pull from 6–12 to 13–19 (+7), by finding a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days.",
   "status": "ok",
   "status_reason": null,
   "inputs": {
-    "evidence_records": 8,
-    "evidence_usable": 8,
-    "gather_failures": 1,
+    "evidence_records": 6,
+    "evidence_usable": 6,
+    "gather_failures": 0,
     "extraction": {
       "status": "ok",
       "attempts": 1,
-      "facts": 26,
+      "facts": 17,
       "dropped": 0,
       "dropped_by_kind": {},
       "error": null

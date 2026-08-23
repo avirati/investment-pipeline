@@ -16,10 +16,10 @@ that is retroactively made to look correct is worth nothing.
 
 | Want to know | Read |
 |---|---|
-| What was decided and why | [../adr/](../adr/) — 7 records, each with rejected options |
+| What was decided and why | [../adr/](../adr/) — 9 records, each with rejected options |
 | How the thing was built, session by session | The numbered entries here |
-| How prompts evolved and why | `prompts/CHANGELOG.md` — arrives with stage 2 |
-| How prompt and rubric changes were evaluated | `docs/evals/` — arrives with the first golden set |
+| How prompts evolved and why | [`prompts/CHANGELOG.md`](../../prompts/CHANGELOG.md) |
+| How prompt and rubric changes were evaluated | **Nowhere — there is no eval harness.** A deliberate cut, recorded in [../SCOPE.md](../SCOPE.md). The rubric is not validated; [0040](./0040-sample-run-and-hand-check.md) measures what that costs |
 | What is left to build, in order | [../tickets/](../tickets/) |
 | What was cut and why | [../SCOPE.md](../SCOPE.md) |
 | How the AI was steered | [../../CLAUDE.md](../../CLAUDE.md) |
@@ -80,3 +80,6 @@ are unfinished, not delegated.
 | [0036](./0036-memo-template-and-render.md) | 2026-08-23 | The memo template and renderer, `Analysis` v4's "why this call", two golden memos; TICKET-0024 closes |
 | [0037](./0037-memo-validator.md) | 2026-08-23 | The memo validator: the pipeline's one hard fail, read back out of the rendered markdown; TICKET-0025 closes |
 | [0038](./0038-stage-3-wiring.md) | 2026-08-23 | Stage 3 wired: `./pipeline memo` writes validated memos offline, and exit 3 becomes reachable; TICKET-0026 closes |
+| [0039](./0039-bundles-and-the-run-command.md) | 2026-08-23 | Bundles as artifacts, a replay that reads them, and `./pipeline run`; inconsistencies 70 and 84 close, TICKET-0027 closes |
+| [0040](./0040-sample-run-and-hand-check.md) | 2026-08-23 | The committed sample run of 12, read by hand: one wrong call, one degenerate dimension, two runs that disagree; TICKET-0028 closes |
+| [0041](./0041-docs-closeout.md) | 2026-08-23 | Docs closeout: the checklist walked, every score recomputed by hand, and a replay that was eating the committed manifest; TICKET-0029 closes |

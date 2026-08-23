@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "283fbcf555627d5a",
+  "url": "https://intunedhq.com/docs",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:29:56.019Z",
+  "status": 200,
+  "title": "Introduction - Intuned",
+  "text": "Getting started\nIntroduction\nCopy pageCopy page\nCode-first browser automation platform with an AI agent that builds and maintains your automations\nCopy pageCopy page\n​\nWhat is Intuned?\nIntuned is a code-first browser automation platform for developers, with two parts:\nA platform for deploying and running browser automations as code—with built-in authentication, stealth, monitoring, scheduling, and scale.\nAn AI agent that builds, edits, and maintains those automations autonomously.\nBuild automations by hand or let AI build them for you. What deploys is always code you can read, debug, and own. Because the agent runs inside the platform—with access to browser traces, run history, and project configuration—it can do more than generate code. It can test against live pages, diagnose failures, and maintain your automations after deployment.\n​\nTwo ways to use Intuned\nProjects\nBuild, deploy, and run browser automations as code. Full platform:\nAuthSessions, Jobs, the IDE, the CLI, and Intuned Agent. Best when you want\nto own and maintain the automation.\nWeb Tasks\nDescribe a web task in plain English and call an API. No project to create\nor maintain. Best for repeatable tasks with a clear starting URL—runs get\ncheaper and faster over time.\n​\nWhat you can build\nBrowser automation covers any task where software controls a browser to interact with websites. Common use cases include:\nScrapers — Extract structured data from websites. Product prices, job listings, public records, news articles. Write the extraction logic once, run it on a schedule, and get results delivered to your systems.\nRPA automations — Interact with websites on behalf of users. Form submissions, data entry, account actions, report downloads. Useful when a service doesn’t offer an API or you need to automate legacy web apps.\nCrawlers — Discover and collect data across many pages. Follow links, parse sitemaps, index content. Build crawlers that process hundreds or thousands of pages per run.\nAI-powered automations — Use LLMs to navigate, interact, and extract from websites. Build AI agents that adapt to different sites or combine AI with deterministic code for reliability where it matters.\n​\nIntuned Agent\nIntuned Agent is an AI agent that builds, edits, and maintains browser automation Projects. It runs inside the Intuned platform with a real browser, full access to the platform, and works in the background as long as needed.\nBuild from a conversation — Describe your scraper or automation in natural language. The agent creates a plan, controls a real browser in the background, validates against live pages, and delivers working code with sample data. Typically takes 30–60 minutes.\nEdit existing projects — Select a project, describe the change. Add fields, fix selectors, change pagination, modify formatting. The agent shows a diff, tests it, and delivers results.\nFix failed runs — Click “Fix with AI” on any failed run. Error context is pre-filled—the agent diagnoses and generates a fix without back-and-forth.\nSelf-healing projects — Enable self-healing on any project. Intuned detects issues automatically—not just pass/fail, but anomalies in response size, output patterns, and run behavior. The agent can fix issues, merge changes, and redeploy, with the level of autonomy you choose.\nRun it locally — Prefer your own setup? The External agent (private preview) runs the same agent in Claude Code or Codex to build, edit, and debug automations locally.\nTry Intuned Agent\nStart building with Intuned Agent\nLearn more\nSee what the agent can do\n​\nPlatform features\nBuilt-in authentication — Handle login flows with AuthSessions. You define how to log in and verify sessions—Intuned manages the rest.\nStealth and anti-detection — Proxies, stealth mode, and CAPTCHA solving help your automations avoid detection.\nMonitoring and traces — Full logs, browser traces, and session recordings for every Run.\nJobs and scheduling — Run automations on a schedule or in batches. Configure retries, concurrency, and result delivery.\nFlexible automations — Write deterministic scripts, AI-driven automations, crawlers, or any combination. Use any library or pattern.\n​\nQuickstarts\nBuild a scraper with AI\nGenerate a scraper from a prompt and schema.\nBuild an RPA with AI\nAutomate browser workflows using the agent.\nBuild a scraper manually\nExtract data from a website with code.\nBuild an RPA manually\nAutomate browser workflows with code.\nAuthenticated RPA\nAutomate login-protected workflows with AuthSessions.\n​\nContinue reading\nHow the platform works\nUnderstand Projects, Runs, Jobs, and the execution model\nIntuned vs other approaches\nSee how Intuned compares to other browser automation tools\nNeed managed automations? Our solution engineers—powered by Intuned\nAgent—build and maintain automations for you. Tell us what you need, and we\nhandle the rest. Get in touch.\n⌘I",
+  "meta": {
+    "og_title": "Introduction - Intuned",
+    "og_description": "Code-first browser automation platform with an AI agent that builds and maintains your automations",
+    "og_site_name": "Intuned",
+    "og_type": "website",
+    "description": "Code-first browser automation platform with an AI agent that builds and maintains your automations",
+    "canonical": "https://intunedhq.com/docs/main/00-getting-started/introduction",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "docs",
+    "final_url": "https://intunedhq.com/docs/main/00-getting-started/introduction",
+    "empty_shell": false,
+    "text_chars": 4867,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 4867
+  }
+}

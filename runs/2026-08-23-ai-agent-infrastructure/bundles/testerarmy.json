@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "testerarmy",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "testerarmy",
+    "name": "TesterArmy",
+    "url": "https://tester.army",
+    "one_liner": "Agents that test web and mobile apps",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48586299",
+        "title": "Launch HN: TesterArmy (YC P26) – Agents that test web and mobile apps",
+        "posted_url": "https://tester.army",
+        "posted_at": "2026-06-18T14:49:44.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://tester.army",
+      "from": "candidate_url"
+    },
+    "github": null
+  },
+  "evidence_ids": [
+    "d15d5924ec1f9a76",
+    "174612b378279eb8",
+    "ea4eb152780f5619",
+    "4981bbc2d4badf8d",
+    "d37f625e18a20a86"
+  ],
+  "signals": [
+    {
+      "key": "site.url",
+      "value": "https://tester.army/",
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "174612b378279eb8"
+    },
+    {
+      "key": "site.title",
+      "value": "TesterArmy: Test your app with AI, catch bugs before users do",
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "174612b378279eb8"
+    },
+    {
+      "key": "site.description",
+      "value": "TesterArmy runs real tests against your site or mobile app. Get screenshots, recordings, and bug reports - no test scripts to maintain.",
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "174612b378279eb8"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "174612b378279eb8"
+    },
+    {
+      "key": "site.team_url",
+      "value": "https://tester.army/about",
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "174612b378279eb8"
+    },
+    {
+      "key": "site.pricing_url",
+      "value": "https://tester.army/pricing",
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "174612b378279eb8"
+    },
+    {
+      "key": "site.docs_url",
+      "value": "https://tester.army/docs",
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "174612b378279eb8"
+    },
+    {
+      "key": "site.signup_url",
+      "value": "https://tester.army/sign-in",
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "174612b378279eb8"
+    },
+    {
+      "key": "site.contact_url",
+      "value": "https://tester.army/contact",
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "174612b378279eb8"
+    },
+    {
+      "key": "site.people_named",
+      "value": 2,
+      "as_of": "2026-08-22T10:19:42.988Z",
+      "evidence_id": "ea4eb152780f5619"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "site.repo_url",
+      "reason": "the home page links to no repo page"
+    },
+    {
+      "key": "github",
+      "reason": "candidate url is not a GitHub account and the site links to no code host"
+    }
+  ],
+  "people": [
+    {
+      "name": "Szymon Rybczak",
+      "role": "Co-founder & CEO",
+      "matched": "role element after name",
+      "context": "Szymon RybczakCo-founder & CEO"
+    },
+    {
+      "name": "Oskar Kwaśniewski",
+      "role": "Co-founder & CTO",
+      "matched": "role element after name",
+      "context": "Oskar KwaśniewskiCo-founder & CTO"
+    }
+  ],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

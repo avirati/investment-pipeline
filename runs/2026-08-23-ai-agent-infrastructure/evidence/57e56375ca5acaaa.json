@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "57e56375ca5acaaa",
+  "url": "https://zatanna.ai",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:29:55.603Z",
+  "status": 200,
+  "title": "Zatanna — Turn software workflows into reliable APIs for AI agents |",
+  "text": "Zatanna maps human-only software workflows and exposes them as reliable APIs your AI agents and internal tools can call in production. No browser automation scripts to maintain.\n\nUIs are for humans, not agents\nAPIs for\nany EHR\nAny portal becomes a fast, stable API your agents call in production — even the ones with no public API. No browser bots to babysit.\n4,829,385,502Modeled total requests processed since March 1, 2026, based on an average of 1.22 million requests per hourtotal requests processed\nBook a 15-min demoSee how it works→\nYBacked by Y Combinator\nTrusted by some of the fastest-growing startups in healthcare, logistics, hospitality, and more\nWhat we do\nThe real API was always there. We just expose it.\nCapture the real API\nWe observe the actual network traffic behind your portal workflows and reconstruct the exact request flow — auth, sessions, sequencing, everything.\nOne stable endpoint\nYour agents call a single, clean API. We manage auth, retries, anti-bot detection, and session handling underneath.\nMilliseconds, not seconds\nDirect API calls instead of browser automation. No UI dependencies, no fragile selectors, no headless Chrome overhead.\nHow we do it\nFrom one recorded workflow to a production API\n01\nRecord\nWalk through the workflow once\nWe capture every underlying network request — login flows, API calls, session tokens, and sequencing — while a human completes the task.\n02\nGenerate\nReconstruct the optimal request flow\nWe model the real calls, auth behavior, retry logic, and edge cases. No UI layer involved.\n03\nIntegrate\nCall one stable endpoint\nYour agents call a clean, parameterized API. We own the auth, retries, and maintenance below the surface.\nReliability layer\nSelf-maintaining by design\nSessions expire. Portals update. Auth flows change. Zatanna detects when tools break and repairs them automatically — so you integrate once and treat workflows like stable infrastructure.\nStateful auth & session management\nRequest sequencing & replay\nAutomatic retry & re-authentication\nAnti-bot & TLS fingerprint hardening\nPortal change detection & auto-repair\nUse cases\nWorks with any portal that has a login\nIf a human can reach it through a browser login, your agents can reach it through one API call.\nBack-office & ops portals\nERP systems, freight carrier portals, insurance platforms, and internal tools with no public API\nDocument & form workflows\nClaim submissions, permit applications, record lookups, and structured data entry at scale\nAI agent actions\nAgents that need to do real work in third-party software, not just read it\nBring one blocked workflow. We'll turn it into a production API.\nBook a workflow review\n30-minute working session\nFAQ\nCommon questions\nHow is this different from browser automation or computer use?+\nBrowser automation renders full pages and clicks through UIs — it breaks when anything changes, is slow, and fails at scale. Zatanna works at the network layer. We reverse-engineer the underlying API calls behind any portal and deploy them as direct endpoints. That means milliseconds instead of seconds, structured data instead of scraped HTML, and integrations that don't break when a button moves.\nWhat does Zatanna do?+\nZatanna reverse-engineers the network traffic behind any web portal and turns it into a stable, callable API. Walk through a workflow once — we capture the underlying request behavior and deploy it as an endpoint your agents can call in production.\nCan Zatanna handle MFA and login flows?+\nYes. We handle stateful auth, MFA, cookie management, and session refresh automatically. Your agents call the API endpoint — we manage everything below the authentication layer.\nWhat if the portal changes?+\nWe work at the API layer, so frontend changes like UI redesigns or layout updates rarely affect your integrations. When backend behavior does change, our observability layer detects it and we repair the integration automatically.\nHow long does it take to get started?+\nBook a 30-minute workflow review. We walk the workflow once, reconstruct the request flow, and deploy an endpoint. Most integrations are live within days.",
+  "meta": {
+    "og_title": "Zatanna — Turn software workflows into reliable APIs for AI agents |",
+    "og_description": "Zatanna maps human-only software workflows and exposes them as reliable APIs your AI agents and internal tools can call in production. No browser automation scripts to maintain.",
+    "og_type": "website",
+    "description": "Zatanna maps human-only software workflows and exposes them as reliable APIs your AI agents and internal tools can call in production. No browser automation scripts to maintain.",
+    "canonical": "https://www.zatanna.ai/",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "home",
+    "final_url": "https://www.zatanna.ai/",
+    "empty_shell": false,
+    "text_chars": 4121,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 4121
+  }
+}

@@ -1,0 +1,493 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "intuned",
+    "name": "Intuned",
+    "url": "https://intunedhq.com",
+    "one_liner": "Build and run reliable browser automations as code",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48445171",
+        "title": "Launch HN: Intuned (YC S22) – Build and run reliable browser automations as code",
+        "posted_url": "https://intunedhq.com",
+        "posted_at": "2026-06-08T13:35:27.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Intuned is a platform for building, deploying, and maintaining browser automations as code.",
+      "value": "Build and run reliable browser automations as code",
+      "evidence_ids": [
+        "7172399fb3eb408c"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Customers primarily use Intuned AI agent to automate websites that don't expose APIs for tasks like scraping data, pulling reports, and submitting forms.",
+      "value": null,
+      "evidence_ids": [
+        "7172399fb3eb408c"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "In late 2024, stronger AI models like Claude Code and Codex enabled Intuned to pivot from rigid pipelines to a more open-ended coding agent approach.",
+      "value": null,
+      "evidence_ids": [
+        "7172399fb3eb408c"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Intuned is a managed runtime platform running browser automation code with an integrated AI agent that debug and maintain the automation code.",
+      "value": null,
+      "evidence_ids": [
+        "7172399fb3eb408c"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.data_accumulated",
+      "statement": "The Intuned platform captures context of every automation run including parameters, results, traces, and logs for debugging and self-healing.",
+      "value": true,
+      "evidence_ids": [
+        "7172399fb3eb408c"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Intuned Agent generates and maintains integration code via reverse-engineered network calls or browser automation and runs it at scale with authentication, captcha solving, and observability.",
+      "value": "Build reliable integrations for services with no APIs",
+      "evidence_ids": [
+        "f5c960628e30a767"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Intuned builds integrations for services that do not have APIs by either copying the service's network calls or automating a browser, running these integrations at scale with handling of login, captchas, and monitoring.",
+      "value": null,
+      "evidence_ids": [
+        "f5c960628e30a767"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "Intuned supports use cases including scrapers to extract data from websites, crawlers to navigate and collect data across many pages, back-office automation for data entry and form submissions, AI-powered automations, managed integrations, data migration, and AI agents using various AI frameworks.",
+      "value": null,
+      "evidence_ids": [
+        "f5c960628e30a767"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Intuned Agent is the first AI agent designed to build and maintain scrapers generating Playwright code, with features to enable self-healing and support authenticated scrapers managing authentication state.",
+      "value": null,
+      "evidence_ids": [
+        "f5c960628e30a767"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "Intuned offers stealth mode featuring anti-detection, proxies, and captcha solving built in for crawlers and AI automations.",
+      "value": null,
+      "evidence_ids": [
+        "f5c960628e30a767"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Intuned automates back-office workflows in CRMs, vendor portals, admin panels, and legacy systems with authenticated operations, reliable execution, and monitoring.",
+      "value": null,
+      "evidence_ids": [
+        "f5c960628e30a767"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Intuned runs browser and network automations as deterministic scripts, AI-driven automations, crawlers, or any combination, using any framework in TypeScript or Python.",
+      "value": null,
+      "evidence_ids": [
+        "f5c960628e30a767"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.open_source",
+      "statement": "Intuned maintains a GitHub repository called 'cookbook' with examples for building browser automations using Intuned, primarily in Python.",
+      "value": "https://github.com/Intuned/cookbook",
+      "evidence_ids": [
+        "cc6b0a5e7b16e22d"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "org.github_account_type",
+      "statement": "The Intuned GitHub account is an organization account.",
+      "value": "Organization",
+      "evidence_ids": [
+        "21fa9b13ba57ce46"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.github_stars",
+      "statement": "The Intuned/cookbook GitHub repository has 30 stars as of 2026-08-23.",
+      "value": 30,
+      "evidence_ids": [
+        "cc6b0a5e7b16e22d"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.repo_activity",
+      "statement": "The Intuned/cookbook GitHub repository was last pushed to on 2026-08-21.",
+      "value": "2026-08-21",
+      "evidence_ids": [
+        "cc6b0a5e7b16e22d"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.repo_activity",
+      "statement": "The Intuned/cookbook GitHub repository was created on 2025-12-02.",
+      "value": "2025-12-02",
+      "evidence_ids": [
+        "cc6b0a5e7b16e22d"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.self_serve",
+      "statement": "Intuned offers a free tier with trial credits for initial automations, enabling self-service sign-up and usage without requiring contact with sales.",
+      "value": true,
+      "evidence_ids": [
+        "7172399fb3eb408c",
+        "f5c960628e30a767"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "Intuned publishes pricing plans on their website including a Free plan at $0/month, Developer at $25/month, Startup at $120/month, and an Enterprise plan with custom pricing.",
+      "value": true,
+      "evidence_ids": [
+        "cac01e855a783577"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "The Free plan includes 3 compute hours, 5 API machines, 10 job runs, $5 trial AI credit, advanced stealth mode, and 7-day data retention.",
+      "value": null,
+      "evidence_ids": [
+        "cac01e855a783577"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "The Developer plan includes 100 compute hours, 25 API machines, 100 job runs, $5 AI credit, access to large and XL machines, advanced stealth mode, and 30-day data retention for $25 per month.",
+      "value": null,
+      "evidence_ids": [
+        "cac01e855a783577"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "The Startup plan includes 500 compute hours, 100 API machines, 400 job runs, $40 AI credit, access to large and XL machines, advanced stealth mode, and 30-day data retention for $120 per month.",
+      "value": null,
+      "evidence_ids": [
+        "cac01e855a783577"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "The Enterprise plan offers custom compute and machine limits, volume pricing, SSO/SAML, advanced access controls, dedicated support, custom data retention and regions.",
+      "value": null,
+      "evidence_ids": [
+        "cac01e855a783577"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "Faisal and Ahmad are founders of Intuned, as stated by themselves on Hacker News.",
+      "value": null,
+      "evidence_ids": [
+        "7172399fb3eb408c"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.prior_role",
+      "statement": "Faisal has a background at UiPath, contributing to the product pivot in early 2024.",
+      "value": null,
+      "evidence_ids": [
+        "7172399fb3eb408c"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 19,
+      "max": 25,
+      "band": "13–19",
+      "evidence_ids": [
+        "7172399fb3eb408c",
+        "21fa9b13ba57ce46"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 15,
+      "max": 20,
+      "band": "11–15",
+      "evidence_ids": [
+        "7172399fb3eb408c",
+        "f5c960628e30a767"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 5,
+      "max": 25,
+      "band": "0–5",
+      "evidence_ids": [
+        "cc6b0a5e7b16e22d"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "7172399fb3eb408c",
+        "f5c960628e30a767",
+        "cc6b0a5e7b16e22d"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 12,
+      "max": 15,
+      "band": "9–12",
+      "evidence_ids": [
+        "7172399fb3eb408c",
+        "f5c960628e30a767",
+        "cc6b0a5e7b16e22d"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 66,
+  "coverage": 1,
+  "disqualifiers": [],
+  "call": "WATCH",
+  "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Watch — 66/100 meets the 55 a watch needs and is below the 72 a meeting needs, at 100% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D3 Evidence of pull at 5/25 (band 0–5).",
+      "evidence_ids": [
+        "cc6b0a5e7b16e22d"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Faisal and Ahmad are founders of Intuned, as stated by themselves on Hacker News.",
+          "evidence_ids": [
+            "7172399fb3eb408c"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Faisal has a background at UiPath, contributing to the product pivot in early 2024.",
+          "evidence_ids": [
+            "7172399fb3eb408c"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Intuned GitHub account is an organization account.",
+          "evidence_ids": [
+            "21fa9b13ba57ce46"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Intuned is a platform for building, deploying, and maintaining browser automations as code.",
+          "evidence_ids": [
+            "7172399fb3eb408c"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Intuned Agent generates and maintains integration code via reverse-engineered network calls or browser automation and runs it at scale with authentication, captcha solving, and observability.",
+          "evidence_ids": [
+            "f5c960628e30a767"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Customers primarily use Intuned AI agent to automate websites that don't expose APIs for tasks like scraping data, pulling reports, and submitting forms.",
+          "evidence_ids": [
+            "7172399fb3eb408c"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Intuned builds integrations for services that do not have APIs by either copying the service's network calls or automating a browser, running these integrations at scale with handling of login, captchas, and monitoring.",
+          "evidence_ids": [
+            "f5c960628e30a767"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Intuned Agent is the first AI agent designed to build and maintain scrapers generating Playwright code, with features to enable self-healing and support authenticated scrapers managing authentication state.",
+          "evidence_ids": [
+            "f5c960628e30a767"
+          ]
+        }
+      ],
+      "omitted": 13
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "In late 2024, stronger AI models like Claude Code and Codex enabled Intuned to pivot from rigid pipelines to a more open-ended coding agent approach.",
+          "evidence_ids": [
+            "7172399fb3eb408c"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Intuned/cookbook GitHub repository has 30 stars as of 2026-08-23.",
+          "evidence_ids": [
+            "cc6b0a5e7b16e22d"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Intuned/cookbook GitHub repository was last pushed to on 2026-08-21.",
+          "evidence_ids": [
+            "cc6b0a5e7b16e22d"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Intuned/cookbook GitHub repository was created on 2025-12-02.",
+          "evidence_ids": [
+            "cc6b0a5e7b16e22d"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "D3 Evidence of pull: find one credible signal: over 200 stars, a named user, or a named integration. That moves it from 0–5 to 6–12 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find a named person with a stated prior role, and something they are stated to have founded, sold or shipped before this. That moves it from 13–19 to 20–25 (+6).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a named customer, design partner or user, stated to be using it for that job. That moves it from 11–15 to 16–20 (+5).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": "6 points short of 72 (score 66). D1 Founder–market fit & technical depth from 13–19 to 20–25 (+6), by finding a named person with a stated prior role, and something they are stated to have founded, sold or shipped before this, alone clears it.",
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 6,
+    "evidence_usable": 6,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 25,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "hypercubic-ai",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "hypercubic-ai",
+    "name": "hypercubic.ai",
+    "url": "https://hypercubic.ai/hopper",
+    "one_liner": "Agentic interface for mainframes and COBOL",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48111143",
+        "title": "Show HN: Agentic interface for mainframes and COBOL",
+        "posted_url": "https://www.hypercubic.ai/hopper",
+        "posted_at": "2026-05-12T17:10:22.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://hypercubic.ai/hopper",
+      "from": "candidate_url"
+    },
+    "github": null
+  },
+  "evidence_ids": [
+    "6999fae9c793c7e8",
+    "57a43da0df4373ec",
+    "03cd1dadb6fe7937",
+    "03eaa9a0d7845d61"
+  ],
+  "signals": [
+    {
+      "key": "site.url",
+      "value": "https://www.hypercubic.ai/hopper",
+      "as_of": "2026-08-22T10:19:48.170Z",
+      "evidence_id": "57a43da0df4373ec"
+    },
+    {
+      "key": "site.title",
+      "value": "Agentic TN3270 Emulator With Hopper | Hypercubic",
+      "as_of": "2026-08-22T10:19:48.170Z",
+      "evidence_id": "57a43da0df4373ec"
+    },
+    {
+      "key": "site.description",
+      "value": "Hopper is an agentic TN3270 terminal emulator. AI agents navigate ISPF, write column-strict JCL, debug failed jobs and query VSAM inside z/OS.",
+      "as_of": "2026-08-22T10:19:48.170Z",
+      "evidence_id": "57a43da0df4373ec"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-22T10:19:48.170Z",
+      "evidence_id": "57a43da0df4373ec"
+    },
+    {
+      "key": "site.team_url",
+      "value": "https://www.hypercubic.ai/company",
+      "as_of": "2026-08-22T10:19:48.170Z",
+      "evidence_id": "57a43da0df4373ec"
+    },
+    {
+      "key": "site.docs_url",
+      "value": "https://docs.hypercubic.ai/core-concepts/the-ai-agent",
+      "as_of": "2026-08-22T10:19:48.170Z",
+      "evidence_id": "57a43da0df4373ec"
+    },
+    {
+      "key": "site.contact_url",
+      "value": "https://www.hypercubic.ai/contact",
+      "as_of": "2026-08-22T10:19:48.170Z",
+      "evidence_id": "57a43da0df4373ec"
+    },
+    {
+      "key": "site.people_named",
+      "value": 2,
+      "as_of": "2026-08-22T10:19:48.170Z",
+      "evidence_id": "03cd1dadb6fe7937"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "site.pricing_url",
+      "reason": "the home page links to no pricing page"
+    },
+    {
+      "key": "site.signup_url",
+      "reason": "the home page links to no signup page"
+    },
+    {
+      "key": "site.repo_url",
+      "reason": "the home page links to no repo page"
+    },
+    {
+      "key": "site.pricing_page",
+      "reason": "no pricing page was linked or fetched"
+    },
+    {
+      "key": "github",
+      "reason": "candidate url is not a GitHub account and the site links to no code host"
+    }
+  ],
+  "people": [
+    {
+      "name": "Aayush Naik",
+      "role": "Co-founder",
+      "matched": "role element after name",
+      "context": "Aayush NaikCo-founder"
+    },
+    {
+      "name": "Sai Gurrapu",
+      "role": "Co-founder",
+      "matched": "role element after name",
+      "context": "Sai GurrapuCo-founder"
+    }
+  ],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

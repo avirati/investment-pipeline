@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "ardent",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "ardent",
+    "name": "Ardent",
+    "url": "https://tryardent.com",
+    "one_liner": "Postgres sandboxes in seconds with zero migration",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48124436",
+        "title": "Launch HN: Ardent (YC P26) – Postgres sandboxes in seconds with zero migration",
+        "posted_url": "https://www.tryardent.com/",
+        "posted_at": "2026-05-13T16:54:03.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://tryardent.com",
+      "from": "candidate_url"
+    },
+    "github": null
+  },
+  "evidence_ids": [
+    "f8a24d94eefcb448",
+    "56bc7c5f3a97da10",
+    "726cc988f959b4a1",
+    "b29be988fea6860f"
+  ],
+  "signals": [
+    {
+      "key": "site.url",
+      "value": "https://www.tryardent.com/",
+      "as_of": "2026-08-22T10:19:47.557Z",
+      "evidence_id": "56bc7c5f3a97da10"
+    },
+    {
+      "key": "site.title",
+      "value": "Ardent — Database branching for coding agents",
+      "as_of": "2026-08-22T10:19:47.557Z",
+      "evidence_id": "56bc7c5f3a97da10"
+    },
+    {
+      "key": "site.description",
+      "value": "Create copies of any Postgres database in under 6 seconds. Let coding agents test, clean, and migrate data on isolated branches with zero risk to production.",
+      "as_of": "2026-08-22T10:19:47.557Z",
+      "evidence_id": "56bc7c5f3a97da10"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-22T10:19:47.557Z",
+      "evidence_id": "56bc7c5f3a97da10"
+    },
+    {
+      "key": "site.pricing_url",
+      "value": "https://www.tryardent.com/pricing",
+      "as_of": "2026-08-22T10:19:47.557Z",
+      "evidence_id": "56bc7c5f3a97da10"
+    },
+    {
+      "key": "site.docs_url",
+      "value": "https://docs.tryardent.com/",
+      "as_of": "2026-08-22T10:19:47.557Z",
+      "evidence_id": "56bc7c5f3a97da10"
+    },
+    {
+      "key": "site.signup_url",
+      "value": "https://app.tryardent.com/signup",
+      "as_of": "2026-08-22T10:19:47.557Z",
+      "evidence_id": "56bc7c5f3a97da10"
+    },
+    {
+      "key": "site.contact_url",
+      "value": "https://cal.com/vikram-chennai/company-meet",
+      "as_of": "2026-08-22T10:19:47.557Z",
+      "evidence_id": "56bc7c5f3a97da10"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "site.team_url",
+      "reason": "the home page links to no team page"
+    },
+    {
+      "key": "site.repo_url",
+      "reason": "the home page links to no repo page"
+    },
+    {
+      "key": "site.team_page",
+      "reason": "no team page was linked or fetched"
+    },
+    {
+      "key": "site.people_named",
+      "reason": "no person was named with a role beside them on any page read"
+    },
+    {
+      "key": "github",
+      "reason": "candidate url is not a GitHub account and the site links to no code host"
+    }
+  ],
+  "people": [],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

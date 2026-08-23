@@ -1,0 +1,340 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "kontext-cli",
+    "name": "Kontext CLI",
+    "url": "https://github.com/kontext-security/kontext",
+    "one_liner": "Credential broker for AI coding agents in Go",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "47765374",
+        "title": "Show HN: Kontext CLI – Credential broker for AI coding agents in Go",
+        "posted_url": "https://github.com/kontext-dev/kontext-cli",
+        "posted_at": "2026-04-14T13:26:53.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Kontext CLI is a credential broker for AI coding agents written in Go.",
+      "value": "Credential broker for AI coding agents in Go",
+      "evidence_ids": [
+        "c853b0346c680b11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Kontext CLI enables AI coding agents to access credentials needed for services like GitHub, Stripe, and databases without exposing long-lived API keys.",
+      "value": "Enable AI coding agents to access credentials securely",
+      "evidence_ids": [
+        "c853b0346c680b11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Kontext CLI runs locally and injects credentials into the AI agent's runtime environment during sessions, using OAuth and short-lived tokens.",
+      "value": "CLI injecting credentials at runtime for AI agents",
+      "evidence_ids": [
+        "c853b0346c680b11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.data_accumulated",
+      "statement": "The CLI streams every tool call made by the AI agent for audit as it runs, capturing what was accessed, who did it, and session context.",
+      "value": "Audit logs of agent tool calls with user and session attribution",
+      "evidence_ids": [
+        "c853b0346c680b11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "Kontext's credential management depends on OAuth and RFC 8693 token exchange to mint short-lived, scoped credentials.",
+      "value": "OAuth and RFC 8693 token exchange",
+      "evidence_ids": [
+        "c853b0346c680b11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.open_source",
+      "statement": "The Kontext CLI is open source and licensed under MIT, with a public repository on GitHub at kontext-security/kontext.",
+      "value": "MIT",
+      "evidence_ids": [
+        "4c7160666f3d0996"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.github_stars",
+      "statement": "The kontext-security/kontext GitHub repository has 210 stars as of 2026-08-23.",
+      "value": 210,
+      "evidence_ids": [
+        "4c7160666f3d0996"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.repo_activity",
+      "statement": "The kontext-security/kontext GitHub repository was last pushed on 2026-08-23 and has 22 open issues.",
+      "value": "last pushed 2026-08-23",
+      "evidence_ids": [
+        "4c7160666f3d0996"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "org.github_account_type",
+      "statement": "The kontext-security GitHub account is an organization account.",
+      "value": "Organization",
+      "evidence_ids": [
+        "4c7160666f3d0996"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "team.size_visible",
+      "statement": "The kontext-security GitHub organization has 12 public repositories and 42 followers as of 2026-08-23.",
+      "value": 12,
+      "evidence_ids": [
+        "a7558d1ae95d1aeb"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 5,
+      "max": 25,
+      "band": "0–5",
+      "evidence_ids": [
+        "a7558d1ae95d1aeb",
+        "4c7160666f3d0996"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 15,
+      "max": 20,
+      "band": "11–15",
+      "evidence_ids": [
+        "c853b0346c680b11"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "4c7160666f3d0996"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "c853b0346c680b11",
+        "4c7160666f3d0996"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 12,
+      "max": 15,
+      "band": "9–12",
+      "evidence_ids": [
+        "c853b0346c680b11",
+        "4c7160666f3d0996"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 59,
+  "coverage": 1,
+  "disqualifiers": [],
+  "call": "WATCH",
+  "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Watch — 59/100 meets the 55 a watch needs and is below the 72 a meeting needs, at 100% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D1 Founder–market fit & technical depth at 5/25 (band 0–5).",
+      "evidence_ids": [
+        "a7558d1ae95d1aeb",
+        "4c7160666f3d0996"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "The kontext-security GitHub organization has 12 public repositories and 42 followers as of 2026-08-23.",
+          "evidence_ids": [
+            "a7558d1ae95d1aeb"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The kontext-security GitHub account is an organization account.",
+          "evidence_ids": [
+            "4c7160666f3d0996"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Kontext CLI is a credential broker for AI coding agents written in Go.",
+          "evidence_ids": [
+            "c853b0346c680b11"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Kontext CLI enables AI coding agents to access credentials needed for services like GitHub, Stripe, and databases without exposing long-lived API keys.",
+          "evidence_ids": [
+            "c853b0346c680b11"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Kontext CLI is open source and licensed under MIT, with a public repository on GitHub at kontext-security/kontext.",
+          "evidence_ids": [
+            "4c7160666f3d0996"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Kontext CLI runs locally and injects credentials into the AI agent's runtime environment during sessions, using OAuth and short-lived tokens.",
+          "evidence_ids": [
+            "c853b0346c680b11"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The CLI streams every tool call made by the AI agent for audit as it runs, capturing what was accessed, who did it, and session context.",
+          "evidence_ids": [
+            "c853b0346c680b11"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Kontext's credential management depends on OAuth and RFC 8693 token exchange to mint short-lived, scoped credentials.",
+          "evidence_ids": [
+            "c853b0346c680b11"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The kontext-security/kontext GitHub repository has 210 stars as of 2026-08-23.",
+          "evidence_ids": [
+            "4c7160666f3d0996"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The kontext-security/kontext GitHub repository was last pushed on 2026-08-23 and has 22 open issues.",
+          "evidence_ids": [
+            "4c7160666f3d0996"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Risks",
+      "bullets": [
+        {
+          "kind": "gap",
+          "text": "D1 Founder–market fit & technical depth scored in its lowest band (0–5): nothing in the evidence read met 6–12, which asks for anybody named with a role beside them — on a team or about page, or as the repository's top contributor.",
+          "evidence_ids": [
+            "a7558d1ae95d1aeb",
+            "4c7160666f3d0996"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find anybody named with a role beside them — on a team or about page, or as the repository's top contributor. That moves it from 0–5 to 6–12 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D3 Evidence of pull: find a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a named customer, design partner or user, stated to be using it for that job. That moves it from 11–15 to 16–20 (+5).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": "13 points short of 72 (score 59); no single dimension covers it, but these together do: D1 Founder–market fit & technical depth from 0–5 to 6–12 (+7), by finding anybody named with a role beside them — on a team or about page, or as the repository's top contributor; D3 Evidence of pull from 6–12 to 13–19 (+7), by finding a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days.",
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 4,
+    "evidence_usable": 4,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 10,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

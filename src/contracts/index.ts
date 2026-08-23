@@ -2,7 +2,7 @@
  * The stage boundary. Stages know about each other through these schemas and
  * nothing else (CLAUDE.md invariant 5).
  *
- * Two conventions hold across all six contracts:
+ * Two conventions hold across all seven contracts:
  *
  * 1. **`schema_version` is a required literal, in the file.** Not a default and
  *    not a comment. Cache keys include it, so a bump must invalidate downstream
@@ -16,6 +16,7 @@
  *    diff from one that never had the field at all.
  */
 export * from "./analysis.js";
+export * from "./bundle.js";
 export * from "./candidate.js";
 export * from "./evidence.js";
 export * from "./fact.js";

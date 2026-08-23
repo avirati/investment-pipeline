@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
 import { type EnvSource, type GithubAuth, githubAuth } from "../config.js";
@@ -23,6 +23,7 @@ import {
 } from "../manifest.js";
 import { RUNS_ROOT, type RunPaths, runPaths } from "../run.js";
 import { mapWithConcurrency, type RequestPool } from "./budget.js";
+import { bundleStore } from "./bundles.js";
 import { deriveMemoFields } from "./derive.js";
 import { type ExtractResult, extractFacts } from "./extract.js";
 import { type Bundle, gatherRun } from "./gather.js";
@@ -69,7 +70,9 @@ export type AnalyseFailure =
   /** `--run` names something that is not a finished stage-1 run. Exit 1. */
   | "no_run"
   /** The run is there and has nothing to analyse. A data gap. Exit 2. */
-  | "no_candidates";
+  | "no_candidates"
+  /** Analyses are already on disk and this pass would overwrite them. Exit 1. */
+  | "analyses_exist";
 
 export class AnalyseError extends Error {
   readonly failure: AnalyseFailure;
@@ -123,8 +126,18 @@ export const AnalyseStage = z.object({
   duration_ms: z.number().int().min(0),
   flags: z.object({
     replay: z.boolean(),
+    force: z.boolean(),
     concurrency: z.number().int().min(1),
     gather_concurrency: z.number().int().min(1),
+  }),
+  /**
+   * Where stage 2b's input came from (STATE inconsistency 84). `gather` read
+   * the network; `bundles` read `runs/<id>/bundles/`, which is what makes a
+   * replay on a fresh clone reproduce a run rather than empty it.
+   */
+  bundles: z.object({
+    source: z.enum(["gather", "bundles"]),
+    count: z.number().int().min(0),
   }),
   /** Lines in `candidates.jsonl`, and the ones that were not candidates. */
   input: z.object({
@@ -132,18 +145,21 @@ export const AnalyseStage = z.object({
     candidates: z.number().int().min(0),
     unparseable: z.number().int().min(0),
   }),
-  budget: z.object({
-    candidates: z.number().int().min(1),
-    github_mode: z.enum(["authenticated", "unauthenticated"]),
-    github_calls: z.number().int().min(0),
-    site_pages: z.number().int().min(0),
-    over_planning_ceiling: z.boolean(),
-    planned: z.record(z.string(), z.number().int().min(0)),
-    spent: z.record(
-      z.string(),
-      z.object({ spent: z.number().int().min(0), limit: z.number().int().nullable() }),
-    ),
-  }),
+  /** Null on a replay: nothing was planned because nothing was fetched. */
+  budget: z
+    .object({
+      candidates: z.number().int().min(1),
+      github_mode: z.enum(["authenticated", "unauthenticated"]),
+      github_calls: z.number().int().min(0),
+      site_pages: z.number().int().min(0),
+      over_planning_ceiling: z.boolean(),
+      planned: z.record(z.string(), z.number().int().min(0)),
+      spent: z.record(
+        z.string(),
+        z.object({ spent: z.number().int().min(0), limit: z.number().int().nullable() }),
+      ),
+    })
+    .nullable(),
   /**
    * What was actually used, not what was configured — `Manifest.llm` already
    * records the second. `cost_usd` is null while `PRICES` is empty
@@ -214,8 +230,10 @@ export interface AnalyseOptions {
   runId: string;
   /** Repo root. Tests point this at a temp directory. */
   root?: string;
-  /** `--replay`: answer from both caches, make no requests, spend nothing. */
+  /** `--replay`: read the stored bundles, make no requests, spend nothing. */
   replay?: boolean;
+  /** `--force`: overwrite analyses already in the run directory. */
+  force?: boolean;
   /** Model calls in flight. Defaults to `EXTRACT_CONCURRENCY`. */
   concurrency?: number;
   /** Fetches in flight. Defaults to `GATHER_CONCURRENCY`. */
@@ -231,6 +249,14 @@ export interface AnalyseOptions {
   limits?: Record<RequestPool, number | null>;
   now?: () => Date;
   env?: EnvSource;
+  /**
+   * Called as each candidate settles, so a caller can say something while a
+   * fifteen-candidate stage 2 spends four minutes. It is a notification and
+   * not a hook: it is given what the manifest row will say, it cannot change
+   * the outcome, and a throw from it is the caller's bug rather than the
+   * candidate's — so it is not caught here.
+   */
+  onCandidate?: (row: { slug: string; status: CandidateStatus; reason: string | null }) => void;
 }
 
 export interface AnalysedCandidate {
@@ -382,6 +408,7 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
     runId,
     root = ".",
     replay = false,
+    force = false,
     concurrency = EXTRACT_CONCURRENCY,
     now = () => new Date(),
     env = process.env,
@@ -412,6 +439,24 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
     );
   }
 
+  // Rule 4. The guard is the run directory's, not the file's: a partial
+  // overwrite — three of fifteen analyses replaced and twelve left from the
+  // previous pass — is a run directory describing two different runs, and no
+  // reader could tell. `--replay` is exempt because a replay reproduces the
+  // analyses it overwrites (see the bundle store), and `--force` is the
+  // operator saying they meant it.
+  const existingAnalyses = existsSync(paths.analysesDir)
+    ? readdirSync(paths.analysesDir).filter((name) => name.endsWith(".json"))
+    : [];
+  if (existingAnalyses.length > 0 && !replay && !force) {
+    throw new AnalyseError(
+      "analyses_exist",
+      `${paths.analysesDir} already holds ${existingAnalyses.length} analysis file(s) — ` +
+        `refusing to overwrite a decided run. Pass --replay to reproduce it, ` +
+        `--force to re-analyse it, or --run <id> for a new one`,
+    );
+  }
+
   mkdirSync(paths.analysesDir, { recursive: true });
 
   const auth = options.auth ?? githubAuth(env);
@@ -424,15 +469,39 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
   const cache = options.cache ?? llmCache();
   const http = replay ? replayHttp(options.http) : (options.http ?? {});
 
-  const gathered = await gatherRun(input.candidates, {
-    store: evidenceStore(runId, join(root, RUNS_ROOT)),
-    auth,
-    http,
-    ...(options.gatherConcurrency === undefined ? {} : { concurrency: options.gatherConcurrency }),
-    ...(options.limits === undefined ? {} : { limits: options.limits }),
-  });
+  // Rule 2's other half. A replay does not gather: it reads what the gather
+  // that decided this run wrote (STATE inconsistency 84). Before this, a
+  // replay re-fetched with a refusing transport, which on a fresh clone — no
+  // `.cache/http/`, because it is not committed — produced empty bundles and
+  // overwrote the run's analyses with 0%-coverage passes.
+  const store = evidenceStore(runId, join(root, RUNS_ROOT));
+  const bundles = bundleStore(runId, join(root, RUNS_ROOT));
+  const gathered = replay
+    ? null
+    : await gatherRun(input.candidates, {
+        store,
+        auth,
+        http,
+        ...(options.gatherConcurrency === undefined
+          ? {}
+          : { concurrency: options.gatherConcurrency }),
+        ...(options.limits === undefined ? {} : { limits: options.limits }),
+      });
 
-  const analysed = await mapWithConcurrency(gathered.bundles, concurrency, async (bundle) => {
+  const gatheredAt = now().toISOString();
+  const inputBundles =
+    gathered === null
+      ? input.candidates.map((candidate) => bundles.read(candidate.slug, store))
+      : gathered.bundles.map((bundle) => {
+          bundles.write(bundle, gatheredAt);
+          return bundle;
+        });
+
+  const settled = (row: { slug: string; status: CandidateStatus; reason: string | null }): void => {
+    options.onCandidate?.(row);
+  };
+
+  const analysed = await mapWithConcurrency(inputBundles, concurrency, async (bundle) => {
     const at = now().getTime();
     try {
       const extract = await extractFacts(bundle, {
@@ -445,12 +514,14 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
       });
       const analysis = analysisFor(bundle, extract);
       const path = writeAnalysis(paths.analysesDir, analysis);
+      const status: CandidateStatus = analysis.status === "ok" ? "ok" : "partial";
+      settled({ slug: bundle.slug, status, reason: analysis.status_reason });
       return {
         bundle,
         extract,
         analysis,
         path,
-        status: (analysis.status === "ok" ? "ok" : "partial") as CandidateStatus,
+        status,
         reason: analysis.status_reason,
         duration_ms: Math.max(0, now().getTime() - at),
       };
@@ -459,6 +530,7 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
       // out of here — anything else is this candidate's, and one candidate does
       // not cost the run (ARCHITECTURE §5).
       if (error instanceof Error && error.name === "LlmCallError") throw error;
+      settled({ slug: bundle.slug, status: "failed", reason: messageOf(error) });
       return {
         bundle,
         extract: null,
@@ -506,6 +578,7 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
     duration_ms: Math.max(0, finishedAt.getTime() - startedAt.getTime()),
     flags: {
       replay,
+      force,
       concurrency,
       gather_concurrency: options.gatherConcurrency ?? 4,
     },
@@ -514,15 +587,22 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
       candidates: input.candidates.length,
       unparseable: input.unparseable,
     },
-    budget: {
-      candidates: gathered.plan.candidates,
-      github_mode: gathered.plan.mode,
-      github_calls: gathered.plan.github.length,
-      site_pages: gathered.plan.sitePages,
-      over_planning_ceiling: gathered.plan.over_planning_ceiling,
-      planned: gathered.plan.planned,
-      spent: gathered.requests,
+    bundles: {
+      source: gathered === null ? "bundles" : "gather",
+      count: inputBundles.length,
     },
+    budget:
+      gathered === null
+        ? null
+        : {
+            candidates: gathered.plan.candidates,
+            github_mode: gathered.plan.mode,
+            github_calls: gathered.plan.github.length,
+            site_pages: gathered.plan.sitePages,
+            over_planning_ceiling: gathered.plan.over_planning_ceiling,
+            planned: gathered.plan.planned,
+            spent: gathered.requests,
+          },
     llm: {
       provider: model.provider,
       model: model.model,
@@ -570,7 +650,14 @@ export async function runAnalyse(options: AnalyseOptions): Promise<AnalyseOutcom
     ...base,
     prompt_versions: { ...base.prompt_versions, [prompt.ref.id]: prompt.ref.version },
   });
-  const manifest = writeStage(paths.manifest, base, "analyse", stage);
+  // A replay writes beside the record, never over it (STATE inconsistency 96).
+  // `stages.analyse` describes the gather that decided this run — the requests
+  // it spent, against the limits it had — and a replay performed none of them.
+  // Overwriting it with `budget: null` destroyed the one part of ARCHITECTURE
+  // §4's list that only the original invocation could know, and did so on the
+  // documented command for reproducing a committed run. So a replay's record
+  // goes to `stages.analyse_replay`, dated, beside the one it reproduces.
+  const manifest = writeStage(paths.manifest, base, replay ? "analyse_replay" : "analyse", stage);
 
   return {
     run_id: runId,

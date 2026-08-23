@@ -1,0 +1,423 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "testerarmy",
+    "name": "TesterArmy",
+    "url": "https://tester.army",
+    "one_liner": "Agents that test web and mobile apps",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48586299",
+        "title": "Launch HN: TesterArmy (YC P26) – Agents that test web and mobile apps",
+        "posted_url": "https://tester.army",
+        "posted_at": "2026-06-18T14:49:44.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "TesterArmy is built by Szymon Rybczak (Co-founder & CEO) and Oskar Kwaśniewski (Co-founder & CTO).",
+      "value": null,
+      "evidence_ids": [
+        "ea4eb152780f5619"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.prior_artifact",
+      "statement": "Szymon Rybczak is a React Native contributor and conference speaker with years of experience building developer tools in the open-source ecosystem.",
+      "value": null,
+      "evidence_ids": [
+        "ea4eb152780f5619"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.prior_artifact",
+      "statement": "Oskar Kwaśniewski is a React Native core contributor with over 100 merged PRs and creator of React Native visionOS, Bottom Tabs, and Liquid Glass.",
+      "value": null,
+      "evidence_ids": [
+        "ea4eb152780f5619"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "TesterArmy is described as an agentic testing platform that runs end-to-end checks before deployment and in production, letting users specify tests in natural language and handling everything in between.",
+      "value": "Agents that test web and mobile apps",
+      "evidence_ids": [
+        "d15d5924ec1f9a76",
+        "174612b378279eb8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "TesterArmy's product is for engineers and teams to create and run automated AI-agent driven tests on web and mobile apps to catch bugs before deployment and in production.",
+      "value": null,
+      "evidence_ids": [
+        "d15d5924ec1f9a76",
+        "174612b378279eb8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "TesterArmy claims to be an AI-agent testing automation platform that replaces brittle scripts with AI agents that test web and mobile apps like real users do.",
+      "value": null,
+      "evidence_ids": [
+        "ea4eb152780f5619",
+        "d37f625e18a20a86"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "TesterArmy depends on AI and recent advances in AI coding tools and models such as GPT-5.6 Luna for its agentic testing capabilities.",
+      "value": null,
+      "evidence_ids": [
+        "d15d5924ec1f9a76",
+        "174612b378279eb8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "TesterArmy is a hosted service where the user describes tests in natural language and the AI agent handles test execution including clicks, typing, and verification in real browsers.",
+      "value": null,
+      "evidence_ids": [
+        "174612b378279eb8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.data_accumulated",
+      "statement": "TesterArmy's AI agents have persistent memory that learns from past test runs and remembers context across sessions to improve reliability.",
+      "value": true,
+      "evidence_ids": [
+        "174612b378279eb8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.self_serve",
+      "statement": "Users can start using TesterArmy by signing up through their website with no credit card required and run their first tests in under five minutes.",
+      "value": true,
+      "evidence_ids": [
+        "174612b378279eb8",
+        "d37f625e18a20a86"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "TesterArmy publicly lists monthly pricing plans starting at $99 per month for solo builders and $299 per month for small teams, with enterprise plans available by contacting sales.",
+      "value": true,
+      "evidence_ids": [
+        "4981bbc2d4badf8d"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.sales_gate",
+      "statement": "Enterprise customers need to book a call for custom limits, self-hosting options, single sign-on, and dedicated support.",
+      "value": true,
+      "evidence_ids": [
+        "4981bbc2d4badf8d"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.hn_engagement",
+      "statement": "The Hacker News launch post for TesterArmy received 132 points and 69 comments 65 days ago from the date of retrieval.",
+      "value": 132,
+      "evidence_ids": [
+        "d15d5924ec1f9a76"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.named_user",
+      "statement": "Named customers of TesterArmy include Novu, HireVoice, CodeCrafters, Copyfy, Lightsprint, Standout, Cube, and Regbase.",
+      "value": null,
+      "evidence_ids": [
+        "174612b378279eb8",
+        "4981bbc2d4badf8d"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.integration",
+      "statement": "TesterArmy integrates with GitHub, Slack, Discord, Expo, Vercel, webhooks, and supports CI/CD systems like GitHub Actions and GitLab CI.",
+      "value": null,
+      "evidence_ids": [
+        "174612b378279eb8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "team.size_visible",
+      "statement": "The team behind TesterArmy is stated as two engineers, Szymon Rybczak and Oskar Kwaśniewski, on the About page.",
+      "value": 2,
+      "evidence_ids": [
+        "ea4eb152780f5619"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "ea4eb152780f5619"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 20,
+      "max": 20,
+      "band": "16–20",
+      "evidence_ids": [
+        "d15d5924ec1f9a76",
+        "174612b378279eb8",
+        "ea4eb152780f5619",
+        "d37f625e18a20a86",
+        "4981bbc2d4badf8d"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "174612b378279eb8",
+        "4981bbc2d4badf8d",
+        "d15d5924ec1f9a76"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "d15d5924ec1f9a76",
+        "174612b378279eb8",
+        "ea4eb152780f5619",
+        "d37f625e18a20a86"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "174612b378279eb8",
+        "d15d5924ec1f9a76"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 74,
+  "coverage": 1,
+  "disqualifiers": [],
+  "call": "TAKE_A_MEETING",
+  "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Take a meeting — 74/100 clears the 72 threshold, at 100% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The strongest reading is D2 Wedge specificity at 20/20 (band 16–20).",
+      "evidence_ids": [
+        "d15d5924ec1f9a76",
+        "174612b378279eb8",
+        "ea4eb152780f5619",
+        "d37f625e18a20a86",
+        "4981bbc2d4badf8d"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "TesterArmy is built by Szymon Rybczak (Co-founder & CEO) and Oskar Kwaśniewski (Co-founder & CTO).",
+          "evidence_ids": [
+            "ea4eb152780f5619"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Szymon Rybczak is a React Native contributor and conference speaker with years of experience building developer tools in the open-source ecosystem.",
+          "evidence_ids": [
+            "ea4eb152780f5619"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Oskar Kwaśniewski is a React Native core contributor with over 100 merged PRs and creator of React Native visionOS, Bottom Tabs, and Liquid Glass.",
+          "evidence_ids": [
+            "ea4eb152780f5619"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The team behind TesterArmy is stated as two engineers, Szymon Rybczak and Oskar Kwaśniewski, on the About page.",
+          "evidence_ids": [
+            "ea4eb152780f5619"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "TesterArmy is described as an agentic testing platform that runs end-to-end checks before deployment and in production, letting users specify tests in natural language and handling everything in between.",
+          "evidence_ids": [
+            "d15d5924ec1f9a76",
+            "174612b378279eb8"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "TesterArmy's product is for engineers and teams to create and run automated AI-agent driven tests on web and mobile apps to catch bugs before deployment and in production.",
+          "evidence_ids": [
+            "d15d5924ec1f9a76",
+            "174612b378279eb8"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "TesterArmy claims to be an AI-agent testing automation platform that replaces brittle scripts with AI agents that test web and mobile apps like real users do.",
+          "evidence_ids": [
+            "ea4eb152780f5619",
+            "d37f625e18a20a86"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "TesterArmy is a hosted service where the user describes tests in natural language and the AI agent handles test execution including clicks, typing, and verification in real browsers.",
+          "evidence_ids": [
+            "174612b378279eb8"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "TesterArmy's AI agents have persistent memory that learns from past test runs and remembers context across sessions to improve reliability.",
+          "evidence_ids": [
+            "174612b378279eb8"
+          ]
+        }
+      ],
+      "omitted": 3
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "TesterArmy depends on AI and recent advances in AI coding tools and models such as GPT-5.6 Luna for its agentic testing capabilities.",
+          "evidence_ids": [
+            "d15d5924ec1f9a76",
+            "174612b378279eb8"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Named customers of TesterArmy include Novu, HireVoice, CodeCrafters, Copyfy, Lightsprint, Standout, Cube, and Regbase.",
+          "evidence_ids": [
+            "174612b378279eb8",
+            "4981bbc2d4badf8d"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "TesterArmy integrates with GitHub, Slack, Discord, Expo, Vercel, webhooks, and supports CI/CD systems like GitHub Actions and GitLab CI.",
+          "evidence_ids": [
+            "174612b378279eb8"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Hacker News launch post for TesterArmy received 132 points and 69 comments 65 days ago from the date of retrieval.",
+          "evidence_ids": [
+            "d15d5924ec1f9a76"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find a prior employer, role or period stated for somebody the company names. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D3 Evidence of pull: find a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": null,
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 5,
+    "evidence_usable": 5,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 16,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

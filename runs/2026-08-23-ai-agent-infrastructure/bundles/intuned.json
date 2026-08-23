@@ -1,0 +1,290 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "intuned",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "intuned",
+    "name": "Intuned",
+    "url": "https://intunedhq.com",
+    "one_liner": "Build and run reliable browser automations as code",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48445171",
+        "title": "Launch HN: Intuned (YC S22) – Build and run reliable browser automations as code",
+        "posted_url": "https://intunedhq.com",
+        "posted_at": "2026-06-08T13:35:27.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://intunedhq.com",
+      "from": "candidate_url"
+    },
+    "github": {
+      "ref": {
+        "owner": "intuned",
+        "repo": "cookbook",
+        "from": "github.com"
+      },
+      "from": "site_link"
+    }
+  },
+  "evidence_ids": [
+    "7172399fb3eb408c",
+    "f5c960628e30a767",
+    "cac01e855a783577",
+    "283fbcf555627d5a",
+    "cc6b0a5e7b16e22d",
+    "21fa9b13ba57ce46"
+  ],
+  "signals": [
+    {
+      "key": "site.url",
+      "value": "https://intunedhq.com/",
+      "as_of": "2026-08-22T10:19:44.780Z",
+      "evidence_id": "f5c960628e30a767"
+    },
+    {
+      "key": "site.title",
+      "value": "Reliable Integrations for Services with No APIs | Intuned",
+      "as_of": "2026-08-22T10:19:44.780Z",
+      "evidence_id": "f5c960628e30a767"
+    },
+    {
+      "key": "site.description",
+      "value": "Build reliable integrations for services with no APIs. Intuned Agent generates and maintains the integration code - reverse-engineered network calls or browser automation - and runs it at scale with auth, captcha solving, and observability.",
+      "as_of": "2026-08-22T10:19:44.780Z",
+      "evidence_id": "f5c960628e30a767"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-22T10:19:44.780Z",
+      "evidence_id": "f5c960628e30a767"
+    },
+    {
+      "key": "site.pricing_url",
+      "value": "https://intunedhq.com/pricing",
+      "as_of": "2026-08-22T10:19:44.780Z",
+      "evidence_id": "f5c960628e30a767"
+    },
+    {
+      "key": "site.docs_url",
+      "value": "https://intunedhq.com/docs",
+      "as_of": "2026-08-22T10:19:44.780Z",
+      "evidence_id": "f5c960628e30a767"
+    },
+    {
+      "key": "site.contact_url",
+      "value": "https://cal.com/team/intuned/get-started",
+      "as_of": "2026-08-22T10:19:44.780Z",
+      "evidence_id": "f5c960628e30a767"
+    },
+    {
+      "key": "site.repo_url",
+      "value": "https://github.com/intuned/cookbook",
+      "as_of": "2026-08-22T10:19:44.780Z",
+      "evidence_id": "f5c960628e30a767"
+    },
+    {
+      "key": "github.repo",
+      "value": "Intuned/cookbook",
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.stars",
+      "value": 30,
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.forks",
+      "value": 3,
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.watchers",
+      "value": 0,
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.open_issues",
+      "value": 16,
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.created_at",
+      "value": "2025-12-02T09:10:53Z",
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.age_days",
+      "value": 263,
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d",
+      "derived_from": "created_at → retrieval"
+    },
+    {
+      "key": "github.pushed_at",
+      "value": "2026-08-21T15:13:54Z",
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.days_since_push",
+      "value": 1,
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d",
+      "derived_from": "pushed_at → retrieval"
+    },
+    {
+      "key": "github.stars_per_day_lifetime",
+      "value": 0.11,
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d",
+      "derived_from": "stars ÷ age_days — a lifetime average, not a current rate"
+    },
+    {
+      "key": "github.topics",
+      "value": "automation, crawlers, intuned, playwright, python, rpa, scrapers, typescript, web",
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.language",
+      "value": "Python",
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.archived",
+      "value": false,
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.is_fork",
+      "value": false,
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.homepage",
+      "value": "https://intunedhq.com/",
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.owner",
+      "value": "Intuned",
+      "as_of": "2026-08-23T06:29:57.401Z",
+      "evidence_id": "cc6b0a5e7b16e22d"
+    },
+    {
+      "key": "github.owner_type",
+      "value": "Organization",
+      "as_of": "2026-08-23T06:29:57.860Z",
+      "evidence_id": "21fa9b13ba57ce46"
+    },
+    {
+      "key": "github.owner_name",
+      "value": "Intuned",
+      "as_of": "2026-08-23T06:29:57.860Z",
+      "evidence_id": "21fa9b13ba57ce46"
+    },
+    {
+      "key": "github.owner_location",
+      "value": "United States of America",
+      "as_of": "2026-08-23T06:29:57.860Z",
+      "evidence_id": "21fa9b13ba57ce46"
+    },
+    {
+      "key": "github.owner_public_repos",
+      "value": 15,
+      "as_of": "2026-08-23T06:29:57.860Z",
+      "evidence_id": "21fa9b13ba57ce46"
+    },
+    {
+      "key": "github.owner_followers",
+      "value": 19,
+      "as_of": "2026-08-23T06:29:57.860Z",
+      "evidence_id": "21fa9b13ba57ce46"
+    },
+    {
+      "key": "github.owner_created_at",
+      "value": "2022-07-03T03:02:08Z",
+      "as_of": "2026-08-23T06:29:57.860Z",
+      "evidence_id": "21fa9b13ba57ce46"
+    },
+    {
+      "key": "github.owner_age_days",
+      "value": 1512,
+      "as_of": "2026-08-23T06:29:57.860Z",
+      "evidence_id": "21fa9b13ba57ce46",
+      "derived_from": "account created_at → retrieval"
+    },
+    {
+      "key": "github.owner_site",
+      "value": "https://intunedhq.com/",
+      "as_of": "2026-08-23T06:29:57.860Z",
+      "evidence_id": "21fa9b13ba57ce46",
+      "derived_from": "the account's own `blog` field — the repository's `homepage` is the stronger route"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "site.team_url",
+      "reason": "the home page links to no team page"
+    },
+    {
+      "key": "site.signup_url",
+      "reason": "the home page links to no signup page"
+    },
+    {
+      "key": "site.team_page",
+      "reason": "no team page was linked or fetched"
+    },
+    {
+      "key": "site.people_named",
+      "reason": "no person was named with a role beside them on any page read"
+    },
+    {
+      "key": "github.readme",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.contributors",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.commit_activity",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.license",
+      "reason": "GitHub could not identify a licence in the repository"
+    },
+    {
+      "key": "github.owner_company",
+      "reason": "the account names no company"
+    }
+  ],
+  "people": [],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

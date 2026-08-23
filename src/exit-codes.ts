@@ -17,12 +17,15 @@ export const EXIT = {
   DATA_GAP: 2,
   /** A contract or citation check failed (ADR-0003). A bug, not a data gap. */
   INVARIANT: 3,
-  /**
-   * A stage this build does not have yet. Temporary scaffolding: it disappears
-   * as tickets 0012, 0022, 0026 and 0027 land — 0027 is the last of them, and
-   * `run` is the last caller. 70 is sysexits' EX_SOFTWARE.
-   */
-  UNIMPLEMENTED: 70,
 } as const;
+
+/**
+ * There was a fourth, `UNIMPLEMENTED: 70` (sysexits' `EX_SOFTWARE`) — the
+ * scaffolding each stage ticket removed one caller from. TICKET-0027 wired
+ * `run`, which was the last of them, and took the code with it. It is recorded
+ * here rather than deleted silently because an exit code is a contract: 70 used
+ * to mean something to anybody scripting against this CLI, and it now means
+ * nothing at all.
+ */
 
 export type ExitCode = (typeof EXIT)[keyof typeof EXIT];

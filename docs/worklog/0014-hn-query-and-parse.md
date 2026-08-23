@@ -35,6 +35,14 @@ page, its page 1, an empty result set, and an Ask HN page where every hit has a
 null url. `hitsPerPage=5`, so a whole page fits on a screen in review. No new
 dependency.
 
+> **Correction (TICKET-0029, 2026-08-23).** The link above never resolved:
+> `tests/fixtures/hn/README.md` was not written. The `curl` commands it promised
+> ended up in [`tests/fixtures/README.md`](../../tests/fixtures/README.md), one
+> level up, and the capture became a script at TICKET-0014 —
+> `pnpm capture-fixtures`, with `capture.json` recording url, status, date, size
+> and sha256 per file. Found by walking every internal link in `docs/` for
+> TICKET-0029; it was the only broken one in the repo.
+
 ## Four judgement calls, in descending order of how much they need review
 
 **1. `show_hn` is a tag filter, not a phrasing.** ADR-0004 asks for expansion

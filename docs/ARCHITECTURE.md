@@ -33,6 +33,7 @@ seed  (topic query | url list)
 ┌─ STAGE 2 · ANALYSE ───────────────────────────────────────────┐
 │  a. gather   company site + GitHub org + HN thread            │
 │              ──► runs/<run_id>/evidence/<sha256>.json         │
+│              ──► runs/<run_id>/bundles/<slug>.json            │
 │              deterministic, cached, no LLM                    │
 │                                                                │
 │  b. extract  LLM(evidence bundle) ──► facts + evidence_ids[]   │
@@ -118,7 +119,7 @@ The key *vocabulary* is deliberately not enumerated in the contract — it belon
 to the extraction schema and the rubric, and it is unvalidated until real
 candidates exist.
 
-Two conventions hold across all six contracts. `schema_version` is a required
+Two conventions hold across all seven contracts. `schema_version` is a required
 literal written into the artifact, so an artifact from a different version fails
 to parse rather than being silently reinterpreted. And fields we have no value
 for are `null`, never omitted — unknown is written as unknown, and a gap should
@@ -157,6 +158,9 @@ runs/<run_id>/
                      counts, timings, cost, per-candidate status
   query_plan.json    the seed as approved, and how it was approved
   candidates.jsonl
+  bundles/*.json     what stage 2a gathered per candidate: the join, the
+                     signals the rubric scores, unknowns, people, failures,
+                     and the evidence ids — in the order the model saw them
   evidence/*.json
   analyses/*.json
 .cache/llm/<hash>.json   keyed on sha256 over provider, model, prompt id,
@@ -166,8 +170,17 @@ runs/<run_id>/
 
 - `pipeline memo --run <id>` re-renders memos from committed analyses. Zero API
   calls, zero network.
-- `pipeline run --seed ... --replay` reuses the LLM cache, so re-running after a
-  template or rubric change costs nothing.
+- `pipeline run --seed ... --replay` and `pipeline analyse --run <id> --replay`
+  rebuild each bundle from `bundles/` and `evidence/` rather than re-fetching,
+  and answer the model calls from the LLM cache. Zero requests and zero tokens,
+  on a clone with no `.cache/http/` and no network — which is the state a
+  reviewer's clone is in (ADR-0009).
+- An `analyse` that is *not* a replay refuses to overwrite analyses already in
+  the run directory. `--force` overrides it.
+- **A replay writes its manifest record beside the one it reproduces, never over
+  it** — `stages.analyse_replay` and `stages.run_replay`. `stages.analyse`
+  records the *gather*: the requests it spent against the limits it had, which
+  is the one part of the list above only the original invocation can know.
 - A prompt or schema version bump changes the cache key, so stale responses can
   never silently survive a change. That is the point of versioning them.
 
@@ -275,7 +288,6 @@ Exit codes:
   1   usage or configuration error
   2   data gap — the run completed but found too little to act on
   3   invariant violation — a contract or citation check failed (ADR-0003)
-  70  not implemented yet — a stage this build does not have
 
 Run './pipeline <command> --help' for command options.
 ```
@@ -296,13 +308,23 @@ Options:
   --no-expand          use the raw seed verbatim; skips planning
   --since <days>       source window (default: 180)
   --run <id>           explicit run id (default: date-slug)
-  --replay             reuse cached LLM responses; spends nothing
+  --replay             reuse the stored bundles and LLM cache; spends nothing
   -h, --help           show this
 ```
 
-`source` takes the same sourcing options as `run`; `analyse` takes `--run` and
-`--replay`; `memo` takes `--run` alone, because stage 3 makes no LLM calls and
-so has nothing to replay.
+`source` takes the same sourcing options as `run`; `analyse` takes `--run`,
+`--replay` and `--force`; `memo` takes `--run` alone, because stage 3 makes no
+LLM calls and so has nothing to replay.
+
+There was a fifth exit code, `70 — not implemented yet`, while the stages were
+being wired one at a time. TICKET-0027 wired `run`, which was its last caller,
+and the code went with it.
+
+`run` writes progress to **stderr** and the three stage summaries to **stdout**,
+so `./pipeline run ... > report.txt` captures the summaries and still shows a
+person what is happening. Stage 2 reports a line per candidate, because it is
+the stage that takes minutes and a four-minute silence is indistinguishable
+from a hang.
 
 Sub-commands exist so the stage separation is visible from outside, not just in
 the source tree. `run` exists so a partner types one thing.
@@ -317,7 +339,7 @@ the source tree. `run` exists so a partner types one thing.
 3. pnpm install --frozen-lockfile
 4. create .env from .env.example if absent   ← never overwrites an existing .env
 5. pnpm typecheck
-6. ./pipeline memo --run <committed_sample>  ← offline verification
+6. ./pipeline memo --run 2026-08-23-ai-agent-infrastructure      ← offline verification
 ```
 
 Step 6 is the point. It re-renders the committed sample run with no network and
@@ -325,13 +347,11 @@ no API key, so a fresh clone proves the whole toolchain works *before* the
 operator has obtained a single credential. "Did the install work?" becomes an
 assertion rather than a hope.
 
-**Steps 1–5 exist as of TICKET-0004. Step 6 still does not** — but only half
-the reason is left. `memo` runs as of TICKET-0026 and its offline guarantee is
-asserted rather than intended (`tests/memo-run.test.ts`); what is missing is a
-sample run to re-render, which is TICKET-0028's, so shipping the step now would
-mean shipping a check that always fails. The script ends with a `TODO(0028)`
-naming it, and prints a line saying the verification is not wired up, so the gap
-is visible to whoever runs it rather than only to whoever reads this file.
+**All six steps exist.** Steps 1–5 landed with TICKET-0004; step 6 landed with
+TICKET-0028, which is what put a run in the repo for it to re-render. It renders
+the 12 memos of `2026-08-23-ai-agent-infrastructure` and fails the
+script if the run directory is missing, so a clone that lost its artifacts says
+so at setup rather than three commands later.
 
 `./pipeline` is a thin wrapper (`exec pnpm exec tsx src/cli.ts "$@"`) so nobody
 needs to know pnpm exists to run this. It stays a wrapper — not a task runner.

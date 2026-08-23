@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "4981bbc2d4badf8d",
+  "url": "https://tester.army/pricing",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:29:56.173Z",
+  "status": 200,
+  "title": "TesterArmy: Pricing",
+  "text": "TesterArmy automated QA testing plans. Contact us and we'll create a tailored offer for your needs.\n\nPricing\nEverything you need to test web and mobile apps.\nMonthlyYearlySave 15%\nHobby\n$99/mo\nFor solo builders\nUp to 250 test runs included\n3 concurrent test runs\n2 projects, unlimited members\nWeb & Mobile support\nGitHub, Slack, Webhook integrations\nGet started\nStartup\nmost popular\n$299/mo\nFor small teams\nEverything in the Hobby plan\nUp to 1,000 test runs included\n10 concurrent test runs\nUnlimited members and 5 projects\nPowered by the best frontier models\nGet started\nEnterprise\nCustom\nFor organizations\nEverything in the Startup plan\nSLA support via Slack Connect\nWhite-glove onboarding\nStrategic feature partnership\nSSO / SAML, Custom integrations\nBook a call\n[01] compare plans\nFind the plan that fits your workflow best.\nHobbyStartupEnterprise\nTest runs\n1,000\nConcurrent test runs\n10\nMembers\nUnlimited\nProjects\n5\nWeb & Mobile support\nSLA support (Slack Connect)\nWhite-glove onboarding\nStrategic feature partnership\nSSO / SAML\nCustom integrations\nFeatures\nHobby\nStartup\nEnterprise\nTest runs\n250\n1,000\nCustom\nConcurrent test runs\n3\n10\nCustom\nMembers\nUnlimited\nUnlimited\nUnlimited\nProjects\n2\n5\nCustom\nWeb & Mobile support\nSLA support (Slack Connect)\nWhite-glove onboarding\nStrategic feature partnership\nSSO / SAML\nCustom integrations\n[02] Testimonials\nLoved by teams who ship fast\nIn sixteen years of building mobile apps, TesterArmy is the first tool that actually does what I always expected AI-powered testing to do. You're onto something.\nEdwin HuertasCEO, Shockoe\nA master class in onboarding experience - my first e2e test ran in under 2 minutes and just worked. This is what I imagined agentic end-to-end testing to look like.\nDima GrossmanCo-Founder & CTO, Novu\nTesterArmy helped us move faster with confidence. In the last 3 months, it's caught 20 issues before they reached production, so we ship knowing problems get flagged before our users do. It fits naturally into how we ship at Copyfy.\nKevin RousseauLead Full-Stack Engineer, Copyfy\nWe did not believe Testerarmy could work this well. We were wrong. Running it alongside manual QA has been a huge timesaver for our team, and setup took just a couple of minutes.\nJuan Di ToroCo-Founder, HireVoice\nI used to manually check production after every deploy, just to be safe. With TesterArmy, I leave the office and wait for the Slack message.\nBenedict ChanCo-Founder, Lightsprint\nGame-changer for our site rollout - caught several regressions in the first couple of weeks. Automatic auth with test accounts was the blocker that killed our earlier QA attempts, and now we monitor our logged-in dashboard continuously without thinking about it.\nWitold de La ChapelleCo-Founder & CTO, Standout\nTesterArmy is a core part of my software factory. Exploration tests for every PR is a killer feature.\nEthan SheaCo-Founder & CTO, Regbase\nFinally something that allows me to confidently ship my heavily prompt engineered prototypes to live customers.\nSarup BanskotaCo-Founder & CEO, CodeCrafters\nWhat stands out most is how quickly we can generate meaningful test coverage and uncover edge cases. It's given our team a better understanding of the benefits AI can bring to quality assurance, while also helping us improve efficiency and confidence in our releases.\nBart KlumpersDeveloper, Cube\n[03] try it now\nYour first tests are on us\nTry for free\n[04] FAQ\nFrequently Asked Questions\nIs there a free trial?\nYes. Every new team gets 5 free test runs so you can try TesterArmy end-to-end before upgrading.\nWhat counts as a test run?\nEach test run - whether triggered from chat, the CLI, a GitHub deployment, or a scheduled job - counts as one test run, up to 20 minutes of execution time.\nWhat happens when I hit the limit?\nNew test runs are blocked until the next billing cycle. Upgrade your plan or contact us to increase your limit.\nDo you support enterprise onboarding?\nYes. Book a call for custom limits, self-hosting, SSO, and dedicated support.\nCan I cancel anytime?\nYes. Cancel from your dashboard settings. Your subscription stays active until the end of the billing period.\nWhere can I see setup steps?\nFollow the Project Setup guide for GitHub and Vercel integration.\n[05] Start testing\nAI-powered QA testing for modern teams.\nShip faster with confidence\nStart for freeGet a demo",
+  "meta": {
+    "og_title": "TesterArmy: Pricing",
+    "og_description": "TesterArmy automated QA testing plans. Contact us and we'll create a tailored offer for your needs.",
+    "og_site_name": "TesterArmy",
+    "og_type": "website",
+    "description": "TesterArmy automated QA testing plans. Contact us and we'll create a tailored offer for your needs.",
+    "canonical": "https://tester.army/pricing",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "pricing",
+    "empty_shell": false,
+    "text_chars": 4345,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 4345
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "kampala",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "kampala",
+    "name": "Kampala",
+    "url": "https://zatanna.ai",
+    "one_liner": "Reverse-Engineer Apps into APIs",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "47794514",
+        "title": "Launch HN: Kampala (YC W26) – Reverse-Engineer Apps into APIs",
+        "posted_url": "https://www.zatanna.ai/kampala",
+        "posted_at": "2026-04-16T15:19:54.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://zatanna.ai",
+      "from": "candidate_url"
+    },
+    "github": null
+  },
+  "evidence_ids": [
+    "10a1dfcf5cbe933f",
+    "57e56375ca5acaaa"
+  ],
+  "signals": [
+    {
+      "key": "site.url",
+      "value": "https://www.zatanna.ai/",
+      "as_of": "2026-08-23T06:29:55.603Z",
+      "evidence_id": "57e56375ca5acaaa"
+    },
+    {
+      "key": "site.title",
+      "value": "Zatanna — Turn software workflows into reliable APIs for AI agents |",
+      "as_of": "2026-08-23T06:29:55.603Z",
+      "evidence_id": "57e56375ca5acaaa"
+    },
+    {
+      "key": "site.description",
+      "value": "Zatanna maps human-only software workflows and exposes them as reliable APIs your AI agents and internal tools can call in production. No browser automation scripts to maintain.",
+      "as_of": "2026-08-23T06:29:55.603Z",
+      "evidence_id": "57e56375ca5acaaa"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-23T06:29:55.603Z",
+      "evidence_id": "57e56375ca5acaaa"
+    },
+    {
+      "key": "site.contact_url",
+      "value": "https://zatanna.cal.com/tarun/30min?user=tarun&overlayCalendar=true",
+      "as_of": "2026-08-23T06:29:55.603Z",
+      "evidence_id": "57e56375ca5acaaa"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "site.team_url",
+      "reason": "the home page links to no team page"
+    },
+    {
+      "key": "site.pricing_url",
+      "reason": "the home page links to no pricing page"
+    },
+    {
+      "key": "site.docs_url",
+      "reason": "the home page links to no docs page"
+    },
+    {
+      "key": "site.signup_url",
+      "reason": "the home page links to no signup page"
+    },
+    {
+      "key": "site.repo_url",
+      "reason": "the home page links to no repo page"
+    },
+    {
+      "key": "site.team_page",
+      "reason": "no team page was linked or fetched"
+    },
+    {
+      "key": "site.pricing_page",
+      "reason": "no pricing page was linked or fetched"
+    },
+    {
+      "key": "site.docs_page",
+      "reason": "no docs page was linked or fetched"
+    },
+    {
+      "key": "site.people_named",
+      "reason": "no person was named with a role beside them on any page read"
+    },
+    {
+      "key": "github",
+      "reason": "candidate url is not a GitHub account and the site links to no code host"
+    }
+  ],
+  "people": [],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

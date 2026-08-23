@@ -133,6 +133,8 @@ export interface RunPaths {
   manifest: string;
   queryPlan: string;
   candidates: string;
+  /** Stage 2a's record of what each candidate was gathered from (STATE 70, 84). */
+  bundlesDir: string;
   evidenceDir: string;
   analysesDir: string;
   /** Outside `runs/` — see rule 3 above. */
@@ -147,6 +149,7 @@ export function runPaths(id: string, root = "."): RunPaths {
     manifest: join(dir, "manifest.json"),
     queryPlan: join(dir, "query_plan.json"),
     candidates: join(dir, "candidates.jsonl"),
+    bundlesDir: join(dir, "bundles"),
     evidenceDir: join(dir, "evidence"),
     analysesDir: join(dir, "analyses"),
     memoDir: join(root, MEMOS_ROOT, id),

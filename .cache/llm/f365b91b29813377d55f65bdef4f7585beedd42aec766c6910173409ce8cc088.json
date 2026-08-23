@@ -1,0 +1,112 @@
+{
+  "schema_version": 2,
+  "key": "f365b91b29813377d55f65bdef4f7585beedd42aec766c6910173409ce8cc088",
+  "call": {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "prompt_id": "extract",
+    "prompt_version": "1",
+    "schema_version": "2"
+  },
+  "input": "You are reading a small set of documents about one company and writing down what\nthey say about it.\n\nEverything you produce is a **fact**: one observation, in one sentence, attached\nto the record it came from. You are not assessing the company. Something else\ndoes that, from your facts, against criteria you have not been shown and should\nnot try to guess. A fact that says *\"strong technical team\"* is unusable to it. A\nfact that says *\"the two founders were on the Kubernetes networking team at\nGoogle until March 2025\"*, citing the page that says so, is the whole job.\n\n## The company\n\nname: Kontext CLI\nurl: https://github.com/kontext-security/kontext\none_liner: Credential broker for AI coding agents in Go\nfound_via: hn — Show HN: Kontext CLI – Credential broker for AI coding agents in Go (posted 2026-04-14T13:26:53.000Z)\n\n## The evidence\n\nEvery record below has an `id`, the url it came from, what kind of page it is,\nand the date **we retrieved it**. The text is what we fetched, and it may be\ntruncated mid-sentence. These records are the only sources that exist for this\ntask.\n\n--- BEGIN RECORD c853b0346c680b11 ---\nid: c853b0346c680b11\nurl: https://news.ycombinator.com/item?id=47765374\ntype: hn_item\ntitle: Show HN: Kontext CLI – Credential broker for AI coding agents in Go | Hacker News\nretrieved_at: 2026-08-23T06:29:58.163Z\n\nHacker Newsnew | past | comments | ask | show | jobs | submit\nlogin\nShow HN: Kontext CLI – Credential broker for AI coding agents in Go (github.com/kontext-dev)\n70 points by mc-serious 4 months ago | hide | past | favorite | 17 comments\nWe built the Kontext CLI because AI coding agents need access to GitHub, Stripe, databases, and dozens of other services — and right now most teams handle this by copy-pasting long-lived API keys into .env files, or the actual chat interface, whilst hoping for the best.\nThe problem isn't just secret sprawl. It's that there's no lineage of access. You don't know which developer launched which agent, what it accessed, or whether it should have been allowed to. The moment you hand raw credentials to a process, you've lost the ability to enforce policy, audit access, or rotate without pain. The credential is the authorization, and that's fundamentally broken when autonomous agents are making hundreds of API calls per session.\nKontext takes a different approach. You declare what credentials a project needs in a .env.kontext file:\nGITHUB_TOKEN={{kontext:github}}\nSTRIPE_KEY={{kontext:stripe}}\nLINEAR_TOKEN={{kontext:linear}}\nThen run `kontext start --agent claude`. The CLI authenticates you via OIDC, and for each placeholder: if the service supports OAuth, it exchanges the placeholder for a short-lived access token via RFC 8693 token exchange; for static API keys, the backend injects the credential directly into the agent's runtime environment. Either way, secrets exist only in memory during the session — never written to disk on your machine. Every tool call is streamed for audit as the agent runs.\nThe closest analogy is a Security Token Service (STS): you authenticate once, and the backend mints short-lived, scoped credentials on-the-fly — except unlike a classical STS, we hold the upstream secrets, so nothing long-lived ever reaches the agent. The backend holds your OAuth refresh tokens and API keys; the CLI never sees them. It gets back short-lived access tokens scoped to the session.\nWhat the CLI captures for every tool call: what the agent tried to do, what happened, whether it was allowed, and who did it — attributed to a user, session, and org.\nInstall with one command: `brew install kontext-dev/tap/kontext`\nThe CLI is written in Go (~5ms hook overhead per tool call), uses ConnectRPC for backend communication, and stores auth in the system keyring. Works with Claude Code today, Codex support coming soon.\nWe're working on server-side policy enforcement next — the infrastructure for allow/deny decisions on every tool call is already wired, we just need to close the loop so tool calls can also be rejected.\nWe'd love feedback on the approach. Especially curious: how are teams handling credential management for AI agents today? Are you just pasting env vars into the agent chat, or have you found something better?\nGitHub: https://github.com/kontext-dev/kontext-cli\nSite: https://kontext.security\njames-clef 4 months ago | next [–]\nVery cool project. Providing credentials agents and standardizing that whole process seems like valuable work. Question though on the OSS/paid boundary... is the OSS cli the client for the paid service? What is the custody model? Does this service store all my credentials?\npetcat 4 months ago | parent | next [–]\nFrom another comment:\n> Kontext holds secrets server-side and mints short-lived tokens per session.\nThat probably makes this thing DOA for most people (certainly for me and everyone I know).\njames-clef 4 months ago | root | parent | next [–]\nThanks. Yes, I would have to put myself in that category. Typical play here is to offer the self-hosted option. Not sure if that is in the pipeline for the creators of this. Then you are into that trust/operational overhead tradeoff conversation.\nmc-serious 4 months ago | root | parent | next [3 more]\n[flagged]\ntjarjoura 4 months ago | root | parent | next [–]\nWhat do you anticipate to be the hardest part of supporting a self-hosted solution? I've worked a fair bit on converting SAAS -> self-hosted and always interested to hear others' pain points.\nI imagine a lot of the organizations that would find this most valuable, and would be willing to pay a lot, would be the same ones that would require something like this.\nmc-serious 4 months ago | root | parent | next [2 more]\n[flagged]\ntrollbridge 4 months ago | root | parent | next [–]\nCurrently we can use Bitwarden either hosted or self-hosted, which solves most of these problems (plus my own extra rig I built to generate OAuth tokens, for people which support that).\nCould you elaborate on what challenges you face that can't be solved by the Bitwarden approach?\nmeasurablefunc 4 months ago | prev | next [–]\nIt should be possible to do this w/ eBPF. Monitor network i/o & rewrite the request on the fly to include the proper tokens & signatures. The agent can just be given placeholder tokens. That way all the usual libraries work as expected & the secrets/signatures are handled w/o worrying about another abstraction layer. Here is some prior art: https://riptides.io/blog/when-ebpf-isnt-enough-why-we-went-w...\namjd 4 months ago | prev | next [–]\nCongrats on the launch! What are the key advantages of this compared to OneCLI[1]?\n[1]: https://github.com/onecli/onecli\nmc-serious 4 months ago | parent | next [2 more]\n[flagged]\nesafranchik 4 months ago | root | parent | next [–]\nDoes this work with any tool calls that make an HTTP request? e.g. calling `curl` directly vs writing a script to make the request, then calling it\ne12e 4 months ago | prev | next [–]\n> for static API keys, the backend injects the credential directly into the agent's runtime environment.\nWhat prevents the agent from presisering or leaking the API key - or reading it from the environment?\nsjdv1982 4 months ago | prev | next [–]\nWhat if kontext runs under the same user as Claude? Could it in principle inspect the kontext process and extract the key from memory?\nmhluongo 4 months ago | parent | next [–]\nIf they use the system keyring, it depends on the OS and other details - MacOS, Linux, and Windows all have different implementation tradeoffs.\nzimbatm 4 months ago | prev | next [–]\nThis is how keychains should be designed. Never return the secret, but mint a new token, or sign a request.\nWe need this also for normal usage like development environments. Or when invoking a command on a remote server.\nAre you going to add support for services that don't support OIDC or this going to be a known limitation?\nsarahroehm 4 months ago | prev | next [–]\nFinally a solution which focuses on contextual authorization - evaluating the agent's reasoning trace when it requests a credential, only issuing it if the intent matches what the user authorized.. developer-focused and self-serve.Happy Launch day!!\ntraceroute66 4 months ago | prev | next [–]\nSounds awfully similar to Tailscale Aperture[1]\n[1] https://tailscale.com/blog/aperture-self-serve\nairstrike 4 months ago | prev | next [–]\nReally cool and much needed!\nI was actually just about to get started writing this but in Rust....\n0xOsprey 4 months ago | prev | next [–]\nYup I needed this bad for my NanoClaw\nNice work\nVishi3 4 months ago | prev | next [–]\nCan I integrate this with my coding agents?\nGuidelines | FAQ | Lists | API | Security | Legal | Apply to YC | Contact\nSearch:\n--- END RECORD c853b0346c680b11 ---\n\n--- BEGIN RECORD 4c7160666f3d0996 ---\nid: 4c7160666f3d0996\nurl: https://api.github.com/repos/kontext-security/kontext\ntype: github_repo\ntitle: kontext-security/kontext\nretrieved_at: 2026-08-23T06:29:58.421Z\n\nrepository: kontext-security/kontext\nurl: https://github.com/kontext-security/kontext\ndescription: Secure agents in seconds with permissions enforced at runtime.\nhomepage: https://app.kontext.security\nowner: kontext-security\nowner type: Organization\nprimary language: Go\nlicense: MIT\ntopics: ai, ai-agents, audit-logging, authorization, developer-tools, golang, kontext, permissions, security, security-tools\nstars: 210\nforks: 8\nwatchers: 0\nopen issues: 22\ncreated at: 2026-04-05T09:12:57Z\nlast pushed at: 2026-08-23T03:23:20Z\narchived: false\nis a fork: false\n--- END RECORD 4c7160666f3d0996 ---\n\n--- BEGIN RECORD a7558d1ae95d1aeb ---\nid: a7558d1ae95d1aeb\nurl: https://api.github.com/users/kontext-security\ntype: github_user\ntitle: Kontext\nretrieved_at: 2026-08-23T06:29:58.897Z\n\naccount: kontext-security\ntype: Organization\nname: Kontext\nbio: unknown\ncompany: unknown\nlocation: Germany\nwebsite: https://kontext.security\npublic repositories: 12\nfollowers: 42\naccount created at: 2022-10-22T15:51:36Z\n--- END RECORD a7558d1ae95d1aeb ---\n\n--- BEGIN RECORD e1640300f968529d ---\nid: e1640300f968529d\nurl: https://app.kontext.security/\ntype: company_site\ntitle: Login - Kontext\nretrieved_at: 2026-08-23T06:29:59.281Z\n\nKontext is the control plane for traces, providers, access, and AI applications.\n\nWelcome to Kontext\nEnter your email to receive a secure sign-in code\nEmail\nSend code\nOr\nContinue with GitHubContinue with Google\nBy signing in, you agree to our Terms of Service and Privacy Policy.\nGive agents room to work.Keep the authority to intervene.\n--- END RECORD e1640300f968529d ---\n\n## What to look for\n\nEach observation you record is filed under a `key` from this list. The list is\nwhat the reader downstream knows how to read; a key outside it goes nowhere.\n\n- `founder.name_role` — A person named on the company's own pages, with the role it gives them.\n- `founder.prior_role` — A prior employer, role or period a named person is stated to have held.\n- `founder.prior_exit` — A company a named person is stated to have founded, sold, or left after building.\n- `founder.prior_artifact` — Something a named person is stated to have built or shipped before this — a project, library, paper or talk.\n- `team.size_visible` — How many people the source names or states, and where it names them.\n- `org.github_account_type` — Whether the GitHub owner is an organisation or a personal account, as the payload states it.\n- `product.one_liner` — How the company describes what the product does, in its own words.\n- `product.job` — The specific task, and the person doing it, that the source says the product is for.\n- `product.category_claim` — The category, platform or scope the company claims for itself — its own framing, quoted or closely paraphrased.\n- `product.capability_dependency` — A technology, model or cost change the source says the product depends on, and when the source says it arrived.\n- `product.launch_date` — A date the source gives for the company, the product, or a first release.\n- `product.open_source` — A licence or public repository the source states for the product itself.\n- `product.runtime_position` — Where the source says the product sits — agent, sidecar, proxy, kernel module, build step, hosted service.\n- `product.data_accumulated` — Data the source says the product collects, stores or builds up as it is used.\n- `adoption.self_serve` — A stated way to start using it without speaking to anyone — sign-up, free tier, download, install command.\n- `adoption.pricing_public` — Whether prices are published, and what the page states them to be.\n- `adoption.sales_gate` — A stated requirement to contact sales, book a demo, or request access before using it.\n- `traction.github_stars` — A star count, with the date the record carries for it.\n- `traction.repo_activity` — Commit, release or issue activity, with whatever dates the record gives.\n- `traction.contributors` — How many people have contributed, as the payload states it.\n- `traction.named_user` — A named customer, design partner or user the source states — a logo wall counts only if the page says they use it.\n- `traction.integration` — A named third-party product or project the source says this works with.\n- `traction.hn_engagement` — Points, comment count or dates on the Hacker News thread.\n- `funding.raised_usd` — An amount, round, date or investor the source states.\n\nNo bundle answers all of these. Most answer a minority. A key with no answer in\nthe evidence is simply not reported — see rule 6.\n\n## Rules\n\n1. **Cite everything.** Every fact carries `evidence_ids` with at least one id,\n   and every id must be one of the ids listed above. A fact citing an id that is\n   not in that list is discarded unread, as is a fact citing nothing. If an\n   observation genuinely rests on two records, cite both.\n\n2. **Only what these records say.** Not what you know about this company from\n   anywhere else, and not what is usually true of companies like it. You may\n   well have seen this company before. That is the single most likely way this\n   output becomes wrong in a way nobody catches, because a recalled fact arrives\n   wearing a citation and looks checked.\n\n3. **One observation per fact.** Two claims in one sentence cannot be verified\n   separately, and the second one is the one that turns out to be wrong.\n\n4. **Statements are checkable.** A reader opens the cited record and decides\n   whether your sentence is supported by it. Quote or paraphrase closely. Do not\n   blend several records into a summary that no single one of them supports.\n\n5. **Dates are the source's, not ours.** `retrieved_at` is when we read the\n   page. If the text states when something happened — a launch, a release, a\n   funding round, a commit, a job that ended — put that date in the statement and\n   use it. \"Recently\" and \"last year\" are not dates; write what the source wrote.\n\n6. **Omission is how you say \"unknown\".** There is no penalty for a short\n   answer, and a bundle that supports four facts should produce four. Missing\n   information is handled honestly further down the pipeline; a filled-in guess\n   is not recoverable, because by then it is indistinguishable from something\n   that was read.\n\n7. **No number you did not read.** Counts, stars, dates, headcount, funding,\n   customers: taken from the text or left out. Never rounded up, never\n   estimated, never carried across from a similar company.\n\n8. **No scoring, ranking, or recommending.** Do not rate the company, compare it\n   to another, or say whether it is a good investment, a good fit, or promising.\n   If you are writing an adjective that ranks — strong, impressive, thin,\n   weak, promising — you are writing a judgement, and the sentence needs to go\n   back to being an observation or be dropped.\n\n## The fields\n\n- `key` — one of the keys listed above.\n- `statement` — the sentence a partner reads. Plain, specific, one observation,\n  and true to the cited record.\n- `value` — the same observation in machine-readable form: a number for a count\n  or an amount (bare, no units or commas), `true`/`false` for a yes-or-no, a\n  short string for a name or a label or an ISO date, and `null` when the\n  observation is the sentence itself and has no scalar to reduce to.\n- `evidence_ids` — the ids this rests on.\n- `confidence` — how firmly *the cited text* supports the statement:\n  - `high` — the record states it outright.\n  - `medium` — the record clearly implies it; one short step, and any careful\n    reader would take the same one.\n  - `low` — the record is consistent with it and it is the most reasonable\n    reading, but a careful reader could read it another way.\n\n  Confidence is about the evidence, never about the company. Anything you would\n  want to mark below `low` is an omission, not a fact.\n\nReturn the facts and nothing else. No preamble, no summary of the company, no\nclosing assessment.\n",
+  "output": {
+    "facts": [
+      {
+        "key": "product.one_liner",
+        "statement": "Kontext CLI is a credential broker for AI coding agents written in Go.",
+        "value": "Credential broker for AI coding agents in Go",
+        "evidence_ids": [
+          "c853b0346c680b11"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.job",
+        "statement": "Kontext CLI enables AI coding agents to access credentials needed for services like GitHub, Stripe, and databases without exposing long-lived API keys.",
+        "value": "Enable AI coding agents to access credentials securely",
+        "evidence_ids": [
+          "c853b0346c680b11"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.runtime_position",
+        "statement": "Kontext CLI runs locally and injects credentials into the AI agent's runtime environment during sessions, using OAuth and short-lived tokens.",
+        "value": "CLI injecting credentials at runtime for AI agents",
+        "evidence_ids": [
+          "c853b0346c680b11"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.data_accumulated",
+        "statement": "The CLI streams every tool call made by the AI agent for audit as it runs, capturing what was accessed, who did it, and session context.",
+        "value": "Audit logs of agent tool calls with user and session attribution",
+        "evidence_ids": [
+          "c853b0346c680b11"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.capability_dependency",
+        "statement": "Kontext's credential management depends on OAuth and RFC 8693 token exchange to mint short-lived, scoped credentials.",
+        "value": "OAuth and RFC 8693 token exchange",
+        "evidence_ids": [
+          "c853b0346c680b11"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.open_source",
+        "statement": "The Kontext CLI is open source and licensed under MIT, with a public repository on GitHub at kontext-security/kontext.",
+        "value": "MIT",
+        "evidence_ids": [
+          "4c7160666f3d0996"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.github_stars",
+        "statement": "The kontext-security/kontext GitHub repository has 210 stars as of 2026-08-23.",
+        "value": 210,
+        "evidence_ids": [
+          "4c7160666f3d0996"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.repo_activity",
+        "statement": "The kontext-security/kontext GitHub repository was last pushed on 2026-08-23 and has 22 open issues.",
+        "value": "last pushed 2026-08-23",
+        "evidence_ids": [
+          "4c7160666f3d0996"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "org.github_account_type",
+        "statement": "The kontext-security GitHub account is an organization account.",
+        "value": "Organization",
+        "evidence_ids": [
+          "4c7160666f3d0996"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "team.size_visible",
+        "statement": "The kontext-security GitHub organization has 12 public repositories and 42 followers as of 2026-08-23.",
+        "value": 12,
+        "evidence_ids": [
+          "a7558d1ae95d1aeb"
+        ],
+        "confidence": "high"
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4558,
+    "output_tokens": 610,
+    "cost_usd": null
+  },
+  "created_at": "2026-08-23T06:32:42.752Z"
+}

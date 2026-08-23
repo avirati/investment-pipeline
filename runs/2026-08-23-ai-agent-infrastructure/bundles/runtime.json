@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "runtime",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "runtime",
+    "name": "Runtime",
+    "url": "https://runtm.com",
+    "one_liner": "Sandboxed coding agents for everyone on a team",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48225040",
+        "title": "Launch HN: Runtime (YC P26) – Sandboxed coding agents for everyone on a team",
+        "posted_url": "https://www.runtm.com/",
+        "posted_at": "2026-05-21T16:07:13.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://runtm.com",
+      "from": "candidate_url"
+    },
+    "github": {
+      "ref": {
+        "owner": "runtm-ai",
+        "repo": "runtm-coding-agent-runtime-control-plane",
+        "from": "github.com"
+      },
+      "from": "site_link"
+    }
+  },
+  "evidence_ids": [
+    "51af072cdf0001e8",
+    "ae539235a3554b90",
+    "37bec11bb197d350",
+    "755c350fbe36c12d",
+    "73fc28f6289b44df"
+  ],
+  "signals": [
+    {
+      "key": "site.url",
+      "value": "https://www.runtm.com/",
+      "as_of": "2026-08-22T10:19:45.210Z",
+      "evidence_id": "ae539235a3554b90"
+    },
+    {
+      "key": "site.title",
+      "value": "Runtime - Build and run agents that use all your tools",
+      "as_of": "2026-08-22T10:19:45.210Z",
+      "evidence_id": "ae539235a3554b90"
+    },
+    {
+      "key": "site.description",
+      "value": "Build and run AI agents that use your existing tools, data, and services. Trigger them from Slack, tickets, email, or GitHub. Every run is stored with its steps, tools, and cost.",
+      "as_of": "2026-08-22T10:19:45.210Z",
+      "evidence_id": "ae539235a3554b90"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-22T10:19:45.210Z",
+      "evidence_id": "ae539235a3554b90"
+    },
+    {
+      "key": "site.docs_url",
+      "value": "https://docs.runtm.com/",
+      "as_of": "2026-08-22T10:19:45.210Z",
+      "evidence_id": "ae539235a3554b90"
+    },
+    {
+      "key": "site.contact_url",
+      "value": "https://www.runtm.com/demo",
+      "as_of": "2026-08-22T10:19:45.210Z",
+      "evidence_id": "ae539235a3554b90"
+    },
+    {
+      "key": "site.repo_url",
+      "value": "https://github.com/runtm-ai/runtm-coding-agent-runtime-control-plane/blob/main/CHANGELOG.md",
+      "as_of": "2026-08-22T10:19:45.210Z",
+      "evidence_id": "ae539235a3554b90"
+    },
+    {
+      "key": "github.repo",
+      "value": "runtm-ai/runtm",
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.stars",
+      "value": 291,
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.forks",
+      "value": 32,
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.watchers",
+      "value": 2,
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.open_issues",
+      "value": 23,
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.created_at",
+      "value": "2026-01-02T21:37:04Z",
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.age_days",
+      "value": 232,
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d",
+      "derived_from": "created_at → retrieval"
+    },
+    {
+      "key": "github.pushed_at",
+      "value": "2026-08-21T02:19:19Z",
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.days_since_push",
+      "value": 2,
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d",
+      "derived_from": "pushed_at → retrieval"
+    },
+    {
+      "key": "github.stars_per_day_lifetime",
+      "value": 1.25,
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d",
+      "derived_from": "stars ÷ age_days — a lifetime average, not a current rate"
+    },
+    {
+      "key": "github.topics",
+      "value": "agent-runtime, agentic, ai-agents, anthropic, app-runtime, claude, claude-code, control-plane, cursor, ephemeral-environments, infra, llm-tools, llmops, observability, open-source, openai, sandbox, serverless",
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.language",
+      "value": "Python",
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.archived",
+      "value": false,
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.is_fork",
+      "value": false,
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.homepage",
+      "value": "https://www.runtm.com/",
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.owner",
+      "value": "runtm-ai",
+      "as_of": "2026-08-23T06:29:56.646Z",
+      "evidence_id": "755c350fbe36c12d"
+    },
+    {
+      "key": "github.owner_type",
+      "value": "Organization",
+      "as_of": "2026-08-23T06:29:57.859Z",
+      "evidence_id": "73fc28f6289b44df"
+    },
+    {
+      "key": "github.owner_name",
+      "value": "runtm",
+      "as_of": "2026-08-23T06:29:57.859Z",
+      "evidence_id": "73fc28f6289b44df"
+    },
+    {
+      "key": "github.owner_location",
+      "value": "United States of America",
+      "as_of": "2026-08-23T06:29:57.859Z",
+      "evidence_id": "73fc28f6289b44df"
+    },
+    {
+      "key": "github.owner_public_repos",
+      "value": 4,
+      "as_of": "2026-08-23T06:29:57.859Z",
+      "evidence_id": "73fc28f6289b44df"
+    },
+    {
+      "key": "github.owner_followers",
+      "value": 14,
+      "as_of": "2026-08-23T06:29:57.859Z",
+      "evidence_id": "73fc28f6289b44df"
+    },
+    {
+      "key": "github.owner_created_at",
+      "value": "2025-12-15T22:15:52Z",
+      "as_of": "2026-08-23T06:29:57.859Z",
+      "evidence_id": "73fc28f6289b44df"
+    },
+    {
+      "key": "github.owner_age_days",
+      "value": 250,
+      "as_of": "2026-08-23T06:29:57.859Z",
+      "evidence_id": "73fc28f6289b44df",
+      "derived_from": "account created_at → retrieval"
+    },
+    {
+      "key": "github.owner_site",
+      "value": "https://www.runtm.com/",
+      "as_of": "2026-08-23T06:29:57.859Z",
+      "evidence_id": "73fc28f6289b44df",
+      "derived_from": "the account's own `blog` field — the repository's `homepage` is the stronger route"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "site.team_url",
+      "reason": "the home page links to no team page"
+    },
+    {
+      "key": "site.pricing_url",
+      "reason": "the home page links to no pricing page"
+    },
+    {
+      "key": "site.signup_url",
+      "reason": "the home page links to no signup page"
+    },
+    {
+      "key": "site.team_page",
+      "reason": "no team page was linked or fetched"
+    },
+    {
+      "key": "site.pricing_page",
+      "reason": "no pricing page was linked or fetched"
+    },
+    {
+      "key": "site.people_named",
+      "reason": "no person was named with a role beside them on any page read"
+    },
+    {
+      "key": "github.readme",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.contributors",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.commit_activity",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.license",
+      "reason": "GitHub could not identify a licence in the repository"
+    },
+    {
+      "key": "github.owner_company",
+      "reason": "the account names no company"
+    }
+  ],
+  "people": [],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

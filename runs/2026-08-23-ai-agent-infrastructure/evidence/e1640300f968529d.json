@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "e1640300f968529d",
+  "url": "https://app.kontext.security/",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:29:59.281Z",
+  "status": 200,
+  "title": "Login - Kontext",
+  "text": "Kontext is the control plane for traces, providers, access, and AI applications.\n\nWelcome to Kontext\nEnter your email to receive a secure sign-in code\nEmail\nSend code\nOr\nContinue with GitHubContinue with Google\nBy signing in, you agree to our Terms of Service and Privacy Policy.\nGive agents room to work.Keep the authority to intervene.",
+  "meta": {
+    "og_title": "Kontext",
+    "og_description": "Kontext is the control plane for traces, providers, access, and AI applications.",
+    "og_site_name": "Kontext",
+    "og_type": "website",
+    "description": "Kontext is the control plane for traces, providers, access, and AI applications.",
+    "main_selector": "body",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "home",
+    "final_url": "https://app.kontext.security/login",
+    "empty_shell": false,
+    "text_chars": 337,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 337
+  }
+}

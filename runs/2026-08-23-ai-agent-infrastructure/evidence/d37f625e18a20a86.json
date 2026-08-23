@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "d37f625e18a20a86",
+  "url": "https://tester.army/docs",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:29:56.825Z",
+  "status": 200,
+  "title": "Welcome | TesterArmy: Documentation",
+  "text": "TesterArmy is AI-agent testing automation: on every product change, an army of AI testers clicks through your app like real users. Start here.\n\nGet Started\nWelcome\nAsk a question|Copy page|View as Markdown|More actions\nWelcome to TesterArmy!\nWe’re super excited to have you here. Let’s explore how you can set up automated testing for your software.\nTesterArmy is a testing automation software that’s built from the ground up around AI agents. On every change in your product, our army of testers clicks through your product like real users.\nAll we need to test your app is a URL, we’ll handle authentication, bot detection, agent orchestration and more. This helps teams focus on what’s important - building the product.\nNext steps\nIntroduction\nWhat makes TesterArmy different from static test scripts and how our AI agents work.\nQuick Start\nSign up and run your first test in under 5 minutes.\nNeed Help?\nJoin our Discord\nAsk questions and share your projects with the community.\nEmail Support\nGet in touch with our team for personalized help.",
+  "meta": {
+    "og_title": "Welcome | TesterArmy: Documentation",
+    "og_description": "TesterArmy is AI-agent testing automation: on every product change, an army of AI testers clicks through your app like real users. Start here.",
+    "og_site_name": "TesterArmy",
+    "description": "TesterArmy is AI-agent testing automation: on every product change, an army of AI testers clicks through your app like real users. Start here.",
+    "canonical": "https://tester.army/docs/docs/get-started",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "docs",
+    "final_url": "https://tester.army/docs/get-started",
+    "empty_shell": false,
+    "text_chars": 1044,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 1044
+  }
+}

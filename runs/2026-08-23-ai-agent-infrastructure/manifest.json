@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "run_id": "2026-08-23-ai-agent-infrastructure",
-  "created_at": "2026-08-23T04:06:24.233Z",
+  "created_at": "2026-08-23T06:32:03.067Z",
   "seed": {
     "form": "topic",
     "value": "AI agent infrastructure"
   },
   "git": {
-    "sha": "0850bb5b5efc2a4badcbaa0b0c89cd6778e83588",
-    "dirty": false
+    "sha": "7e3790c29398871028ab9811cd095c7b978c2541",
+    "dirty": true
   },
   "llm": {
     "provider": "openai",
@@ -22,12 +22,12 @@
   },
   "stages": {
     "source": {
-      "started_at": "2026-08-23T04:06:24.233Z",
-      "finished_at": "2026-08-23T04:06:31.601Z",
-      "duration_ms": 7368,
+      "started_at": "2026-08-23T06:32:03.067Z",
+      "finished_at": "2026-08-23T06:32:03.108Z",
+      "duration_ms": 41,
       "seed_form": "topic",
       "flags": {
-        "limit": 3,
+        "limit": 12,
         "since_days": 180,
         "min_hits": 8,
         "expand": true,
@@ -101,9 +101,9 @@
         "sites_with_multiple_posts": 3
       },
       "resolve": {
-        "requests": 3,
-        "redirected": 0,
-        "rekeyed": 0,
+        "requests": 12,
+        "redirected": 2,
+        "rekeyed": 1,
         "unreachable": 0,
         "rejected_on_landing": 0
       },
@@ -131,37 +131,114 @@
           "posts": 1,
           "status": "ok",
           "http_status": 200
+        },
+        {
+          "slug": "testerarmy",
+          "name": "TesterArmy",
+          "url": "https://tester.army",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "intuned",
+          "name": "Intuned",
+          "url": "https://intunedhq.com",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "runtime",
+          "name": "Runtime",
+          "url": "https://runtm.com",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "kampala",
+          "name": "Kampala",
+          "url": "https://zatanna.ai",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "ardent",
+          "name": "Ardent",
+          "url": "https://tryardent.com",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "hypercubic-ai",
+          "name": "hypercubic.ai",
+          "url": "https://hypercubic.ai/hopper",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "hoplite",
+          "name": "Hoplite",
+          "url": "https://hoplite.sh",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "kontext-cli",
+          "name": "Kontext CLI",
+          "url": "https://github.com/kontext-security/kontext",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
+        },
+        {
+          "slug": "bitboard",
+          "name": "BitBoard",
+          "url": "https://bitboard.work",
+          "posts": 1,
+          "status": "ok",
+          "http_status": 200
         }
       ],
       "counts": {
-        "candidates": 3,
+        "candidates": 12,
         "dropped": 0
       }
     },
     "analyse": {
-      "started_at": "2026-08-23T04:10:33.386Z",
-      "finished_at": "2026-08-23T04:10:33.796Z",
-      "duration_ms": 410,
+      "started_at": "2026-08-23T06:32:03.110Z",
+      "finished_at": "2026-08-23T06:32:48.575Z",
+      "duration_ms": 45465,
       "flags": {
-        "replay": true,
+        "replay": false,
+        "force": false,
         "concurrency": 3,
         "gather_concurrency": 4
       },
+      "bundles": {
+        "source": "gather",
+        "count": 12
+      },
       "input": {
-        "lines": 3,
-        "candidates": 3,
+        "lines": 12,
+        "candidates": 12,
         "unparseable": 0
       },
       "budget": {
-        "candidates": 3,
+        "candidates": 12,
         "github_mode": "unauthenticated",
-        "github_calls": 5,
+        "github_calls": 2,
         "site_pages": 3,
         "over_planning_ceiling": false,
         "planned": {
-          "github": 15,
-          "site": 12,
-          "hn": 3
+          "github": 24,
+          "site": 48,
+          "hn": 12
         },
         "spent": {
           "github": {
@@ -173,7 +250,7 @@
             "limit": 240
           },
           "hn": {
-            "spent": 3,
+            "spent": 12,
             "limit": null
           }
         }
@@ -185,15 +262,15 @@
           "id": "extract",
           "version": "1"
         },
-        "attempts": 3,
-        "calls": 3,
-        "from_cache": 3,
-        "input_tokens": 22100,
-        "output_tokens": 3223,
+        "attempts": 12,
+        "calls": 12,
+        "from_cache": 0,
+        "input_tokens": 79582,
+        "output_tokens": 11341,
         "cost_usd": null
       },
       "facts": {
-        "kept": 47,
+        "kept": 171,
         "dropped": 0,
         "dropped_by_kind": {}
       },
@@ -202,49 +279,336 @@
           "slug": "freestyle",
           "status": "ok",
           "reason": null,
-          "score": 55,
+          "score": 64,
           "coverage": 1,
           "call": "WATCH",
-          "facts": 26,
+          "facts": 17,
           "dropped": 0,
-          "evidence_records": 8,
-          "gather_failures": 1,
-          "duration_ms": 9
+          "evidence_records": 6,
+          "gather_failures": 0,
+          "duration_ms": 12437
         },
         {
           "slug": "klaus",
           "status": "ok",
           "reason": null,
-          "score": 63,
+          "score": 81,
           "coverage": 0.8,
-          "call": "WATCH",
-          "facts": 9,
+          "call": "TAKE_A_MEETING",
+          "facts": 13,
           "dropped": 0,
           "evidence_records": 4,
           "gather_failures": 2,
-          "duration_ms": 6
+          "duration_ms": 10718
         },
         {
           "slug": "agent-vault",
           "status": "ok",
           "reason": null,
-          "score": 75,
+          "score": 59,
+          "coverage": 1,
+          "call": "WATCH",
+          "facts": 18,
+          "dropped": 0,
+          "evidence_records": 5,
+          "gather_failures": 0,
+          "duration_ms": 12485
+        },
+        {
+          "slug": "testerarmy",
+          "status": "ok",
+          "reason": null,
+          "score": 74,
           "coverage": 1,
           "call": "TAKE_A_MEETING",
+          "facts": 16,
+          "dropped": 0,
+          "evidence_records": 5,
+          "gather_failures": 0,
+          "duration_ms": 11176
+        },
+        {
+          "slug": "intuned",
+          "status": "ok",
+          "reason": null,
+          "score": 66,
+          "coverage": 1,
+          "call": "WATCH",
+          "facts": 25,
+          "dropped": 0,
+          "evidence_records": 6,
+          "gather_failures": 0,
+          "duration_ms": 16013
+        },
+        {
+          "slug": "runtime",
+          "status": "ok",
+          "reason": null,
+          "score": 80,
+          "coverage": 1,
+          "call": "TAKE_A_MEETING",
+          "facts": 15,
+          "dropped": 0,
+          "evidence_records": 5,
+          "gather_failures": 0,
+          "duration_ms": 10331
+        },
+        {
+          "slug": "kampala",
+          "status": "ok",
+          "reason": null,
+          "score": 59,
+          "coverage": 1,
+          "call": "PASS",
+          "facts": 15,
+          "dropped": 0,
+          "evidence_records": 2,
+          "gather_failures": 0,
+          "duration_ms": 10163
+        },
+        {
+          "slug": "ardent",
+          "status": "ok",
+          "reason": null,
+          "score": 71,
+          "coverage": 1,
+          "call": "PASS",
           "facts": 12,
           "dropped": 0,
-          "evidence_records": 8,
+          "evidence_records": 4,
           "gather_failures": 0,
-          "duration_ms": 6
+          "duration_ms": 9261
+        },
+        {
+          "slug": "hypercubic-ai",
+          "status": "ok",
+          "reason": null,
+          "score": 60,
+          "coverage": 0.8,
+          "call": "PASS",
+          "facts": 11,
+          "dropped": 0,
+          "evidence_records": 4,
+          "gather_failures": 0,
+          "duration_ms": 9118
+        },
+        {
+          "slug": "hoplite",
+          "status": "ok",
+          "reason": null,
+          "score": 60,
+          "coverage": 0.8,
+          "call": "PASS",
+          "facts": 9,
+          "dropped": 0,
+          "evidence_records": 4,
+          "gather_failures": 0,
+          "duration_ms": 7378
+        },
+        {
+          "slug": "kontext-cli",
+          "status": "ok",
+          "reason": null,
+          "score": 59,
+          "coverage": 1,
+          "call": "WATCH",
+          "facts": 10,
+          "dropped": 0,
+          "evidence_records": 4,
+          "gather_failures": 0,
+          "duration_ms": 6506
+        },
+        {
+          "slug": "bitboard",
+          "status": "ok",
+          "reason": null,
+          "score": 54,
+          "coverage": 0.6,
+          "call": "PASS",
+          "facts": 10,
+          "dropped": 0,
+          "evidence_records": 4,
+          "gather_failures": 0,
+          "duration_ms": 6840
         }
       ],
       "counts": {
-        "candidates": 3,
-        "ok": 3,
+        "candidates": 12,
+        "ok": 12,
         "partial": 0,
         "failed": 0,
-        "analyses": 3
+        "analyses": 12
       }
+    },
+    "memo": {
+      "started_at": "2026-08-23T06:34:32.320Z",
+      "finished_at": "2026-08-23T06:34:32.338Z",
+      "duration_ms": 18,
+      "template": "memo.md.eta",
+      "input": {
+        "files": 12,
+        "analyses": 12,
+        "unreadable": 0
+      },
+      "memos": [
+        {
+          "slug": "agent-vault",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/agent-vault.md",
+          "call": "WATCH",
+          "score": 59,
+          "coverage": 1,
+          "citations": 4,
+          "bytes": 3560,
+          "written": false
+        },
+        {
+          "slug": "ardent",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/ardent.md",
+          "call": "PASS",
+          "score": 71,
+          "coverage": 1,
+          "citations": 4,
+          "bytes": 3591,
+          "written": false
+        },
+        {
+          "slug": "bitboard",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/bitboard.md",
+          "call": "PASS",
+          "score": 54,
+          "coverage": 0.6,
+          "citations": 2,
+          "bytes": 2528,
+          "written": false
+        },
+        {
+          "slug": "freestyle",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/freestyle.md",
+          "call": "WATCH",
+          "score": 64,
+          "coverage": 1,
+          "citations": 5,
+          "bytes": 3909,
+          "written": false
+        },
+        {
+          "slug": "hoplite",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/hoplite.md",
+          "call": "PASS",
+          "score": 60,
+          "coverage": 0.8,
+          "citations": 3,
+          "bytes": 3125,
+          "written": false
+        },
+        {
+          "slug": "hypercubic-ai",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/hypercubic-ai.md",
+          "call": "PASS",
+          "score": 60,
+          "coverage": 0.8,
+          "citations": 3,
+          "bytes": 3245,
+          "written": false
+        },
+        {
+          "slug": "intuned",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/intuned.md",
+          "call": "WATCH",
+          "score": 66,
+          "coverage": 1,
+          "citations": 4,
+          "bytes": 3251,
+          "written": false
+        },
+        {
+          "slug": "kampala",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/kampala.md",
+          "call": "PASS",
+          "score": 59,
+          "coverage": 1,
+          "citations": 2,
+          "bytes": 2908,
+          "written": false
+        },
+        {
+          "slug": "klaus",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/klaus.md",
+          "call": "TAKE_A_MEETING",
+          "score": 81,
+          "coverage": 0.8,
+          "citations": 2,
+          "bytes": 2856,
+          "written": false
+        },
+        {
+          "slug": "kontext-cli",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/kontext-cli.md",
+          "call": "WATCH",
+          "score": 59,
+          "coverage": 1,
+          "citations": 3,
+          "bytes": 3299,
+          "written": false
+        },
+        {
+          "slug": "runtime",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/runtime.md",
+          "call": "TAKE_A_MEETING",
+          "score": 80,
+          "coverage": 1,
+          "citations": 5,
+          "bytes": 2991,
+          "written": false
+        },
+        {
+          "slug": "testerarmy",
+          "path": "memos/2026-08-23-ai-agent-infrastructure/testerarmy.md",
+          "call": "TAKE_A_MEETING",
+          "score": 74,
+          "coverage": 1,
+          "citations": 5,
+          "bytes": 3339,
+          "written": false
+        }
+      ],
+      "counts": {
+        "analyses": 12,
+        "memos": 12,
+        "written": 0,
+        "unchanged": 12,
+        "citations": 42
+      }
+    },
+    "run": {
+      "started_at": "2026-08-23T06:32:03.067Z",
+      "finished_at": "2026-08-23T06:32:48.603Z",
+      "duration_ms": 45536,
+      "flags": {
+        "replay": false
+      },
+      "stages": [
+        {
+          "stage": "source",
+          "duration_ms": 43
+        },
+        {
+          "stage": "analyse",
+          "duration_ms": 45470
+        },
+        {
+          "stage": "memo",
+          "duration_ms": 23
+        }
+      ],
+      "counts": {
+        "candidates": 12,
+        "analyses": 12,
+        "partial": 0,
+        "failed": 0,
+        "memos": 12
+      },
+      "cost_usd": null
     }
   }
 }

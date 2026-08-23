@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "726cc988f959b4a1",
+  "url": "https://www.tryardent.com/pricing",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:29:57.367Z",
+  "status": 200,
+  "title": "Pricing | Ardent",
+  "text": "Create copies of any Postgres database in under 6 seconds. Let coding agents test, clean, and migrate data on isolated branches with zero risk to production.\n\nPricing\nPay for what you use\nBase plan + compute and storage. Never pay for idle resources.\nStarter\n$0\n+ compute & storage\nFor developers and early teams building with agents.\n$30 one-time credit\nUp to 3 projects\nBranches in <6s\nCommunity support\nStart for free\nPopular\nScale\n$250/month\n+ compute & storage\nFor teams and platforms that need more resources to run agents at scale.\n$100/month in credits\nUnlimited projects\nBranches in <6s\nSlack support\nGet started\nEnterprise\nCustom\nFor organizations that need dedicated infrastructure and custom deployment.\nEverything in Scale, plus:\nUnlimited compute\nUnlimited storage\nCustom BYOC\nCustom SLAs\nDeploy behind VPC\nTeam-level access controls\nDedicated support\nTalk to us\nUsage pricing\nPrices apply after your included usage.\nManagedEnterprise BYOC\nHave cloud credits?\nCompute\n1 CU = 1 vCPU + 4 GB RAM\n$0.40 / CU-hr\nStorage\nPer GB stored\n$0.70 / GB-mo\nShip fast and don't break things\nMake sure coding agents never break your DB.\nGet startedBook a Demo",
+  "meta": {
+    "og_title": "Ardent — Database branching for coding agents",
+    "og_description": "Create copies of any Postgres database in under 6 seconds. Let coding agents test, clean, and migrate data on isolated branches with zero risk to production.",
+    "og_site_name": "Ardent",
+    "og_type": "website",
+    "description": "Ardent pricing plans for database branching. Start with a free tier or scale with Pro and Enterprise plans.",
+    "canonical": "https://tryardent.com/pricing",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "pricing",
+    "empty_shell": false,
+    "text_chars": 1157,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 1157
+  }
+}

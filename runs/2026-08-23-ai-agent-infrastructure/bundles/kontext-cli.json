@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "kontext-cli",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "kontext-cli",
+    "name": "Kontext CLI",
+    "url": "https://github.com/kontext-security/kontext",
+    "one_liner": "Credential broker for AI coding agents in Go",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "47765374",
+        "title": "Show HN: Kontext CLI – Credential broker for AI coding agents in Go",
+        "posted_url": "https://github.com/kontext-dev/kontext-cli",
+        "posted_at": "2026-04-14T13:26:53.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://app.kontext.security/",
+      "from": "github_homepage"
+    },
+    "github": {
+      "ref": {
+        "owner": "kontext-security",
+        "repo": "kontext",
+        "from": "github.com"
+      },
+      "from": "candidate_url"
+    }
+  },
+  "evidence_ids": [
+    "c853b0346c680b11",
+    "4c7160666f3d0996",
+    "a7558d1ae95d1aeb",
+    "e1640300f968529d"
+  ],
+  "signals": [
+    {
+      "key": "github.repo",
+      "value": "kontext-security/kontext",
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.stars",
+      "value": 210,
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.forks",
+      "value": 8,
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.watchers",
+      "value": 0,
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.open_issues",
+      "value": 22,
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.created_at",
+      "value": "2026-04-05T09:12:57Z",
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.age_days",
+      "value": 139,
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996",
+      "derived_from": "created_at → retrieval"
+    },
+    {
+      "key": "github.pushed_at",
+      "value": "2026-08-23T03:23:20Z",
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.days_since_push",
+      "value": 0,
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996",
+      "derived_from": "pushed_at → retrieval"
+    },
+    {
+      "key": "github.stars_per_day_lifetime",
+      "value": 1.51,
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996",
+      "derived_from": "stars ÷ age_days — a lifetime average, not a current rate"
+    },
+    {
+      "key": "github.license",
+      "value": "MIT",
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.topics",
+      "value": "ai, ai-agents, audit-logging, authorization, developer-tools, golang, kontext, permissions, security, security-tools",
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.language",
+      "value": "Go",
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.archived",
+      "value": false,
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.is_fork",
+      "value": false,
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.homepage",
+      "value": "https://app.kontext.security/",
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.owner",
+      "value": "kontext-security",
+      "as_of": "2026-08-23T06:29:58.421Z",
+      "evidence_id": "4c7160666f3d0996"
+    },
+    {
+      "key": "github.owner_type",
+      "value": "Organization",
+      "as_of": "2026-08-23T06:29:58.897Z",
+      "evidence_id": "a7558d1ae95d1aeb"
+    },
+    {
+      "key": "github.owner_name",
+      "value": "Kontext",
+      "as_of": "2026-08-23T06:29:58.897Z",
+      "evidence_id": "a7558d1ae95d1aeb"
+    },
+    {
+      "key": "github.owner_location",
+      "value": "Germany",
+      "as_of": "2026-08-23T06:29:58.897Z",
+      "evidence_id": "a7558d1ae95d1aeb"
+    },
+    {
+      "key": "github.owner_public_repos",
+      "value": 12,
+      "as_of": "2026-08-23T06:29:58.897Z",
+      "evidence_id": "a7558d1ae95d1aeb"
+    },
+    {
+      "key": "github.owner_followers",
+      "value": 42,
+      "as_of": "2026-08-23T06:29:58.897Z",
+      "evidence_id": "a7558d1ae95d1aeb"
+    },
+    {
+      "key": "github.owner_created_at",
+      "value": "2022-10-22T15:51:36Z",
+      "as_of": "2026-08-23T06:29:58.897Z",
+      "evidence_id": "a7558d1ae95d1aeb"
+    },
+    {
+      "key": "github.owner_age_days",
+      "value": 1400,
+      "as_of": "2026-08-23T06:29:58.897Z",
+      "evidence_id": "a7558d1ae95d1aeb",
+      "derived_from": "account created_at → retrieval"
+    },
+    {
+      "key": "github.owner_site",
+      "value": "https://kontext.security/",
+      "as_of": "2026-08-23T06:29:58.897Z",
+      "evidence_id": "a7558d1ae95d1aeb",
+      "derived_from": "the account's own `blog` field — the repository's `homepage` is the stronger route"
+    },
+    {
+      "key": "site.url",
+      "value": "https://app.kontext.security/login",
+      "as_of": "2026-08-23T06:29:59.281Z",
+      "evidence_id": "e1640300f968529d"
+    },
+    {
+      "key": "site.title",
+      "value": "Login - Kontext",
+      "as_of": "2026-08-23T06:29:59.281Z",
+      "evidence_id": "e1640300f968529d"
+    },
+    {
+      "key": "site.description",
+      "value": "Kontext is the control plane for traces, providers, access, and AI applications.",
+      "as_of": "2026-08-23T06:29:59.281Z",
+      "evidence_id": "e1640300f968529d"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-23T06:29:59.281Z",
+      "evidence_id": "e1640300f968529d"
+    },
+    {
+      "key": "site.signup_url",
+      "value": "https://app.kontext.security/api/auth/signin/github",
+      "as_of": "2026-08-23T06:29:59.281Z",
+      "evidence_id": "e1640300f968529d"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "github.readme",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.contributors",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.commit_activity",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.owner_company",
+      "reason": "the account names no company"
+    },
+    {
+      "key": "site.team_url",
+      "reason": "the home page links to no team page"
+    },
+    {
+      "key": "site.pricing_url",
+      "reason": "the home page links to no pricing page"
+    },
+    {
+      "key": "site.docs_url",
+      "reason": "the home page links to no docs page"
+    },
+    {
+      "key": "site.contact_url",
+      "reason": "the home page links to no contact page"
+    },
+    {
+      "key": "site.repo_url",
+      "reason": "the home page links to no repo page"
+    },
+    {
+      "key": "site.team_page",
+      "reason": "no team page was linked or fetched"
+    },
+    {
+      "key": "site.pricing_page",
+      "reason": "no pricing page was linked or fetched"
+    },
+    {
+      "key": "site.docs_page",
+      "reason": "no docs page was linked or fetched"
+    },
+    {
+      "key": "site.people_named",
+      "reason": "no person was named with a role beside them on any page read"
+    }
+  ],
+  "people": [],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

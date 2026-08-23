@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "agent-vault",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "agent-vault",
+    "name": "Agent Vault",
+    "url": "https://github.com/Infisical/agent-vault",
+    "one_liner": "Open-source credential proxy and vault for agents",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "47865822",
+        "title": "Show HN: Agent Vault – Open-source credential proxy and vault for agents",
+        "posted_url": "https://github.com/Infisical/agent-vault",
+        "posted_at": "2026-04-22T16:25:28.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://docs.agent-vault.dev/",
+      "from": "github_homepage"
+    },
+    "github": {
+      "ref": {
+        "owner": "Infisical",
+        "repo": "agent-vault",
+        "from": "github.com"
+      },
+      "from": "candidate_url"
+    }
+  },
+  "evidence_ids": [
+    "dece46c356dfb9f3",
+    "32a05cf075a05dec",
+    "951273502b253a90",
+    "1f34bb918950de03",
+    "63582244318f4b4c"
+  ],
+  "signals": [
+    {
+      "key": "github.repo",
+      "value": "Infisical/agent-vault",
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.stars",
+      "value": 2121,
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.forks",
+      "value": 136,
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.watchers",
+      "value": 2,
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.open_issues",
+      "value": 70,
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.created_at",
+      "value": "2026-03-27T21:47:17Z",
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.age_days",
+      "value": 148,
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec",
+      "derived_from": "created_at → retrieval"
+    },
+    {
+      "key": "github.pushed_at",
+      "value": "2026-08-23T01:53:21Z",
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.days_since_push",
+      "value": 0,
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec",
+      "derived_from": "pushed_at → retrieval"
+    },
+    {
+      "key": "github.stars_per_day_lifetime",
+      "value": 14.33,
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec",
+      "derived_from": "stars ÷ age_days — a lifetime average, not a current rate"
+    },
+    {
+      "key": "github.topics",
+      "value": "agents, ai-agents, secrets-management",
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.language",
+      "value": "Go",
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.archived",
+      "value": false,
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.is_fork",
+      "value": false,
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.homepage",
+      "value": "https://docs.agent-vault.dev/",
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.owner",
+      "value": "Infisical",
+      "as_of": "2026-08-23T04:06:47.165Z",
+      "evidence_id": "32a05cf075a05dec"
+    },
+    {
+      "key": "github.owner_type",
+      "value": "Organization",
+      "as_of": "2026-08-23T04:06:47.899Z",
+      "evidence_id": "951273502b253a90"
+    },
+    {
+      "key": "github.owner_name",
+      "value": "Infisical",
+      "as_of": "2026-08-23T04:06:47.899Z",
+      "evidence_id": "951273502b253a90"
+    },
+    {
+      "key": "github.owner_location",
+      "value": "United States of America",
+      "as_of": "2026-08-23T04:06:47.899Z",
+      "evidence_id": "951273502b253a90"
+    },
+    {
+      "key": "github.owner_public_repos",
+      "value": 77,
+      "as_of": "2026-08-23T04:06:47.899Z",
+      "evidence_id": "951273502b253a90"
+    },
+    {
+      "key": "github.owner_followers",
+      "value": 556,
+      "as_of": "2026-08-23T04:06:47.899Z",
+      "evidence_id": "951273502b253a90"
+    },
+    {
+      "key": "github.owner_created_at",
+      "value": "2022-06-20T17:29:43Z",
+      "as_of": "2026-08-23T04:06:47.899Z",
+      "evidence_id": "951273502b253a90"
+    },
+    {
+      "key": "github.owner_age_days",
+      "value": 1524,
+      "as_of": "2026-08-23T04:06:47.899Z",
+      "evidence_id": "951273502b253a90",
+      "derived_from": "account created_at → retrieval"
+    },
+    {
+      "key": "github.owner_site",
+      "value": "https://www.infisical.com/",
+      "as_of": "2026-08-23T04:06:47.899Z",
+      "evidence_id": "951273502b253a90",
+      "derived_from": "the account's own `blog` field — the repository's `homepage` is the stronger route"
+    },
+    {
+      "key": "site.url",
+      "value": "https://docs.agent-vault.dev/",
+      "as_of": "2026-08-23T04:06:49.741Z",
+      "evidence_id": "1f34bb918950de03"
+    },
+    {
+      "key": "site.title",
+      "value": "Introduction - Agent Vault",
+      "as_of": "2026-08-23T04:06:49.741Z",
+      "evidence_id": "1f34bb918950de03"
+    },
+    {
+      "key": "site.description",
+      "value": "A credential broker for AI agents to prevent credential exfiltration.",
+      "as_of": "2026-08-23T04:06:49.741Z",
+      "evidence_id": "1f34bb918950de03"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-23T04:06:49.741Z",
+      "evidence_id": "1f34bb918950de03"
+    },
+    {
+      "key": "site.docs_url",
+      "value": "https://docs.agent-vault.dev/llms.txt",
+      "as_of": "2026-08-23T04:06:49.741Z",
+      "evidence_id": "1f34bb918950de03"
+    },
+    {
+      "key": "site.repo_url",
+      "value": "https://github.com/Infisical/infisical",
+      "as_of": "2026-08-23T04:06:49.741Z",
+      "evidence_id": "1f34bb918950de03"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "github.readme",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.contributors",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.commit_activity",
+      "reason": "not read: GITHUB_TOKEN not set — 60 GitHub requests/hour; coverage may be lower. raises the GitHub rate limit from 60/hr to 5000/hr"
+    },
+    {
+      "key": "github.license",
+      "reason": "GitHub could not identify a licence in the repository"
+    },
+    {
+      "key": "github.owner_company",
+      "reason": "the account names no company"
+    },
+    {
+      "key": "site.team_url",
+      "reason": "the home page links to no team page"
+    },
+    {
+      "key": "site.pricing_url",
+      "reason": "the home page links to no pricing page"
+    },
+    {
+      "key": "site.signup_url",
+      "reason": "the home page links to no signup page"
+    },
+    {
+      "key": "site.contact_url",
+      "reason": "the home page links to no contact page"
+    },
+    {
+      "key": "site.team_page",
+      "reason": "no team page was linked or fetched"
+    },
+    {
+      "key": "site.pricing_page",
+      "reason": "no pricing page was linked or fetched"
+    },
+    {
+      "key": "site.people_named",
+      "reason": "no person was named with a role beside them on any page read"
+    }
+  ],
+  "people": [],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "cc6b0a5e7b16e22d",
+  "url": "https://api.github.com/repos/intuned/cookbook",
+  "type": "github_repo",
+  "retrieved_at": "2026-08-23T06:29:57.401Z",
+  "status": 200,
+  "title": "Intuned/cookbook",
+  "text": "repository: Intuned/cookbook\nurl: https://github.com/Intuned/cookbook\ndescription: A cookbook of examples for building browser automations with Intuned\nhomepage: https://intunedhq.com\nowner: Intuned\nowner type: Organization\nprimary language: Python\nlicense: unknown\ntopics: automation, crawlers, intuned, playwright, python, rpa, scrapers, typescript, web\nstars: 30\nforks: 3\nwatchers: 0\nopen issues: 16\ncreated at: 2025-12-02T09:10:53Z\nlast pushed at: 2026-08-21T15:13:54Z\narchived: false\nis a fork: false",
+  "meta": {
+    "call": "repo",
+    "from_cache": true,
+    "attempts": 0,
+    "projection": "github_repo.v1",
+    "full_name": "Intuned/cookbook",
+    "text_truncated": false,
+    "text_original_length": 505
+  }
+}

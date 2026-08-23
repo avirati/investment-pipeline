@@ -335,7 +335,7 @@ the source tree. `run` exists so a partner types one thing.
 3. pnpm install --frozen-lockfile
 4. create .env from .env.example if absent   ← never overwrites an existing .env
 5. pnpm typecheck
-6. ./pipeline memo --run <committed_sample>  ← offline verification
+6. ./pipeline memo --run 2026-08-23-ai-agent-infrastructure      ← offline verification
 ```
 
 Step 6 is the point. It re-renders the committed sample run with no network and
@@ -343,13 +343,11 @@ no API key, so a fresh clone proves the whole toolchain works *before* the
 operator has obtained a single credential. "Did the install work?" becomes an
 assertion rather than a hope.
 
-**Steps 1–5 exist as of TICKET-0004. Step 6 still does not** — but only half
-the reason is left. `memo` runs as of TICKET-0026 and its offline guarantee is
-asserted rather than intended (`tests/memo-run.test.ts`); what is missing is a
-sample run to re-render, which is TICKET-0028's, so shipping the step now would
-mean shipping a check that always fails. The script ends with a `TODO(0028)`
-naming it, and prints a line saying the verification is not wired up, so the gap
-is visible to whoever runs it rather than only to whoever reads this file.
+**All six steps exist.** Steps 1–5 landed with TICKET-0004; step 6 landed with
+TICKET-0028, which is what put a run in the repo for it to re-render. It renders
+the 12 memos of `2026-08-23-ai-agent-infrastructure` and fails the
+script if the run directory is missing, so a clone that lost its artifacts says
+so at setup rather than three commands later.
 
 `./pipeline` is a thin wrapper (`exec pnpm exec tsx src/cli.ts "$@"`) so nobody
 needs to know pnpm exists to run this. It stays a wrapper — not a task runner.

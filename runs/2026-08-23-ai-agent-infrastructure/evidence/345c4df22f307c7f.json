@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "345c4df22f307c7f",
+  "url": "https://bitboard.work",
+  "type": "company_site",
+  "retrieved_at": "2026-08-22T10:19:52.204Z",
+  "status": 200,
+  "title": "The easiest way to analyze your business data with AI — BitBoard",
+  "text": "The easiest way to analyze your business data with AI.\nGet answers, build dashboards, and share with your team.\nTry for free See plans →\nBacked by Y Combinator\nLLM analysis your data team actually trusts.\nGet answers and build dashboards that capture your team’s context and show their work.\nRight answer, right away.\nUse natural language to get answers with proof from connected data sources.\nLearn about Ask →\nDon’t repeat yourself.\nGenerate live dashboards for recurring analysis with trusted sources and queries.\nLearn about Dashboards →\nBuilt for answers you need now,\nthat need to be right.\nAccurate\nAgents use your team’s definitions, trusted queries, and corrections so each analysis reflects how your business actually works.\nTraceable\nSources, queries, code, and context stay attached to the result.\nRepeatable\nSave trusted patterns and rerun analysis without starting from scratch.\nTry BitBoard for free.\nTry for free See plans →",
+  "meta": {
+    "og_title": "The easiest way to analyze your business data with AI — BitBoard",
+    "og_description": "Get answers, build dashboards, and share with your team.",
+    "og_site_name": "BitBoard",
+    "og_type": "website",
+    "description": "Get answers, build dashboards, and share with your team.",
+    "canonical": "https://bitboard.work/",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "home",
+    "final_url": "https://bitboard.work/",
+    "empty_shell": false,
+    "text_chars": 940,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 940
+  }
+}

@@ -1,0 +1,398 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "ardent",
+    "name": "Ardent",
+    "url": "https://tryardent.com",
+    "one_liner": "Postgres sandboxes in seconds with zero migration",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48124436",
+        "title": "Launch HN: Ardent (YC P26) – Postgres sandboxes in seconds with zero migration",
+        "posted_url": "https://www.tryardent.com/",
+        "posted_at": "2026-05-13T16:54:03.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Ardent describes its product as enabling creation of copies of any Postgres database in under 6 seconds, letting coding agents test, clean, and migrate data on isolated branches with zero risk to production.",
+      "value": "Postgres sandboxes in seconds with zero migration",
+      "evidence_ids": [
+        "56bc7c5f3a97da10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Ardent's product is designed to let coding agents test their database code on isolated, near-production-like sandboxes to prevent errors that could impact production databases.",
+      "value": "Let coding agents test database code safely",
+      "evidence_ids": [
+        "f8a24d94eefcb448",
+        "56bc7c5f3a97da10",
+        "b29be988fea6860f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "Ardent's product depends on recent developments in logical replication and copy-on-write branching technology implemented by providers like neon, allowing near-instant clones of Postgres databases even at terabyte scale.",
+      "value": "logical replication + copy-on-write scaling technologies circa early 2020s",
+      "evidence_ids": [
+        "f8a24d94eefcb448"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Ardent sits as a hosted service that replicates production Postgres databases into read replicas, then creates isolated branches from those replicas, presenting them as full Postgres databases accessible with standard connection URLs.",
+      "value": "hosted read replica and branching service",
+      "evidence_ids": [
+        "f8a24d94eefcb448",
+        "b29be988fea6860f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.self_serve",
+      "statement": "Users can start using Ardent's product for free, including signing up and getting started with isolated Postgres branches without mandatory sales contact.",
+      "value": true,
+      "evidence_ids": [
+        "f8a24d94eefcb448",
+        "56bc7c5f3a97da10",
+        "726cc988f959b4a1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "Ardent publishes pricing information with a free Starter tier, a Scale tier at $250 per month plus usage, and Enterprise pricing available with custom plans.",
+      "value": "public pricing with free, scale, and enterprise tiers",
+      "evidence_ids": [
+        "726cc988f959b4a1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.hn_engagement",
+      "statement": "Ardent's Hacker News launch post received 99 points and 52 comments three months prior to August 23, 2026.",
+      "value": 99,
+      "evidence_ids": [
+        "f8a24d94eefcb448"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.named_user",
+      "statement": "Zennagents CTO Akshendra Garg publicly stated that Ardent allows their agents to test in seconds with zero drift from production data.",
+      "value": "Zennagents CTO Akshendra Garg",
+      "evidence_ids": [
+        "56bc7c5f3a97da10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.named_user",
+      "statement": "Chevron's Head of Data, Abhay Singh, described Ardent as a fundamental shift in how agents and developers work with databases, comparing its importance to Git for code.",
+      "value": "Chevron Head of Data Abhay Singh",
+      "evidence_ids": [
+        "56bc7c5f3a97da10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.named_user",
+      "statement": "Openledger CEO Pryce Yebesi said Ardent lets them move as fast as agents write code without worrying about agents working on the database layer.",
+      "value": "Openledger CEO Pryce Yebesi",
+      "evidence_ids": [
+        "56bc7c5f3a97da10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "Vikram is a named founder of Ardent.",
+      "value": "Vikram",
+      "evidence_ids": [
+        "f8a24d94eefcb448"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "Evan is a named founder of Ardent with 12 years prior experience in data engineering.",
+      "value": "Evan, founder with 12 years data engineering experience",
+      "evidence_ids": [
+        "f8a24d94eefcb448"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "f8a24d94eefcb448"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 20,
+      "max": 20,
+      "band": "16–20",
+      "evidence_ids": [
+        "f8a24d94eefcb448",
+        "56bc7c5f3a97da10",
+        "b29be988fea6860f"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "56bc7c5f3a97da10",
+        "f8a24d94eefcb448"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "f8a24d94eefcb448",
+        "56bc7c5f3a97da10",
+        "b29be988fea6860f"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 12,
+      "max": 15,
+      "band": "9–12",
+      "evidence_ids": [
+        "f8a24d94eefcb448",
+        "b29be988fea6860f",
+        "56bc7c5f3a97da10"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 71,
+  "coverage": 1,
+  "disqualifiers": [
+    {
+      "id": "D-1",
+      "statement": "The team is named and nothing any of them is stated to have built appears in the evidence, and the company has no public repository.",
+      "evidence_ids": [
+        "f8a24d94eefcb448"
+      ]
+    }
+  ],
+  "call": "PASS",
+  "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Pass — disqualifier D-1 fired, and a cited disqualifier forces a pass whatever the score (71/100, 100% coverage).",
+      "evidence_ids": [
+        "f8a24d94eefcb448"
+      ]
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D1 Founder–market fit & technical depth at 12/25 (band 6–12).",
+      "evidence_ids": [
+        "f8a24d94eefcb448"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Vikram is a named founder of Ardent.",
+          "evidence_ids": [
+            "f8a24d94eefcb448"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Evan is a named founder of Ardent with 12 years prior experience in data engineering.",
+          "evidence_ids": [
+            "f8a24d94eefcb448"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Ardent describes its product as enabling creation of copies of any Postgres database in under 6 seconds, letting coding agents test, clean, and migrate data on isolated branches with zero risk to production.",
+          "evidence_ids": [
+            "56bc7c5f3a97da10"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Ardent's product is designed to let coding agents test their database code on isolated, near-production-like sandboxes to prevent errors that could impact production databases.",
+          "evidence_ids": [
+            "f8a24d94eefcb448",
+            "56bc7c5f3a97da10",
+            "b29be988fea6860f"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Ardent sits as a hosted service that replicates production Postgres databases into read replicas, then creates isolated branches from those replicas, presenting them as full Postgres databases accessible with standard connection URLs.",
+          "evidence_ids": [
+            "f8a24d94eefcb448",
+            "b29be988fea6860f"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Users can start using Ardent's product for free, including signing up and getting started with isolated Postgres branches without mandatory sales contact.",
+          "evidence_ids": [
+            "f8a24d94eefcb448",
+            "56bc7c5f3a97da10",
+            "726cc988f959b4a1"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Ardent publishes pricing information with a free Starter tier, a Scale tier at $250 per month plus usage, and Enterprise pricing available with custom plans.",
+          "evidence_ids": [
+            "726cc988f959b4a1"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Ardent's product depends on recent developments in logical replication and copy-on-write branching technology implemented by providers like neon, allowing near-instant clones of Postgres databases even at terabyte scale.",
+          "evidence_ids": [
+            "f8a24d94eefcb448"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Zennagents CTO Akshendra Garg publicly stated that Ardent allows their agents to test in seconds with zero drift from production data.",
+          "evidence_ids": [
+            "56bc7c5f3a97da10"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Chevron's Head of Data, Abhay Singh, described Ardent as a fundamental shift in how agents and developers work with databases, comparing its importance to Git for code.",
+          "evidence_ids": [
+            "56bc7c5f3a97da10"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Openledger CEO Pryce Yebesi said Ardent lets them move as fast as agents write code without worrying about agents working on the database layer.",
+          "evidence_ids": [
+            "56bc7c5f3a97da10"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Ardent's Hacker News launch post received 99 points and 52 comments three months prior to August 23, 2026.",
+          "evidence_ids": [
+            "f8a24d94eefcb448"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Risks",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Disqualifier D-1 — The team is named and nothing any of them is stated to have built appears in the evidence, and the company has no public repository.",
+          "evidence_ids": [
+            "f8a24d94eefcb448"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "Disqualifier D-1: find a stated prior role for somebody they name, something one of them is stated to have built, or a public repository. It would then no longer hold, and the call would no longer be forced to Pass.",
+      "evidence_ids": [
+        "f8a24d94eefcb448"
+      ]
+    },
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find a prior employer, role or period stated for somebody the company names. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D3 Evidence of pull: find a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": null,
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 4,
+    "evidence_usable": 4,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 12,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

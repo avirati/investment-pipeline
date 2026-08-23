@@ -9,8 +9,8 @@
   "text": "account: Infisical\ntype: Organization\nname: Infisical\nbio: Infisical is the open-source secrets management platform: Sync secrets across your team/infrastructure, prevent secret leaks, and manage internal PKI\ncompany: unknown\nlocation: United States of America\nwebsite: https://www.infisical.com\npublic repositories: 77\nfollowers: 556\naccount created at: 2022-06-20T17:29:43Z",
   "meta": {
     "call": "owner",
-    "from_cache": false,
-    "attempts": 1,
+    "from_cache": true,
+    "attempts": 0,
     "projection": "github_user.v1",
     "login": "Infisical",
     "account_type": "Organization",

@@ -10,7 +10,7 @@
       {
         "source": "hn",
         "query": "AI agent infrastructure",
-        "at": "2026-08-23T04:06:24.233Z",
+        "at": "2026-08-23T06:32:03.067Z",
         "ref": "47337249",
         "title": "Show HN: Klaus – OpenClaw on a VM, batteries included",
         "posted_url": "https://klausai.com/",
@@ -22,7 +22,7 @@
     {
       "schema_version": 1,
       "key": "product.one_liner",
-      "statement": "Klaus describes itself as 'OpenClaw on a VM, batteries included.'",
+      "statement": "Klaus describes its product as 'OpenClaw on a VM, batteries included.'",
       "value": "OpenClaw on a VM, batteries included",
       "evidence_ids": [
         "4a45d9b1596e8bd4"
@@ -32,18 +32,8 @@
     {
       "schema_version": 1,
       "key": "product.job",
-      "statement": "Klaus aims to provide a secure and powerful hosted OpenClaw solution that is simple to run without requiring complex setup.",
+      "statement": "Klaus provides a hosted OpenClaw solution that simplifies running OpenClaw by giving each user their own EC2 instance preconfigured with keys and OAuth apps for Slack and Google Workspace integration.",
       "value": null,
-      "evidence_ids": [
-        "4a45d9b1596e8bd4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "product.runtime_position",
-      "statement": "Klaus runs OpenClaw by giving each user their own EC2 instance preconfigured with keys and integrations.",
-      "value": "hosted service",
       "evidence_ids": [
         "4a45d9b1596e8bd4"
       ],
@@ -52,8 +42,8 @@
     {
       "schema_version": 1,
       "key": "product.capability_dependency",
-      "statement": "Klaus depends on OpenClaw and integrates with OpenRouter, AgentMail, Orthogonal, Slack, and Google Workspace using OAuth apps.",
-      "value": null,
+      "statement": "Klaus relies on OpenClaw and uses AWS EC2 instances to provide isolated environments for users.",
+      "value": "AWS EC2 instances",
       "evidence_ids": [
         "4a45d9b1596e8bd4"
       ],
@@ -62,37 +52,17 @@
     {
       "schema_version": 1,
       "key": "adoption.pricing_public",
-      "statement": "Klaus charges $19/month for a t4g.small instance, $49/month for t4g.medium, and $200/month for t4g.xlarge with priority support.",
+      "statement": "Klaus charges $19/month for a t4g.small instance, $49/month for a t4g.medium, and $200/month for a t4g.xlarge plus priority support, including some token and Orthogonal credits.",
       "value": null,
       "evidence_ids": [
         "4a45d9b1596e8bd4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "adoption.pricing_public",
-      "statement": "Klaus offers Starter, Plus, Pro, and Managed Rollout pricing tiers with varying AI and Orthogonal credits, and cloud instance quality.",
-      "value": null,
-      "evidence_ids": [
-        "3b6f2710ebfd0986"
-      ],
-      "confidence": "high"
-    },
-    {
-      "schema_version": 1,
-      "key": "product.launch_date",
-      "statement": "Klaus announced it will shut down on September 1, 2026 and no longer accepts new subscriptions.",
-      "value": "2026-09-01",
-      "evidence_ids": [
-        "3b6f2710ebfd0986"
       ],
       "confidence": "high"
     },
     {
       "schema_version": 1,
       "key": "traction.hn_engagement",
-      "statement": "Klaus' Hacker News thread titled 'Show HN: Klaus – OpenClaw on a VM, batteries included' received 160 points and 91 comments 5 months ago from retrieval date (August 23, 2026).",
+      "statement": "The Hacker News post about Klaus titled 'Show HN: Klaus – OpenClaw on a VM, batteries included' received 160 points and 91 comments.",
       "value": 160,
       "evidence_ids": [
         "4a45d9b1596e8bd4"
@@ -102,7 +72,77 @@
     {
       "schema_version": 1,
       "key": "traction.integration",
-      "statement": "Klaus integrates with many third-party services including Salesforce, HubSpot, Slack, Microsoft, Google, Zoom, Notion, Discord, GitHub, Stripe, Apollo, Zendesk, Intercom, and more.",
+      "statement": "Klaus preconfigures OpenClaw instances with keys for OpenRouter, AgentMail, and Orthogonal and provides OAuth apps to integrate with Slack and Google Workspace.",
+      "value": null,
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Klaus aims to simplify and secure OpenClaw setup that otherwise requires setting up a cloud VM or local container or giving OpenClaw root access to the machine, which can be insecure or painful.",
+      "value": null,
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Klaus provides a hosted VM environment for OpenClaw instances, giving each user a dedicated EC2 instance running OpenClaw.",
+      "value": "hosted service",
+      "evidence_ids": [
+        "4a45d9b1596e8bd4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "Klaus offers multiple subscription tiers labeled Starter at $19/month, Plus at $49/month, and Pro at $200/month, with varying AI and Orthogonal credits, AgentMail accounts, and instance performance.",
+      "value": null,
+      "evidence_ids": [
+        "3b6f2710ebfd0986"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.sales_gate",
+      "statement": "As of August 2026, Klaus is shutting down on September 1, 2026 and is no longer accepting new subscriptions.",
+      "value": true,
+      "evidence_ids": [
+        "3b6f2710ebfd0986"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.named_user",
+      "statement": "Hundreds of businesses trust Klaus according to its website.",
+      "value": true,
+      "evidence_ids": [
+        "3b6f2710ebfd0986"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.integration",
+      "statement": "Klaus integrates with a wide variety of business software including Salesforce, HubSpot, Slack, Microsoft, Google, Zoom, Notion, Discord, GitHub, Stripe, Apollo, Zendesk, Intercom, Fathom, Granola, Circleback, Figma, Asana, Monday, Airtable, Linear, Jira, Mailchimp, Dropbox, QuickBooks, Workday, Okta, Pipedrive, Freshdesk, Klaviyo, Trello, Datadog, and Gusto.",
+      "value": null,
+      "evidence_ids": [
+        "3b6f2710ebfd0986"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Klaus is positioned as 'Your AI employee in five minutes,' offering secure OpenClaw in the cloud with every model, hundreds of integrations, and access to all user accounts.",
       "value": null,
       "evidence_ids": [
         "3b6f2710ebfd0986"
@@ -123,20 +163,21 @@
     {
       "id": "D2",
       "name": "Wedge specificity",
-      "score": 15,
+      "score": 20,
       "max": 20,
-      "band": "11–15",
+      "band": "16–20",
       "evidence_ids": [
-        "4a45d9b1596e8bd4"
+        "4a45d9b1596e8bd4",
+        "3b6f2710ebfd0986"
       ],
       "covered": true
     },
     {
       "id": "D3",
       "name": "Evidence of pull",
-      "score": 12,
+      "score": 25,
       "max": 25,
-      "band": "6–12",
+      "band": "20–25",
       "evidence_ids": [
         "3b6f2710ebfd0986",
         "4a45d9b1596e8bd4"
@@ -150,8 +191,7 @@
       "max": 15,
       "band": "13–15",
       "evidence_ids": [
-        "4a45d9b1596e8bd4",
-        "3b6f2710ebfd0986"
+        "4a45d9b1596e8bd4"
       ],
       "covered": true
     },
@@ -168,22 +208,22 @@
       "covered": true
     }
   ],
-  "score": 63,
+  "score": 81,
   "coverage": 0.8,
   "disqualifiers": [],
-  "call": "WATCH",
+  "call": "TAKE_A_MEETING",
   "unknowns": [
     "D1 Founder–market fit & technical depth: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12"
   ],
   "why_this_call": [
     {
       "kind": "summary",
-      "text": "Watch — 63/100 meets the 55 a watch needs and is below the 72 a meeting needs, at 80% coverage.",
+      "text": "Take a meeting — 81/100 clears the 72 threshold, at 80% coverage.",
       "evidence_ids": []
     },
     {
       "kind": "summary",
-      "text": "The largest shortfall is D3 Evidence of pull at 12/25 (band 6–12).",
+      "text": "The strongest reading is D3 Evidence of pull at 25/25 (band 20–25).",
       "evidence_ids": [
         "3b6f2710ebfd0986",
         "4a45d9b1596e8bd4"
@@ -201,69 +241,76 @@
       "bullets": [
         {
           "kind": "fact",
-          "text": "Klaus describes itself as 'OpenClaw on a VM, batteries included.'",
+          "text": "Klaus describes its product as 'OpenClaw on a VM, batteries included.'",
           "evidence_ids": [
             "4a45d9b1596e8bd4"
           ]
         },
         {
           "kind": "fact",
-          "text": "Klaus aims to provide a secure and powerful hosted OpenClaw solution that is simple to run without requiring complex setup.",
+          "text": "Klaus provides a hosted OpenClaw solution that simplifies running OpenClaw by giving each user their own EC2 instance preconfigured with keys and OAuth apps for Slack and Google Workspace integration.",
           "evidence_ids": [
             "4a45d9b1596e8bd4"
           ]
         },
         {
           "kind": "fact",
-          "text": "Klaus runs OpenClaw by giving each user their own EC2 instance preconfigured with keys and integrations.",
+          "text": "Klaus aims to simplify and secure OpenClaw setup that otherwise requires setting up a cloud VM or local container or giving OpenClaw root access to the machine, which can be insecure or painful.",
           "evidence_ids": [
             "4a45d9b1596e8bd4"
           ]
         },
         {
           "kind": "fact",
-          "text": "Klaus charges $19/month for a t4g.small instance, $49/month for t4g.medium, and $200/month for t4g.xlarge with priority support.",
-          "evidence_ids": [
-            "4a45d9b1596e8bd4"
-          ]
-        },
-        {
-          "kind": "fact",
-          "text": "Klaus offers Starter, Plus, Pro, and Managed Rollout pricing tiers with varying AI and Orthogonal credits, and cloud instance quality.",
+          "text": "Klaus is positioned as 'Your AI employee in five minutes,' offering secure OpenClaw in the cloud with every model, hundreds of integrations, and access to all user accounts.",
           "evidence_ids": [
             "3b6f2710ebfd0986"
           ]
+        },
+        {
+          "kind": "fact",
+          "text": "Klaus provides a hosted VM environment for OpenClaw instances, giving each user a dedicated EC2 instance running OpenClaw.",
+          "evidence_ids": [
+            "4a45d9b1596e8bd4"
+          ]
         }
       ],
-      "omitted": 0
+      "omitted": 3
     },
     {
       "heading": "Market",
       "bullets": [
         {
           "kind": "fact",
-          "text": "Klaus depends on OpenClaw and integrates with OpenRouter, AgentMail, Orthogonal, Slack, and Google Workspace using OAuth apps.",
+          "text": "Klaus relies on OpenClaw and uses AWS EC2 instances to provide isolated environments for users.",
           "evidence_ids": [
             "4a45d9b1596e8bd4"
           ]
         },
         {
           "kind": "fact",
-          "text": "Klaus announced it will shut down on September 1, 2026 and no longer accepts new subscriptions.",
+          "text": "Hundreds of businesses trust Klaus according to its website.",
           "evidence_ids": [
             "3b6f2710ebfd0986"
           ]
         },
         {
           "kind": "fact",
-          "text": "Klaus integrates with many third-party services including Salesforce, HubSpot, Slack, Microsoft, Google, Zoom, Notion, Discord, GitHub, Stripe, Apollo, Zendesk, Intercom, and more.",
+          "text": "Klaus preconfigures OpenClaw instances with keys for OpenRouter, AgentMail, and Orthogonal and provides OAuth apps to integrate with Slack and Google Workspace.",
+          "evidence_ids": [
+            "4a45d9b1596e8bd4"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Klaus integrates with a wide variety of business software including Salesforce, HubSpot, Slack, Microsoft, Google, Zoom, Notion, Discord, GitHub, Stripe, Apollo, Zendesk, Intercom, Fathom, Granola, Circleback, Figma, Asana, Monday, Airtable, Linear, Jira, Mailchimp, Dropbox, QuickBooks, Workday, Okta, Pipedrive, Freshdesk, Klaviyo, Trello, Datadog, and Gusto.",
           "evidence_ids": [
             "3b6f2710ebfd0986"
           ]
         },
         {
           "kind": "fact",
-          "text": "Klaus' Hacker News thread titled 'Show HN: Klaus – OpenClaw on a VM, batteries included' received 160 points and 91 comments 5 months ago from retrieval date (August 23, 2026).",
+          "text": "The Hacker News post about Klaus titled 'Show HN: Klaus – OpenClaw on a VM, batteries included' received 160 points and 91 comments.",
           "evidence_ids": [
             "4a45d9b1596e8bd4"
           ]
@@ -275,21 +322,11 @@
   "what_would_change_my_mind": [
     {
       "kind": "check",
-      "text": "D3 Evidence of pull: find a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days. That moves it from 6–12 to 13–19 (+7).",
-      "evidence_ids": []
-    },
-    {
-      "kind": "check",
-      "text": "D2 Wedge specificity: find a named customer, design partner or user, stated to be using it for that job. That moves it from 11–15 to 16–20 (+5).",
-      "evidence_ids": []
-    },
-    {
-      "kind": "check",
       "text": "D1 Founder–market fit & technical depth: find any primary source that names who is behind this — a team page, an about page, or a repository owner. Nothing was read for this dimension — it is scored at uncovered · floor of 6–12 and drags coverage down.",
       "evidence_ids": []
     }
   ],
-  "upgrade_trigger": "9 points short of 72 (score 63); no single dimension covers it, but these together do: D3 Evidence of pull from 6–12 to 13–19 (+7), by finding a second credible signal — over 200 stars, a named user, a named integration — with the repository pushed inside 90 days; D2 Wedge specificity from 11–15 to 16–20 (+5), by finding a named customer, design partner or user, stated to be using it for that job.",
+  "upgrade_trigger": null,
   "status": "ok",
   "status_reason": null,
   "inputs": {
@@ -299,7 +336,7 @@
     "extraction": {
       "status": "ok",
       "attempts": 1,
-      "facts": 9,
+      "facts": 13,
       "dropped": 0,
       "dropped_by_kind": {},
       "error": null

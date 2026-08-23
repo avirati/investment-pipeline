@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "755c350fbe36c12d",
+  "url": "https://api.github.com/repos/runtm-ai/runtm-coding-agent-runtime-control-plane",
+  "type": "github_repo",
+  "retrieved_at": "2026-08-23T06:29:56.646Z",
+  "status": 200,
+  "title": "runtm-ai/runtm",
+  "text": "repository: runtm-ai/runtm\nurl: https://github.com/runtm-ai/runtm\ndescription: Open-source sandboxes where coding agents build and deploy. Spin up isolated environments where Claude Code, Cursor, and other agents code and deploy software.\nhomepage: https://www.runtm.com/\nowner: runtm-ai\nowner type: Organization\nprimary language: Python\nlicense: unknown\ntopics: agent-runtime, agentic, ai-agents, anthropic, app-runtime, claude, claude-code, control-plane, cursor, ephemeral-environments, infra, llm-tools, llmops, observability, open-source, openai, sandbox, serverless\nstars: 291\nforks: 32\nwatchers: 2\nopen issues: 23\ncreated at: 2026-01-02T21:37:04Z\nlast pushed at: 2026-08-21T02:19:19Z\narchived: false\nis a fork: false",
+  "meta": {
+    "call": "repo",
+    "from_cache": true,
+    "attempts": 0,
+    "projection": "github_repo.v1",
+    "full_name": "runtm-ai/runtm",
+    "text_truncated": false,
+    "text_original_length": 723
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "56bc7c5f3a97da10",
+  "url": "https://tryardent.com",
+  "type": "company_site",
+  "retrieved_at": "2026-08-22T10:19:47.557Z",
+  "status": 200,
+  "title": "Ardent — Database branching for coding agents",
+  "text": "Create copies of any Postgres database in under 6 seconds. Let coding agents test, clean, and migrate data on isolated branches with zero risk to production.\n\nY\nBacked by Y Combinator\nUse coding agents on real data with no risk\nCreate copies of any Postgres database in under 6 seconds so coding agents can verify their code works in prod\nGet startedBook a Demo\nStop breakages\nValidate code before it reaches production\nLet Coding agents test their database code on a 1:1 copy of your production postgres\nBook a Demo\nZero blast radius\nTest with zero risk to production\nEach clone is isolated at both the compute and storage level. Clones never impact production. Ever\nBook a Demo\nSpeed at scale\nCloning that never slows down even at terabyte scale\nClones load in 6s, scale to 0, autoscale compute and do not duplicate storage. Zero management needed\nBook a Demo\nFeatures\nLet agents solve your toughest data problems without fear\nGive every agent a copy of production to test everything.\nContact us\nData cleaning\nLet agents clean, deduplicate and standardize data on an exact copy of production\nMigration testing\nBackfills\nVerify changes\nFeatures\nBuilt to be infinitely scalable and fast\nArdent clones load in seconds and are massively storage and compute efficient even at terabyte scale\nContact us\nCloning Speed\n30,960X faster cloning per TB\nHours\nTraditional\n<6s always\nArdent\nTraditional\nArdent\nExtreme storage efficiency\nOnly pay for changes made\nTraditional\nArdent\nCompute that scales with agent workloads\nNo overprovisioning. Automatic scale to 0\nTraditional\nArdent\nComparison\nWhy AI native data teams use Ardent\nTraditional Replica\nArdent\nClone Creation\nHours / Days\n<6s\nStorage\nEntire DB per clone\nOnly Changes made\nCompute\nAlways on\nWhat you use\nDatabase management\nManual resizing\nAutoscale\nClone limit\n15-20\nInfinite\nGit style team collaboration\nNeed a custom plan?\nWe can tailor workflows, limits, and infrastructure to fit your team's needs.\nTalk to the founder\nBranching on your DB without migration\nDesigned for the providers you already use\nSupabase\nSupport for auth, extensions and more to replicate your supabase instance 1:1\nAWS RDS\nConnect your RDS Postgres instances with zero config changes. Branch directly against your production data\nPlanetscale\nBranch with full compatibility across planetscale specific extensions and configurations\nCustomer Impact\nBuilt for teams moving fast with AI at production scale\n“We spent hours trying to test AI database code through inaccurate seed files. Ardent lets us and our agents test in seconds with zero drift from production.”\nAkshendra Garg\nCTO Zennagents\n-0%\nDowntime\n+0%\nRelease speed\n0 hours\nSaved per release\nWhat the best say\nTrusted by the best in Data\n“I think AI will disrupt data engineering in a significant way. I'm investing in Ardent to accelerate that disruption!”\nZach Wilson\nFounder of Dataexpert.io\n“Ardent is a fundamental complete shift in how agents and developers work with databases. It's as critical as git was for code”\nAbhay Singh\nHead of Data at Chevron\n“Ardent let us move as fast as agents write code. We no longer worry about our agents working on the database layer.”\nPryce Yebesi\nCEO at Openledger\nShip fast and don't break things\nMake sure coding agents never break your DB.\nGet startedBook a Demo",
+  "meta": {
+    "og_title": "Ardent — Database branching for coding agents",
+    "og_description": "Create copies of any Postgres database in under 6 seconds. Let coding agents test, clean, and migrate data on isolated branches with zero risk to production.",
+    "og_site_name": "Ardent",
+    "og_type": "website",
+    "description": "Create copies of any Postgres database in under 6 seconds. Let coding agents test, clean, and migrate data on isolated branches with zero risk to production.",
+    "canonical": "https://tryardent.com",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "home",
+    "final_url": "https://www.tryardent.com/",
+    "empty_shell": false,
+    "text_chars": 3294,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 3294
+  }
+}

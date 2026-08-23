@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "6a0ffcffab1be320",
+  "url": "https://docs.bitboard.work/",
+  "type": "company_site",
+  "retrieved_at": "2026-08-23T06:30:00.360Z",
+  "status": 200,
+  "title": "BitBoard | BitBoard Docs",
+  "text": "Build hosted dashboards and reports with your agent.\n\nBitBoard\nBitBoard is a persistent analytics workspace for dashboards built by people and agents. Your data, queries, transforms, charts, and controls stay together at one shareable URL, so teammates can inspect the work and run it again.\nBuild dashboards with your agent\nSection titled “Build dashboards with your agent”\nConnect Claude, Claude Code, Cursor, ChatGPT, Codex, or another MCP-compatible agent. The agent can create dashboards, load data, author blocks, arrange layouts, and share the result while you watch the dashboard update.\nConnect your agent or build your first dashboard.\nAsk about your data\nSection titled “Ask about your data”\nAsk is BitBoard’s built-in agent for grounded questions across your connected data and apps. It is separate from the third-party agents you connect through MCP to build dashboards.\nAsk is in beta. Its capabilities and workflows may change while we learn how teams use grounded answers.\nLearn how Ask works or connect your data and apps.\nOpen BitBoard\nSection titled “Open BitBoard”\nGo to app.bitboard.work.",
+  "meta": {
+    "og_title": "BitBoard",
+    "og_description": "Build hosted dashboards and reports with your agent.",
+    "og_site_name": "BitBoard Docs",
+    "og_type": "article",
+    "description": "Build hosted dashboards and reports with your agent.",
+    "canonical": "https://docs.bitboard.work/",
+    "main_selector": "main",
+    "from_cache": true,
+    "attempts": 0,
+    "page_role": "docs",
+    "empty_shell": false,
+    "text_chars": 1109,
+    "language": "english",
+    "language_reason": "the page declares lang=\"en\"",
+    "language_declared": "en",
+    "text_truncated": false,
+    "text_original_length": 1109
+  }
+}

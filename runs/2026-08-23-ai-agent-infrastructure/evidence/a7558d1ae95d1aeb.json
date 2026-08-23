@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "a7558d1ae95d1aeb",
+  "url": "https://api.github.com/users/kontext-security",
+  "type": "github_user",
+  "retrieved_at": "2026-08-23T06:29:58.897Z",
+  "status": 200,
+  "title": "Kontext",
+  "text": "account: kontext-security\ntype: Organization\nname: Kontext\nbio: unknown\ncompany: unknown\nlocation: Germany\nwebsite: https://kontext.security\npublic repositories: 12\nfollowers: 42\naccount created at: 2022-10-22T15:51:36Z",
+  "meta": {
+    "call": "owner",
+    "from_cache": true,
+    "attempts": 0,
+    "projection": "github_user.v1",
+    "login": "kontext-security",
+    "account_type": "Organization",
+    "text_truncated": false,
+    "text_original_length": 219
+  }
+}

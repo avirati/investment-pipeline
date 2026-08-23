@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "4c7160666f3d0996",
+  "url": "https://api.github.com/repos/kontext-security/kontext",
+  "type": "github_repo",
+  "retrieved_at": "2026-08-23T06:29:58.421Z",
+  "status": 200,
+  "title": "kontext-security/kontext",
+  "text": "repository: kontext-security/kontext\nurl: https://github.com/kontext-security/kontext\ndescription: Secure agents in seconds with permissions enforced at runtime.\nhomepage: https://app.kontext.security\nowner: kontext-security\nowner type: Organization\nprimary language: Go\nlicense: MIT\ntopics: ai, ai-agents, audit-logging, authorization, developer-tools, golang, kontext, permissions, security, security-tools\nstars: 210\nforks: 8\nwatchers: 0\nopen issues: 22\ncreated at: 2026-04-05T09:12:57Z\nlast pushed at: 2026-08-23T03:23:20Z\narchived: false\nis a fork: false",
+  "meta": {
+    "call": "repo",
+    "from_cache": true,
+    "attempts": 0,
+    "projection": "github_repo.v1",
+    "full_name": "kontext-security/kontext",
+    "text_truncated": false,
+    "text_original_length": 559
+  }
+}

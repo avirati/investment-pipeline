@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "21fa9b13ba57ce46",
+  "url": "https://api.github.com/users/intuned",
+  "type": "github_user",
+  "retrieved_at": "2026-08-23T06:29:57.860Z",
+  "status": 200,
+  "title": "Intuned",
+  "text": "account: Intuned\ntype: Organization\nname: Intuned\nbio: unknown\ncompany: unknown\nlocation: United States of America\nwebsite: https://intunedhq.com\npublic repositories: 15\nfollowers: 19\naccount created at: 2022-07-03T03:02:08Z",
+  "meta": {
+    "call": "owner",
+    "from_cache": true,
+    "attempts": 0,
+    "projection": "github_user.v1",
+    "login": "Intuned",
+    "account_type": "Organization",
+    "text_truncated": false,
+    "text_original_length": 224
+  }
+}

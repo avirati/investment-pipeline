@@ -1,0 +1,187 @@
+{
+  "schema_version": 2,
+  "key": "9ee906f05fd250a157d30ed9c40da6b70971aad7b2e999836d5cb3a0b2907e9e",
+  "call": {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "prompt_id": "extract",
+    "prompt_version": "1",
+    "schema_version": "2"
+  },
+  "input": "You are reading a small set of documents about one company and writing down what\nthey say about it.\n\nEverything you produce is a **fact**: one observation, in one sentence, attached\nto the record it came from. You are not assessing the company. Something else\ndoes that, from your facts, against criteria you have not been shown and should\nnot try to guess. A fact that says *\"strong technical team\"* is unusable to it. A\nfact that says *\"the two founders were on the Kubernetes networking team at\nGoogle until March 2025\"*, citing the page that says so, is the whole job.\n\n## The company\n\nname: Agent Vault\nurl: https://github.com/Infisical/agent-vault\none_liner: Open-source credential proxy and vault for agents\nfound_via: hn — Show HN: Agent Vault – Open-source credential proxy and vault for agents (posted 2026-04-22T16:25:28.000Z)\n\n## The evidence\n\nEvery record below has an `id`, the url it came from, what kind of page it is,\nand the date **we retrieved it**. The text is what we fetched, and it may be\ntruncated mid-sentence. These records are the only sources that exist for this\ntask.\n\n--- BEGIN RECORD dece46c356dfb9f3 ---\nid: dece46c356dfb9f3\nurl: https://news.ycombinator.com/item?id=47865822\ntype: hn_item\ntitle: Show HN: Agent Vault – Open-source credential proxy and vault for agents | Hacker News\nretrieved_at: 2026-08-23T04:06:46.075Z\n\nHacker Newsnew | past | comments | ask | show | jobs | submit\nlogin\nShow HN: Agent Vault – Open-source credential proxy and vault for agents (github.com/infisical)\n156 points by dangtony98 4 months ago | hide | past | favorite | 55 comments\nHey HN! Today we're launching Agent Vault - an open source HTTP credential proxy and vault for AI agents. Repo is at https://github.com/Infisical/agent-vault, and there's an in-depth description at https://infisical.com/blog/agent-vault-the-open-source-crede....\nWe built Agent Vault in response to a question that been plaguing the industry: How do we give agents secure access to services without them reading any secrets?\nMost teams building agents have run into this exact problem: They build an agent or agentic system and come to realize at some point that it needs credentials in order to access any services. The issue is that agents, unlike traditional workloads, are non-deterministic, highly-prone to prompt injection, and thus can easily be manipulated to leaking the credentials that they need to operate. This is the problem of credential exfiltration (not to be confused with data exfiltration).\nIn response to this, some teams we've seen have implemented basic guardrails and security controls to mitigate this risk in their agentic environments including using short-lived access tokens. The more advanced teams have started to converge toward a pattern: credential brokering, the idea being to separate agents from their credentials through some form of egress proxy. In this model, the agent makes a request to a proxy that attaches a credential onto it and brokers it through to the target service. This proxy approach is actually used in Anthropic's Managed Agents architecture blog with it being that \"the harness is never made aware of the credentials.\" We've seen similar credential brokering schemes come out from Vercel and in Cloudflare's latest Outbound Workers.\nSeeing all this made us think: What if we could create a portable credential brokering service plugged seamlessly into agents' existing workflows in an interface agnostic way, meaning that agents could continue to work with APIs, CLIs, SDKs, MCPs without interference and get the security of credential brokering.\nThis led to Agent Vault - an open source HTTP credential proxy and vault that we're building for AI agents. You can deploy this as a dedicated service and set up your agent's environment to proxy requests through it. Note that in a full deployment, you do need to lock down the network so that all outbound traffic is forced through Agent Vault\nThe Agent Vault (AV) implementation has a few interesting design decisions:\n- Local Forward Proxy: AV chooses an interface agnostic approach to credential brokering by following a MITM architecture using HTTPS_PROXY as an environment variable set in the agent's environment to redirect traffic through it; this also means that it runs its own CA whose certificate must be configured on the client's trust store.\n- MITM architecture: Since AV terminates TLS in order to do credential brokering its able to inspect traffic and apply rules to it before establishing a new TLS connection upstream. This makes it a great to be able to extend AV to incorporate firewall-like features to be applied at this proxy layer.\n- Portable: AV itself is a single Go binary that bundles a server and the CLI; it can be deployed as a Docker container as well. In practice, this means that you can self-host AV on your own infrastructure and it should work more universally than provider specific approaches like that of Vercel and Cloudflare.\nWhile the preliminary design of Agent Vault is a bit clunky to work with and we’d wished to have more time to smoothen the developer experience around it, particularly around the configuration setup for agents to start proxying requests through it, we figured it would be best to open source the technology and work with the community to make gradual improvements for it to work seamlessly across all agentic use cases since each has its own nuances.\nAll in all, we believe credential brokering is the right next step for how secrets management should be done for agents and would love to hear your views, questions, feedback!\ndangtony98 4 months ago | next [–]\nT from Infisical here - Also forgot to mention that this is a research preview launch for Agent Vault and should be treated as such - experimental <<\nSince the project is in active development, the form factor including API is unstable but I think it gives a good first glance into how we're thinking about secrets management for AI agents; we made some interesting architectural decisions along the way to get here, and I think this is generally on the right track with how the industry is thinking about solving credential exfiltration: thru credential brokering.\nWe'd appreciate any feedback; feel free also to raise issues, and contribute - this is very much welcome :)\nsandeepkd 4 months ago | prev | next [–]\nThis is a good start, it does covers gaps in certain areas. There are few more areas I can think of\n1. The end point matters, example if the credential is OAuth2 token and service has a token refresh endpoint then the response would have a new token in the payload reaching directly to the agent\n2. Not all the end points are made the same even on the service side, some may not even require credential, the proxy may end up leaking the credential to such endpoints\n3. The proxy is essentially doing a MITM at this point, it just increased its scope to do the certificate validation as well, to do it correctly is a hard problem\n4. All credentials are stored on a machine, it requires a lot more access & authorization framework in terms of who can access the machine now. One might think that they closed a security gap and soon they realize that they opened up couple more in that attempt\ndangtony98 4 months ago | parent | next [–]\nThanks for this feedback! Will keep in mind all of these points as we iterate on Agent Vault.\nWe're pretty swarmed on requests at the moment but I've noted these down as improvements to AV; it's a work in progress, we'll be molding it into the right shape over the next few months.\nA few thoughts for each of the above:\n1. AV doesn't consider OAuth2 tokens atm but this is definitely a next step.\n2. Agree which is why there is a \"passthrough\" mode; for each endpoint, you need to explicitly specify what credential is used for it.\n3. That's correct. This is a MITM architecture with credential brokering capabilities added on top.\n4. Agree. The idea here is that AV can function both as a proxy and vault but in a true production setting, it should pull credentials from a secure secrets store like Infisical. This way credentials cached in memory in AV can even be made ephemeral.\nGreat observations all around and we have plans for them :)\ngregw2 4 months ago | prev | next [–]\nI have a related question, is anyone developing standards on how agents can proxy the requestor identity to backend database or application layers? (short lived oauth tokens perhaps, not long lived credentials like the ShowHN seems to focus on?)\nmooreds 4 months ago | parent | next [–]\nWell, there's the token exchange RFC, which defines on-behalf-of/delegation and impersonation semantics.\nhttps://datatracker.ietf.org/doc/html/rfc8693 has all the details, but here's an example:\n{\n\"aud\":\"https://consumer.example.com\",\n\"iss\":\"https://issuer.example.com\",\n\"exp\":1443904177,\n\"nbf\":1443904077,\n\"sub\":\"user@example.com\",\n\"act\":\n{\n\"sub\":\"admin@example.com\"\n}\n}\nIn this case, the user is user@example.com, but the actor is admin@example.com. (In the agentic case, the actor would be the AI agent.)\nIs this kinda what you are looking for?\nwfinigan 4 months ago | prev | next [–]\nLove this. Our team has been frustrated that nothing like this exists. You run into this problem as soon as you start thinking seriously about capable cloud agents, but there was no generic solution. Ex\n… [truncated]\n--- END RECORD dece46c356dfb9f3 ---\n\n--- BEGIN RECORD 32a05cf075a05dec ---\nid: 32a05cf075a05dec\nurl: https://api.github.com/repos/Infisical/agent-vault\ntype: github_repo\ntitle: Infisical/agent-vault\nretrieved_at: 2026-08-23T04:06:47.165Z\n\nrepository: Infisical/agent-vault\nurl: https://github.com/Infisical/agent-vault\ndescription: A HTTP credential proxy and vault for AI agents like Claude Code, OpenClaw, Hermes, custom agents + harnesses, and more.\nhomepage: https://docs.agent-vault.dev\nowner: Infisical\nowner type: Organization\nprimary language: Go\nlicense: unknown\ntopics: agents, ai-agents, secrets-management\nstars: 2121\nforks: 136\nwatchers: 2\nopen issues: 70\ncreated at: 2026-03-27T21:47:17Z\nlast pushed at: 2026-08-23T01:53:21Z\narchived: false\nis a fork: false\n--- END RECORD 32a05cf075a05dec ---\n\n--- BEGIN RECORD 951273502b253a90 ---\nid: 951273502b253a90\nurl: https://api.github.com/users/Infisical\ntype: github_user\ntitle: Infisical\nretrieved_at: 2026-08-23T04:06:47.899Z\n\naccount: Infisical\ntype: Organization\nname: Infisical\nbio: Infisical is the open-source secrets management platform: Sync secrets across your team/infrastructure, prevent secret leaks, and manage internal PKI\ncompany: unknown\nlocation: United States of America\nwebsite: https://www.infisical.com\npublic repositories: 77\nfollowers: 556\naccount created at: 2022-06-20T17:29:43Z\n--- END RECORD 951273502b253a90 ---\n\n--- BEGIN RECORD 1f34bb918950de03 ---\nid: 1f34bb918950de03\nurl: https://docs.agent-vault.dev/\ntype: company_site\ntitle: Introduction - Agent Vault\nretrieved_at: 2026-08-23T04:06:49.741Z\n\nGetting Started\nIntroduction\nA credential broker for AI agents to prevent credential exfiltration.\nAgent Vault is an open source vault and proxy service by Infisical that sits between AI agents and the APIs they call including LLM providers, GitHub, Stripe, and more. Check out the GitHub repository.\nNeed an enterprise-grade solution? Infisical offers managed Agent Vault with enterprise support, SLAs, and advanced features.\nBook a demo with us to learn more.\nAgent Vault works with all kinds of AI Agent use-cases including secure remote coding agents, all-purpose agents, custom agents + harnesses, secure ephemeral sandboxes and more.\nAgents like Claude Code or OpenClaw route HTTP requests through an Agent Vault server, which swaps dummy credentials for real ones (or replaces auth headers entirely), before forwarding the request to the target service.\n+-----------------------------------------------------------------+\n| Public internet |\n| |\n| api.anthropic.com api.github.com api.stripe.com ... |\n| ^ ^ ^ |\n+----------+-------------------+------------------+---------------+\n| | |\n+-------------------+------------------+\n| outbound HTTPS, Agent Vault\n| injects credentials on the way out\n+------------------------------+----------------------------------+\n| Private network | |\n| | |\n| +---------------------------+----+ +--------------------+ |\n| | Agent Vault | | AI agent | |\n| | :14321 management UI / API |<----| HTTPS_PROXY= | |\n| | :14322 MITM proxy | | agent-vault:14322 | |\n| +----------------^---------------+ +--------------------+ |\n| | |\n+-------------------+---------------------------------------------+\n| operator access: keep private, or front\n| with TLS + auth (SSO reverse proxy, IP\n| allowlist, or VPN) if you need remote admin\n|\nOperator\n​\nWhy Agent Vault\nTraditional secrets management involves returning credentials back to you applications and services.\nThis is not suitable for AI agents because they are vulnerable to credential exfiltration via prompt injection; an attacker could craft a malicious prompt or payload and exfiltrate credentials from an agent back to the attacker.\nEnter Agent Vault - a new credential management solution built for agents that prevents credential exfiltration with ergonomic, agent-first design.\n​\nHow it works\nStart by setting up an instance of Agent Vault on a separate host machine:\nYou install the Agent Vault binary or deploy an instance with Docker.\nYou configure Agent Vault with the credentials and service credential substitution rules to enable Agent Vault to broker credentials for your AI agent.\nYou configure an agent in Agent Vault to represent your AI agent and obtain a token for it. If your workflow involves using an orchestrator backend to spin up ephemeral sandboxed agents, you can use the agent construct to represent your orchestrator and mint a short-lived token to be passed into the sandbox for the agent to use and proxy requests through Agent Vault.\nNext, you configure your AI agent to connect to Agent Vault:\nYou bootstrap your AI agent’s environment to automatically route all outbound HTTP and HTTPS traffic through Agent Vault. This can be done with the Agent Vault CLI and setting AGENT_VAULT_ADDR, AGENT_VAULT_TOKEN, and AGENT_VAULT_VAULT in the agent’s environment.\nYou give your AI agent dummy credentials like __anthropic_api_key__ or __github_pat__ to use when making API calls.\nThat’s it! Your AI agent is now able to make authenticated API calls to LLM providers and other HTTP services through any interface (API, CLI, SDK, MCP, etc.) without holding any real credentials.\nAgent Vault matches the target host on the proxied request against the configured service rules, performs any required credential substitutions, and forwards the reconstructed request upstream to the target service.\n​\nGet started\nInstallation\nDeploy Agent Vault, start a server, and register.\n​\nQuickstart\nClaude Code\nConnect Claude Code to Agent Vault.\nCursor\nConnect Cursor to Agent Vault.\nCodex\nConnect Codex to Agent Vault.\nOpenClaw\nConnect OpenClaw to Agent Vault.\nHermes Agent\nConnect Hermes Agent to Agent Vault.\nOpenCode\nConnect OpenCode to Agent Vault.\nCustom Agent\nConnect any HTTP-capable agent.\n⌘I\n--- END RECORD 1f34bb918950de03 ---\n\n--- BEGIN RECORD 63582244318f4b4c ---\nid: 63582244318f4b4c\nurl: https://docs.agent-vault.dev/llms.txt\ntype: company_site\ntitle: unknown\nretrieved_at: 2026-08-23T04:06:50.383Z\n\n# Agent Vault\n## Docs\n- [Introduction](https://docs.agent-vault.dev/index.md): A credential broker for AI agents to prevent credential exfiltration.\n- [Installation](https://docs.agent-vault.dev/installation.md): Get a server running in under a minute.\n- [Tutorial](https://docs.agent-vault.dev/tutorial.md): Walk through your first vault, service, and agent end to end.\n- [Claude Code](https://docs.agent-vault.dev/quickstart/claude-code.md): Learn how to connect Claude Code to Agent Vault so it can make authenticated API requests without ever seeing your credentials.\n- [Cursor](https://docs.agent-vault.dev/quickstart/cursor.md): Learn how to connect Cursor to Agent Vault so it can make authenticated API requests without ever seeing your credentials.\n- [Codex](https://docs.agent-vault.dev/quickstart/codex.md): Learn how to connect Codex to Agent Vault so it can make authenticated API requests without ever seeing your credentials.\n- [OpenClaw](https://docs.agent-vault.dev/quickstart/openclaw.md): Learn how to connect OpenClaw to Agent Vault so it can make authenticated API requests without ever seeing your credentials.\n- [Hermes Agent](https://docs.agent-vault.dev/quickstart/hermes-agent.md): Learn how to connect Hermes Agent to Agent Vault so it can make authenticated API requests without ever seeing your credentials.\n- [OpenCode](https://docs.agent-vault.dev/quickstart/opencode.md): Learn how to connect OpenCode to Agent Vault so it can make authenticated API requests without ever seeing your credentials.\n- [Custom Agent](https://docs.agent-vault.dev/quickstart/custom-agent.md): Wire up any custom agent, harness, or application so its outbound API calls route through Agent Vault for credential injection.\n- [Connect a coding agent](https://docs.agent-vault.dev/guides/connect-coding-agent.md): Connect Claude Code, Cursor, or any chat-based coding agent to Agent Vault.\n- [Connect a custom agent](https://docs.agent-vault.dev/guides/connect-custom-agent.md): Wire up a custom agent or script to Agent Vault through HTTPS_PROXY/HTTP_PROXY and the transparent CA.\n- [Slack agent template](https://docs.agent-vault.dev/guides/slack-agent-template.md): Build a custom Slack agent that uses Agent Vault for brokered credentials.\n- [Deploy your agent in a container](https://docs.agent-vault.dev/guides/deploy-agent-container.md): Run an Agent Vault-wrapped agent in an unattended container (k8s, Fly, ECS) using a pre-supplied token — no interactive `auth login` required.\n- [Run Hermes on a VPS](https://docs.agent-vault.dev/guides/hermes-on-vps.md): Keep real credentials off the agent host by routing every outbound call through Agent Vault on a separate VPS.\n- [Run OpenClaw on a VPS](https://docs.agent-vault.dev/guides/openclaw-on-vps.md): Keep real credentials off the agent host by routing every outbound call through Agent Vault on a separate VPS.\n- [OAuth for Claude Code](https://docs.agent-vault.dev/guides/oauth-claude-code.md): Manage Claude Code's OAuth tokens through Agent Vault so agents never hold real credentials.\n- [Overview](https://docs.agent-vault.dev/self-hosting/overview.md): Choose how to deploy Agent Vault.\n- [Linux & macOS](https://docs.agent-vault.dev/self-hosting/local.md): Install and run Agent Vault on Linux or macOS using the install script\n- [Docker](https://docs.agent-vault.dev/self-hosting/docker.md): Run Agent Vault in a Docker container\n- [Fly.io](https://docs.agent-vault.dev/self-hosting/fly-io.md): Deploy Agent Vault to Fly.io with persistent storage\n- [PostgreSQL Database](https://docs.agent-vault.dev/self-hosting/postgres.md): Deploy Agent Vault with PostgreSQL for production and multi-instance setups\n- [Environment variables](https://docs.agent-vault.dev/self-hosting/environment-variables.md): Configuration for deploying an instance of Agent Vault.\n- [Maintenance](https://docs.agent-vault.dev/self-hosting/maintenance.md): Verify release signatures and upgrade an existing Agent Vault installation.\n- [Instance Settings](https://docs.agent-vault.dev/guides/instance-settings.md): Configure instance-wide settings for your Agent Vault server.\n- [Configure Email SMTP](https://docs.agent-vault.dev/guides/smtp.md): Configure SMTP to enable email verification, vault invites, and notifications.\n- [Vaults](https://docs.agent-vault.dev/learn/vaults.md): Create vaults and manage team access with invites and roles.\n- [Credentials](https://docs.agent-vault.dev/learn/credentials.md): Store and manage the credentials that Agent Vault attaches to proxied requests.\n- [Credential stores](https://docs.agent-vault.dev/learn/credential-stores.md): Where a vault's credentials come from: Agent Vault's local DB, or an external system like Infisical.\n- [Services](https://docs.agent-vault.dev/learn/services.md): Define which services your agents can access and how credentials are attached.\n- [Proposals](https://docs.agent-vault.dev/learn/proposals.md): Review, approve, and manage agent-initiated credential and service changes.\n- [Permissions](https://docs.agent-vault.dev/learn/permissions.md): Understand how instance roles and vault roles control access across Agent Vault.\n- [Agents](https://docs.agent-vault.dev/agents/overview.md): Understand how agents connect to Agent Vault and how to manage them.\n- [Agent protocol](https://docs.agent-vault.dev/agents/protocol.md): How agents authenticate, discover services, route requests through HTTPS_PROXY/HTTP_PROXY, and propose changes through Agent Vault.\n- [Security](https://docs.agent-vault.dev/learn/security.md): How Agent Vault protects credentials at rest, in transit, and across the network.\n- [CLI reference](https://docs.agent-vault.dev/reference/cli.md): Complete reference for all Agent Vault CLI commands.\n--- END RECORD 63582244318f4b4c ---\n\n## What to look for\n\nEach observation you record is filed under a `key` from this list. The list is\nwhat the reader downstream knows how to read; a key outside it goes nowhere.\n\n- `founder.name_role` — A person named on the company's own pages, with the role it gives them.\n- `founder.prior_role` — A prior employer, role or period a named person is stated to have held.\n- `founder.prior_exit` — A company a named person is stated to have founded, sold, or left after building.\n- `founder.prior_artifact` — Something a named person is stated to have built or shipped before this — a project, library, paper or talk.\n- `team.size_visible` — How many people the source names or states, and where it names them.\n- `org.github_account_type` — Whether the GitHub owner is an organisation or a personal account, as the payload states it.\n- `product.one_liner` — How the company describes what the product does, in its own words.\n- `product.job` — The specific task, and the person doing it, that the source says the product is for.\n- `product.category_claim` — The category, platform or scope the company claims for itself — its own framing, quoted or closely paraphrased.\n- `product.capability_dependency` — A technology, model or cost change the source says the product depends on, and when the source says it arrived.\n- `product.launch_date` — A date the source gives for the company, the product, or a first release.\n- `product.open_source` — A licence or public repository the source states for the product itself.\n- `product.runtime_position` — Where the source says the product sits — agent, sidecar, proxy, kernel module, build step, hosted service.\n- `product.data_accumulated` — Data the source says the product collects, stores or builds up as it is used.\n- `adoption.self_serve` — A stated way to start using it without speaking to anyone — sign-up, free tier, download, install command.\n- `adoption.pricing_public` — Whether prices are published, and what the page states them to be.\n- `adoption.sales_gate` — A stated requirement to contact sales, book a demo, or request access before using it.\n- `traction.github_stars` — A star count, with the date the record carries for it.\n- `traction.repo_activity` — Commit, release or issue activity, with whatever dates the record gives.\n- `traction.contributors` — How many people have contributed, as the payload states it.\n- `traction.named_user` — A named customer, design partner or user the source states — a logo wall counts only if the page says they use it.\n- `traction.integration` — A named third-party product or project the source says this works with.\n- `traction.hn_engagement` — Points, comment count or dates on the Hacker News thread.\n- `funding.raised_usd` — An amount, round, date or investor the source states.\n\nNo bundle answers all of these. Most answer a minority. A key with no answer in\nthe evidence is simply not reported — see rule 6.\n\n## Rules\n\n1. **Cite everything.** Every fact carries `evidence_ids` with at least one id,\n   and every id must be one of the ids listed above. A fact citing an id that is\n   not in that list is discarded unread, as is a fact citing nothing. If an\n   observation genuinely rests on two records, cite both.\n\n2. **Only what these records say.** Not what you know about this company from\n   anywhere else, and not what is usually true of companies like it. You may\n   well have seen this company before. That is the single most likely way this\n   output becomes wrong in a way nobody catches, because a recalled fact arrives\n   wearing a citation and looks checked.\n\n3. **One observation per fact.** Two claims in one sentence cannot be verified\n   separately, and the second one is the one that turns out to be wrong.\n\n4. **Statements are checkable.** A reader opens the cited record and decides\n   whether your sentence is supported by it. Quote or paraphrase closely. Do not\n   blend several records into a summary that no single one of them supports.\n\n5. **Dates are the source's, not ours.** `retrieved_at` is when we read the\n   page. If the text states when something happened — a launch, a release, a\n   funding round, a commit, a job that ended — put that date in the statement and\n   use it. \"Recently\" and \"last year\" are not dates; write what the source wrote.\n\n6. **Omission is how you say \"unknown\".** There is no penalty for a short\n   answer, and a bundle that supports four facts should produce four. Missing\n   information is handled honestly further down the pipeline; a filled-in guess\n   is not recoverable, because by then it is indistinguishable from something\n   that was read.\n\n7. **No number you did not read.** Counts, stars, dates, headcount, funding,\n   customers: taken from the text or left out. Never rounded up, never\n   estimated, never carried across from a similar company.\n\n8. **No scoring, ranking, or recommending.** Do not rate the company, compare it\n   to another, or say whether it is a good investment, a good fit, or promising.\n   If you are writing an adjective that ranks — strong, impressive, thin,\n   weak, promising — you are writing a judgement, and the sentence needs to go\n   back to being an observation or be dropped.\n\n## The fields\n\n- `key` — one of the keys listed above.\n- `statement` — the sentence a partner reads. Plain, specific, one observation,\n  and true to the cited record.\n- `value` — the same observation in machine-readable form: a number for a count\n  or an amount (bare, no units or commas), `true`/`false` for a yes-or-no, a\n  short string for a name or a label or an ISO date, and `null` when the\n  observation is the sentence itself and has no scalar to reduce to.\n- `evidence_ids` — the ids this rests on.\n- `confidence` — how firmly *the cited text* supports the statement:\n  - `high` — the record states it outright.\n  - `medium` — the record clearly implies it; one short step, and any careful\n    reader would take the same one.\n  - `low` — the record is consistent with it and it is the most reasonable\n    reading, but a careful reader could read it another way.\n\n  Confidence is about the evidence, never about the company. Anything you would\n  want to mark below `low` is an omission, not a fact.\n\nReturn the facts and nothing else. No preamble, no summary of the company, no\nclosing assessment.\n",
+  "output": {
+    "facts": [
+      {
+        "key": "product.one_liner",
+        "statement": "Agent Vault is an open source HTTP credential proxy and vault for AI agents.",
+        "value": "Agent Vault is an open source HTTP credential proxy and vault for AI agents.",
+        "evidence_ids": [
+          "dece46c356dfb9f3"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.one_liner",
+        "statement": "Agent Vault is a HTTP credential proxy and vault for AI agents like Claude Code, OpenClaw, Hermes, custom agents + harnesses, and more.",
+        "value": "A HTTP credential proxy and vault for AI agents like Claude Code, OpenClaw, Hermes, custom agents + harnesses, and more.",
+        "evidence_ids": [
+          "32a05cf075a05dec"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.launch_date",
+        "statement": "The Agent Vault GitHub repository was created on 2026-03-27.",
+        "value": "2026-03-27",
+        "evidence_ids": [
+          "32a05cf075a05dec"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.github_stars",
+        "statement": "The Agent Vault GitHub repository had 2121 stars as of 2026-08-23.",
+        "value": 2121,
+        "evidence_ids": [
+          "32a05cf075a05dec"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "org.github_account_type",
+        "statement": "The GitHub owner account 'Infisical' for Agent Vault is an organization.",
+        "value": "Organization",
+        "evidence_ids": [
+          "32a05cf075a05dec"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "founder.name_role",
+        "statement": "A person named 'T' from Infisical participated in the Hacker News discussion about Agent Vault in 2026 and is involved with the project.",
+        "value": "T from Infisical",
+        "evidence_ids": [
+          "dece46c356dfb9f3"
+        ],
+        "confidence": "medium"
+      },
+      {
+        "key": "product.job",
+        "statement": "Agent Vault provides a credential brokering service to AI agents, preventing them from accessing real credentials directly to avoid credential exfiltration.",
+        "value": "credential brokering for AI agents",
+        "evidence_ids": [
+          "dece46c356dfb9f3"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.category_claim",
+        "statement": "Agent Vault is positioned as a credential broker and vault service designed specifically to prevent credential exfiltration in AI agents.",
+        "value": "credential broker and vault for AI agents",
+        "evidence_ids": [
+          "dece46c356dfb9f3",
+          "1f34bb918950de03"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.runtime_position",
+        "statement": "Agent Vault operates as a local forward proxy following a MITM architecture that intercepts and modifies HTTP requests from AI agents to inject credentials securely.",
+        "value": "local forward proxy, MITM architecture",
+        "evidence_ids": [
+          "dece46c356dfb9f3"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "product.open_source",
+        "statement": "Agent Vault's source code is publicly available under the GitHub repository https://github.com/Infisical/agent-vault.",
+        "value": "https://github.com/Infisical/agent-vault",
+        "evidence_ids": [
+          "dece46c356dfb9f3",
+          "32a05cf075a05dec"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "adoption.sales_gate",
+        "statement": "Infisical offers a managed enterprise-grade Agent Vault solution requiring booking a demo for more information.",
+        "value": "Book a demo for enterprise-grade solution",
+        "evidence_ids": [
+          "1f34bb918950de03"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "adoption.self_serve",
+        "statement": "Agent Vault can be deployed by downloading the binary, running it directly or via Docker, and configuring the AI agent environment variables to proxy requests through it.",
+        "value": true,
+        "evidence_ids": [
+          "dece46c356dfb9f3",
+          "1f34bb918950de03"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.hn_engagement",
+        "statement": "Agent Vault received 156 points and 55 comments on its Show HN launch post on Hacker News in 2026.",
+        "value": 156,
+        "evidence_ids": [
+          "dece46c356dfb9f3"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.hn_engagement",
+        "statement": "Agent Vault's Hacker News launch post generated 55 comments in 2026.",
+        "value": 55,
+        "evidence_ids": [
+          "dece46c356dfb9f3"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.repo_activity",
+        "statement": "The last push to the Agent Vault GitHub repository was on 2026-08-23.",
+        "value": "2026-08-23",
+        "evidence_ids": [
+          "32a05cf075a05dec"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "traction.repo_activity",
+        "statement": "There were 70 open issues reported in the Agent Vault GitHub repository as of 2026-08-23.",
+        "value": 70,
+        "evidence_ids": [
+          "32a05cf075a05dec"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "org.github_account_type",
+        "statement": "Infisical, the owner of the Agent Vault repository, is a GitHub organization account.",
+        "value": "Organization",
+        "evidence_ids": [
+          "951273502b253a90"
+        ],
+        "confidence": "high"
+      },
+      {
+        "key": "founder.name_role",
+        "statement": "Infisical is an organization based in the United States of America, focused on open-source secrets management.",
+        "value": "Infisical organization based in USA",
+        "evidence_ids": [
+          "951273502b253a90"
+        ],
+        "confidence": "high"
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6736,
+    "output_tokens": 1103,
+    "cost_usd": null
+  },
+  "created_at": "2026-08-23T06:32:16.653Z"
+}

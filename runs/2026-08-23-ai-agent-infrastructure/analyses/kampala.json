@@ -1,0 +1,417 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "kampala",
+    "name": "Kampala",
+    "url": "https://zatanna.ai",
+    "one_liner": "Reverse-Engineer Apps into APIs",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "47794514",
+        "title": "Launch HN: Kampala (YC W26) – Reverse-Engineer Apps into APIs",
+        "posted_url": "https://www.zatanna.ai/kampala",
+        "posted_at": "2026-04-16T15:19:54.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "Alex is a co-founder of Kampala.",
+      "value": "Alex",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "Tarun is a co-founder of Kampala.",
+      "value": "Tarun",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Kampala is a man-in-the-middle (MITM) style proxy that allows you to agentically reverse engineer existing workflows without brittle browser automation or computer use agents and works for websites, mobile apps, and desktop apps.",
+      "value": "Reverse-Engineer Apps into APIs via a MITM style proxy for websites, mobile and desktop apps",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Kampala functions as a man-in-the-middle (MITM) proxy.",
+      "value": "MITM proxy",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Kampala automates interactions deterministically in seconds using existing session tokens and anti-bot cookies.",
+      "value": "automate interactions deterministically using session tokens and anti-bot cookies",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "Kampala is used to reverse-engineer existing workflows into APIs without brittle browser automation or computer use agents.",
+      "value": "reverse-engineer workflows into APIs without browser automation",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.launch_date",
+      "statement": "Kampala was publicly launched approximately in April 2026 as part of Y Combinator W26 batch.",
+      "value": "2026-04",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.hn_engagement",
+      "statement": "The Hacker News Launch HN post for Kampala received 100 points and 84 comments as of 4 months ago from August 2026.",
+      "value": 100,
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.data_accumulated",
+      "statement": "Since March 1, 2026, Zatanna has modeled a total of 4,829,385,502 requests processed based on an average of 1.22 million requests per hour.",
+      "value": 4829385502,
+      "evidence_ids": [
+        "57e56375ca5acaaa"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Zatanna maps human-only software workflows and exposes them as reliable APIs your AI agents and internal tools can call in production, without browser automation scripts to maintain.",
+      "value": "Turn software workflows into reliable APIs for AI agents without browser automation",
+      "evidence_ids": [
+        "57e56375ca5acaaa"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "Zatanna works at the network layer to reverse-engineer the underlying API calls behind any portal and deploy them as direct endpoints, offering milliseconds latency instead of seconds, with structured data and stable integrations.",
+      "value": "network layer reverse-engineering of API calls for stable API integration",
+      "evidence_ids": [
+        "57e56375ca5acaaa"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "Zatanna depends on observing actual network traffic behind portal workflows and reconstructing the exact request flow including auth, sessions, and sequencing.",
+      "value": "network traffic observation and reconstruction of request flow",
+      "evidence_ids": [
+        "57e56375ca5acaaa"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Zatanna provides a single stable endpoint API that manages authentication, retries, anti-bot detection and session handling underneath.",
+      "value": "single stable API endpoint managing auth and retries",
+      "evidence_ids": [
+        "57e56375ca5acaaa"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Zatanna is designed to enable AI agents to call APIs that perform real work in third-party software portals, even ones without public APIs.",
+      "value": "enable AI agents to perform work in third-party portals without public APIs",
+      "evidence_ids": [
+        "57e56375ca5acaaa"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.sales_gate",
+      "statement": "To start using Zatanna, users can book a 30-minute workflow review where the workflow is walked through once and an endpoint deployed; most integrations go live within days.",
+      "value": "book a 30-minute workflow review before integration",
+      "evidence_ids": [
+        "57e56375ca5acaaa"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 15,
+      "max": 20,
+      "band": "11–15",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f",
+        "57e56375ca5acaaa"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 5,
+      "max": 25,
+      "band": "0–5",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "57e56375ca5acaaa",
+        "10a1dfcf5cbe933f"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 12,
+      "max": 15,
+      "band": "9–12",
+      "evidence_ids": [
+        "57e56375ca5acaaa",
+        "10a1dfcf5cbe933f"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 59,
+  "coverage": 1,
+  "disqualifiers": [
+    {
+      "id": "D-1",
+      "statement": "The team is named and nothing any of them is stated to have built appears in the evidence, and the company has no public repository.",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ]
+    },
+    {
+      "id": "D-4",
+      "statement": "Using it is stated to require contacting someone, and no self-serve or open-source path appears in the evidence.",
+      "evidence_ids": [
+        "57e56375ca5acaaa"
+      ]
+    }
+  ],
+  "call": "PASS",
+  "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Pass — disqualifiers D-1 and D-4 fired, and a cited disqualifier forces a pass whatever the score (59/100, 100% coverage).",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f",
+        "57e56375ca5acaaa"
+      ]
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D3 Evidence of pull at 5/25 (band 0–5).",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Alex is a co-founder of Kampala.",
+          "evidence_ids": [
+            "10a1dfcf5cbe933f"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Tarun is a co-founder of Kampala.",
+          "evidence_ids": [
+            "10a1dfcf5cbe933f"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Kampala is a man-in-the-middle (MITM) style proxy that allows you to agentically reverse engineer existing workflows without brittle browser automation or computer use agents and works for websites, mobile apps, and desktop apps.",
+          "evidence_ids": [
+            "10a1dfcf5cbe933f"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Zatanna maps human-only software workflows and exposes them as reliable APIs your AI agents and internal tools can call in production, without browser automation scripts to maintain.",
+          "evidence_ids": [
+            "57e56375ca5acaaa"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Kampala automates interactions deterministically in seconds using existing session tokens and anti-bot cookies.",
+          "evidence_ids": [
+            "10a1dfcf5cbe933f"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Zatanna is designed to enable AI agents to call APIs that perform real work in third-party software portals, even ones without public APIs.",
+          "evidence_ids": [
+            "57e56375ca5acaaa"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Kampala is used to reverse-engineer existing workflows into APIs without brittle browser automation or computer use agents.",
+          "evidence_ids": [
+            "10a1dfcf5cbe933f"
+          ]
+        }
+      ],
+      "omitted": 5
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Zatanna depends on observing actual network traffic behind portal workflows and reconstructing the exact request flow including auth, sessions, and sequencing.",
+          "evidence_ids": [
+            "57e56375ca5acaaa"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Kampala was publicly launched approximately in April 2026 as part of Y Combinator W26 batch.",
+          "evidence_ids": [
+            "10a1dfcf5cbe933f"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Hacker News Launch HN post for Kampala received 100 points and 84 comments as of 4 months ago from August 2026.",
+          "evidence_ids": [
+            "10a1dfcf5cbe933f"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Risks",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Disqualifier D-1 — The team is named and nothing any of them is stated to have built appears in the evidence, and the company has no public repository.",
+          "evidence_ids": [
+            "10a1dfcf5cbe933f"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Disqualifier D-4 — Using it is stated to require contacting someone, and no self-serve or open-source path appears in the evidence.",
+          "evidence_ids": [
+            "57e56375ca5acaaa"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "Disqualifier D-1: find a stated prior role for somebody they name, something one of them is stated to have built, or a public repository. It would then no longer hold, and the call would no longer be forced to Pass.",
+      "evidence_ids": [
+        "10a1dfcf5cbe933f"
+      ]
+    },
+    {
+      "kind": "check",
+      "text": "Disqualifier D-4: find a self-serve path, a published price, an open-source licence, or a public repository. It would then no longer hold, and the call would no longer be forced to Pass.",
+      "evidence_ids": [
+        "57e56375ca5acaaa"
+      ]
+    },
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find a prior employer, role or period stated for somebody the company names. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": null,
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 2,
+    "evidence_usable": 2,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 15,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

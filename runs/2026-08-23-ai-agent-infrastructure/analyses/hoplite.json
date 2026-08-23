@@ -1,0 +1,333 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "hoplite",
+    "name": "Hoplite",
+    "url": "https://hoplite.sh",
+    "one_liner": "Effortlessly deploy cloud coding agents",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "49157997",
+        "title": "Launch HN: Hoplite (YC S26) – Effortlessly deploy cloud coding agents",
+        "posted_url": "https://hoplite.sh",
+        "posted_at": "2026-08-03T16:32:06.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Hoplite lets you deploy coding agents in the cloud with a suite of tools that makes it incredibly easy to QA features, mirroring your local setup in the cloud.",
+      "value": "Effortlessly deploy cloud coding agents",
+      "evidence_ids": [
+        "7e282a5d0403fd7b"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Hoplite is designed for developers who want to deploy coding agents that can work on software projects in a real, isolated development environment and automate tasks like editing code, running tests, and opening pull requests.",
+      "value": null,
+      "evidence_ids": [
+        "d95e657309709819"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "Hoplite describes itself as a platform for effortless cloud coding agents that can run in isolated sandboxes and handle hundreds of concurrent agents to perform quality assurance and developer automation tasks.",
+      "value": "cloud coding agents platform",
+      "evidence_ids": [
+        "7e282a5d0403fd7b",
+        "70aa9c6ceeff88d6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "Hoplite built a custom agent harness to gain independence and freedom instead of relying on third-party models like Codex or Claude Code, allowing them to test new features without waiting for external providers like Anthropic and OpenAI to catch up.",
+      "value": "custom in-house agent harness built instead of third-party models like Codex or Claude Code",
+      "evidence_ids": [
+        "7e282a5d0403fd7b"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Hoplite runs agents in isolated sandboxes in the cloud, each with its own VM, enabling hundreds of concurrent agents to run simultaneously.",
+      "value": "cloud isolated sandboxes",
+      "evidence_ids": [
+        "7e282a5d0403fd7b",
+        "70aa9c6ceeff88d6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.data_accumulated",
+      "statement": "Hoplite prepares video recordings of all new feature changes for easy verification without manual walkthroughs, storing these flows in a QA library to be replayed without rerunning agents.",
+      "value": "QA library with video recordings of feature changes",
+      "evidence_ids": [
+        "7e282a5d0403fd7b",
+        "70aa9c6ceeff88d6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.self_serve",
+      "statement": "Users can try Hoplite immediately and freely by signing up with the code ‘HACKERNEWS’ which grants $100 in free credits plus the ability to connect Codex subscription for OpenAI models integration.",
+      "value": true,
+      "evidence_ids": [
+        "7e282a5d0403fd7b"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "Hoplite publishes transparent monthly and yearly pricing plans starting at $99 per seat for Pro and $299 per seat for Scale, including prepaid credits and features tailored for team sizes.",
+      "value": true,
+      "evidence_ids": [
+        "70aa9c6ceeff88d6",
+        "271d289a102b6b87"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "founder.name_role",
+      "statement": "The founders of Hoplite are Bence and Ryan, as stated in the Hacker News launch post.",
+      "value": "Bence and Ryan, founders",
+      "evidence_ids": [
+        "7e282a5d0403fd7b"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 12,
+      "max": 25,
+      "band": "6–12",
+      "evidence_ids": [
+        "7e282a5d0403fd7b"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 15,
+      "max": 20,
+      "band": "11–15",
+      "evidence_ids": [
+        "d95e657309709819",
+        "7e282a5d0403fd7b",
+        "70aa9c6ceeff88d6"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 6,
+      "max": 25,
+      "band": "uncovered · floor of 6–12",
+      "evidence_ids": [],
+      "covered": false
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "7e282a5d0403fd7b",
+        "70aa9c6ceeff88d6"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 12,
+      "max": 15,
+      "band": "9–12",
+      "evidence_ids": [
+        "7e282a5d0403fd7b",
+        "70aa9c6ceeff88d6",
+        "d95e657309709819"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 60,
+  "coverage": 0.8,
+  "disqualifiers": [
+    {
+      "id": "D-1",
+      "statement": "The team is named and nothing any of them is stated to have built appears in the evidence, and the company has no public repository.",
+      "evidence_ids": [
+        "7e282a5d0403fd7b"
+      ]
+    }
+  ],
+  "call": "PASS",
+  "unknowns": [
+    "D3 Evidence of pull: unknown — no primary source in this candidate's evidence, scored at uncovered · floor of 6–12"
+  ],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Pass — disqualifier D-1 fired, and a cited disqualifier forces a pass whatever the score (60/100, 80% coverage).",
+      "evidence_ids": [
+        "7e282a5d0403fd7b"
+      ]
+    },
+    {
+      "kind": "summary",
+      "text": "The largest shortfall is D1 Founder–market fit & technical depth at 12/25 (band 6–12).",
+      "evidence_ids": [
+        "7e282a5d0403fd7b"
+      ]
+    },
+    {
+      "kind": "summary",
+      "text": "1 of 5 dimensions had no primary source behind them; they are listed under what we could not verify.",
+      "evidence_ids": []
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "The founders of Hoplite are Bence and Ryan, as stated in the Hacker News launch post.",
+          "evidence_ids": [
+            "7e282a5d0403fd7b"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Hoplite lets you deploy coding agents in the cloud with a suite of tools that makes it incredibly easy to QA features, mirroring your local setup in the cloud.",
+          "evidence_ids": [
+            "7e282a5d0403fd7b"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Hoplite is designed for developers who want to deploy coding agents that can work on software projects in a real, isolated development environment and automate tasks like editing code, running tests, and opening pull requests.",
+          "evidence_ids": [
+            "d95e657309709819"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Hoplite describes itself as a platform for effortless cloud coding agents that can run in isolated sandboxes and handle hundreds of concurrent agents to perform quality assurance and developer automation tasks.",
+          "evidence_ids": [
+            "7e282a5d0403fd7b",
+            "70aa9c6ceeff88d6"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Hoplite runs agents in isolated sandboxes in the cloud, each with its own VM, enabling hundreds of concurrent agents to run simultaneously.",
+          "evidence_ids": [
+            "7e282a5d0403fd7b",
+            "70aa9c6ceeff88d6"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Hoplite prepares video recordings of all new feature changes for easy verification without manual walkthroughs, storing these flows in a QA library to be replayed without rerunning agents.",
+          "evidence_ids": [
+            "7e282a5d0403fd7b",
+            "70aa9c6ceeff88d6"
+          ]
+        }
+      ],
+      "omitted": 2
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Hoplite built a custom agent harness to gain independence and freedom instead of relying on third-party models like Codex or Claude Code, allowing them to test new features without waiting for external providers like Anthropic and OpenAI to catch up.",
+          "evidence_ids": [
+            "7e282a5d0403fd7b"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Risks",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Disqualifier D-1 — The team is named and nothing any of them is stated to have built appears in the evidence, and the company has no public repository.",
+          "evidence_ids": [
+            "7e282a5d0403fd7b"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "Disqualifier D-1: find a stated prior role for somebody they name, something one of them is stated to have built, or a public repository. It would then no longer hold, and the call would no longer be forced to Pass.",
+      "evidence_ids": [
+        "7e282a5d0403fd7b"
+      ]
+    },
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find a prior employer, role or period stated for somebody the company names. That moves it from 6–12 to 13–19 (+7).",
+      "evidence_ids": []
+    },
+    {
+      "kind": "check",
+      "text": "D2 Wedge specificity: find a named customer, design partner or user, stated to be using it for that job. That moves it from 11–15 to 16–20 (+5).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": null,
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 4,
+    "evidence_usable": 4,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 9,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

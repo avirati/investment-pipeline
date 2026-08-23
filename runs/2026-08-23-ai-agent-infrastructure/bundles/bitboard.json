@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-08-23-ai-agent-infrastructure",
+  "slug": "bitboard",
+  "gathered_at": "2026-08-23T06:32:04.164Z",
+  "candidate": {
+    "schema_version": 2,
+    "slug": "bitboard",
+    "name": "BitBoard",
+    "url": "https://bitboard.work",
+    "one_liner": "Analytics Workspace for Agents",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48506545",
+        "title": "Launch HN: BitBoard (YC P25) – Analytics Workspace for Agents",
+        "posted_url": "https://bitboard.work/",
+        "posted_at": "2026-06-12T16:58:03.000Z"
+      }
+    ]
+  },
+  "join": {
+    "site": {
+      "url": "https://bitboard.work",
+      "from": "candidate_url"
+    },
+    "github": null
+  },
+  "evidence_ids": [
+    "903a6898a725afd9",
+    "345c4df22f307c7f",
+    "4b23444ac2b8ba6b",
+    "6a0ffcffab1be320"
+  ],
+  "signals": [
+    {
+      "key": "site.url",
+      "value": "https://bitboard.work/",
+      "as_of": "2026-08-22T10:19:52.204Z",
+      "evidence_id": "345c4df22f307c7f"
+    },
+    {
+      "key": "site.title",
+      "value": "The easiest way to analyze your business data with AI — BitBoard",
+      "as_of": "2026-08-22T10:19:52.204Z",
+      "evidence_id": "345c4df22f307c7f"
+    },
+    {
+      "key": "site.description",
+      "value": "Get answers, build dashboards, and share with your team.",
+      "as_of": "2026-08-22T10:19:52.204Z",
+      "evidence_id": "345c4df22f307c7f"
+    },
+    {
+      "key": "site.language",
+      "value": "english",
+      "as_of": "2026-08-22T10:19:52.204Z",
+      "evidence_id": "345c4df22f307c7f"
+    },
+    {
+      "key": "site.pricing_url",
+      "value": "https://bitboard.work/pricing",
+      "as_of": "2026-08-22T10:19:52.204Z",
+      "evidence_id": "345c4df22f307c7f"
+    },
+    {
+      "key": "site.docs_url",
+      "value": "https://docs.bitboard.work/",
+      "as_of": "2026-08-22T10:19:52.204Z",
+      "evidence_id": "345c4df22f307c7f"
+    },
+    {
+      "key": "site.contact_url",
+      "value": "https://bitboard.work/contact",
+      "as_of": "2026-08-22T10:19:52.204Z",
+      "evidence_id": "345c4df22f307c7f"
+    }
+  ],
+  "unknowns": [
+    {
+      "key": "site.team_url",
+      "reason": "the home page links to no team page"
+    },
+    {
+      "key": "site.signup_url",
+      "reason": "the home page links to no signup page"
+    },
+    {
+      "key": "site.repo_url",
+      "reason": "the home page links to no repo page"
+    },
+    {
+      "key": "site.team_page",
+      "reason": "no team page was linked or fetched"
+    },
+    {
+      "key": "site.people_named",
+      "reason": "no person was named with a role beside them on any page read"
+    },
+    {
+      "key": "github",
+      "reason": "candidate url is not a GitHub account and the site links to no code host"
+    }
+  ],
+  "people": [],
+  "requests": {
+    "github": 0,
+    "site": 0,
+    "hn": 1
+  },
+  "failures": []
+}

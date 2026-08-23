@@ -1,0 +1,402 @@
+{
+  "schema_version": 4,
+  "candidate": {
+    "schema_version": 2,
+    "slug": "runtime",
+    "name": "Runtime",
+    "url": "https://runtm.com",
+    "one_liner": "Sandboxed coding agents for everyone on a team",
+    "provenance": [
+      {
+        "source": "hn",
+        "query": "AI agent infrastructure",
+        "at": "2026-08-23T06:32:03.067Z",
+        "ref": "48225040",
+        "title": "Launch HN: Runtime (YC P26) – Sandboxed coding agents for everyone on a team",
+        "posted_url": "https://www.runtm.com/",
+        "posted_at": "2026-05-21T16:07:13.000Z"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "schema_version": 1,
+      "key": "product.one_liner",
+      "statement": "Runtime's product is sandboxed coding agents for everyone on a team.",
+      "value": "Sandboxed coding agents for everyone on a team",
+      "evidence_ids": [
+        "51af072cdf0001e8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.job",
+      "statement": "Runtime's product enables the whole team, including non-engineers, to ship code with AI coding agents without engineering handholding each session.",
+      "value": null,
+      "evidence_ids": [
+        "51af072cdf0001e8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.category_claim",
+      "statement": "Runtime positions itself as an infrastructure that lets teams run and build AI coding agents safely at scale through sandboxed environments with guardrails and observability.",
+      "value": "sandboxed coding agents infrastructure with guardrails and observability",
+      "evidence_ids": [
+        "37bec11bb197d350"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.capability_dependency",
+      "statement": "Runtime works with multiple AI agents including Claude Code, Codex, Cursor, Copilot, Gemini, and Devin, relying on APIs from providers like Anthropic and OpenAI.",
+      "value": "Claude Code, Codex, Cursor, Copilot, Gemini, Devin agents and relevant APIs",
+      "evidence_ids": [
+        "51af072cdf0001e8",
+        "37bec11bb197d350"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.launch_date",
+      "statement": "The Runtime product and related open-source repositories were active and publicly launched by January 2026 and discussed in May 2026.",
+      "value": "2026-01",
+      "evidence_ids": [
+        "755c350fbe36c12d",
+        "51af072cdf0001e8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.open_source",
+      "statement": "The core of Runtime is open source and publicly available at https://github.com/runtm-ai/runtm.",
+      "value": true,
+      "evidence_ids": [
+        "51af072cdf0001e8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.runtime_position",
+      "statement": "Runtime acts as a control plane and runtime environment orchestrating isolated cloud sandboxed environments where AI coding agents build, test, and deploy software.",
+      "value": "control plane and sandboxed runtime environment",
+      "evidence_ids": [
+        "37bec11bb197d350"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "product.data_accumulated",
+      "statement": "Runtime stores and accumulates data for every agent run, including prompts, steps, tools used, costs, and results for observability and auditing.",
+      "value": true,
+      "evidence_ids": [
+        "ae539235a3554b90"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.self_serve",
+      "statement": "Users can self-serve by signing up for a free tier hosted version at https://app.runtm.com, where no infrastructure needs to be managed.",
+      "value": true,
+      "evidence_ids": [
+        "37bec11bb197d350",
+        "51af072cdf0001e8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "adoption.pricing_public",
+      "statement": "Runtime's pricing includes a flat platform fee plus compute cost, with no markup on tokens, and a free tier is included on the hosted version.",
+      "value": true,
+      "evidence_ids": [
+        "51af072cdf0001e8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.github_stars",
+      "statement": "The Runtime open source repository had 291 stars as of 2026-08-23.",
+      "value": 291,
+      "evidence_ids": [
+        "755c350fbe36c12d"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.repo_activity",
+      "statement": "The Runtime open source repository was created on 2026-01-02 and last pushed to on 2026-08-21, indicating ongoing development.",
+      "value": "2026-08-21",
+      "evidence_ids": [
+        "755c350fbe36c12d"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.named_user",
+      "statement": "A fintech unicorn and several YC scaleups are live users of Runtime, including teams who previously built similar infrastructure internally.",
+      "value": null,
+      "evidence_ids": [
+        "51af072cdf0001e8"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "schema_version": 1,
+      "key": "traction.integration",
+      "statement": "Runtime integrates with tools and services such as Slack, Linear, GitHub, Stripe, Zendesk, PagerDuty, Sentry, Postgres, NetSuite, and Snowflake.",
+      "value": null,
+      "evidence_ids": [
+        "51af072cdf0001e8",
+        "ae539235a3554b90",
+        "37bec11bb197d350"
+      ],
+      "confidence": "high"
+    },
+    {
+      "schema_version": 1,
+      "key": "org.github_account_type",
+      "statement": "The runtm-ai GitHub account is an Organization account.",
+      "value": "Organization",
+      "evidence_ids": [
+        "73fc28f6289b44df"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "Founder–market fit & technical depth",
+      "score": 5,
+      "max": 25,
+      "band": "0–5",
+      "evidence_ids": [
+        "73fc28f6289b44df"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D2",
+      "name": "Wedge specificity",
+      "score": 20,
+      "max": 20,
+      "band": "16–20",
+      "evidence_ids": [
+        "51af072cdf0001e8",
+        "37bec11bb197d350"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D3",
+      "name": "Evidence of pull",
+      "score": 25,
+      "max": 25,
+      "band": "20–25",
+      "evidence_ids": [
+        "755c350fbe36c12d",
+        "51af072cdf0001e8",
+        "ae539235a3554b90",
+        "37bec11bb197d350"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D4",
+      "name": "Why now",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "51af072cdf0001e8",
+        "37bec11bb197d350",
+        "755c350fbe36c12d",
+        "ae539235a3554b90"
+      ],
+      "covered": true
+    },
+    {
+      "id": "D5",
+      "name": "Path to defensibility",
+      "score": 15,
+      "max": 15,
+      "band": "13–15",
+      "evidence_ids": [
+        "ae539235a3554b90",
+        "37bec11bb197d350",
+        "51af072cdf0001e8",
+        "755c350fbe36c12d"
+      ],
+      "covered": true
+    }
+  ],
+  "score": 80,
+  "coverage": 1,
+  "disqualifiers": [],
+  "call": "TAKE_A_MEETING",
+  "unknowns": [],
+  "why_this_call": [
+    {
+      "kind": "summary",
+      "text": "Take a meeting — 80/100 clears the 72 threshold, at 100% coverage.",
+      "evidence_ids": []
+    },
+    {
+      "kind": "summary",
+      "text": "The strongest reading is D3 Evidence of pull at 25/25 (band 20–25).",
+      "evidence_ids": [
+        "755c350fbe36c12d",
+        "51af072cdf0001e8",
+        "ae539235a3554b90",
+        "37bec11bb197d350"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Team",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "The runtm-ai GitHub account is an Organization account.",
+          "evidence_ids": [
+            "73fc28f6289b44df"
+          ]
+        }
+      ],
+      "omitted": 0
+    },
+    {
+      "heading": "Product",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Runtime's product is sandboxed coding agents for everyone on a team.",
+          "evidence_ids": [
+            "51af072cdf0001e8"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Runtime's product enables the whole team, including non-engineers, to ship code with AI coding agents without engineering handholding each session.",
+          "evidence_ids": [
+            "51af072cdf0001e8"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Runtime positions itself as an infrastructure that lets teams run and build AI coding agents safely at scale through sandboxed environments with guardrails and observability.",
+          "evidence_ids": [
+            "37bec11bb197d350"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The core of Runtime is open source and publicly available at https://github.com/runtm-ai/runtm.",
+          "evidence_ids": [
+            "51af072cdf0001e8"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "Runtime acts as a control plane and runtime environment orchestrating isolated cloud sandboxed environments where AI coding agents build, test, and deploy software.",
+          "evidence_ids": [
+            "37bec11bb197d350"
+          ]
+        }
+      ],
+      "omitted": 3
+    },
+    {
+      "heading": "Market",
+      "bullets": [
+        {
+          "kind": "fact",
+          "text": "Runtime works with multiple AI agents including Claude Code, Codex, Cursor, Copilot, Gemini, and Devin, relying on APIs from providers like Anthropic and OpenAI.",
+          "evidence_ids": [
+            "51af072cdf0001e8",
+            "37bec11bb197d350"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Runtime product and related open-source repositories were active and publicly launched by January 2026 and discussed in May 2026.",
+          "evidence_ids": [
+            "755c350fbe36c12d",
+            "51af072cdf0001e8"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Runtime open source repository had 291 stars as of 2026-08-23.",
+          "evidence_ids": [
+            "755c350fbe36c12d"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "The Runtime open source repository was created on 2026-01-02 and last pushed to on 2026-08-21, indicating ongoing development.",
+          "evidence_ids": [
+            "755c350fbe36c12d"
+          ]
+        },
+        {
+          "kind": "fact",
+          "text": "A fintech unicorn and several YC scaleups are live users of Runtime, including teams who previously built similar infrastructure internally.",
+          "evidence_ids": [
+            "51af072cdf0001e8"
+          ]
+        }
+      ],
+      "omitted": 1
+    },
+    {
+      "heading": "Risks",
+      "bullets": [
+        {
+          "kind": "gap",
+          "text": "D1 Founder–market fit & technical depth scored in its lowest band (0–5): nothing in the evidence read met 6–12, which asks for anybody named with a role beside them — on a team or about page, or as the repository's top contributor.",
+          "evidence_ids": [
+            "73fc28f6289b44df"
+          ]
+        }
+      ],
+      "omitted": 0
+    }
+  ],
+  "what_would_change_my_mind": [
+    {
+      "kind": "check",
+      "text": "D1 Founder–market fit & technical depth: find anybody named with a role beside them — on a team or about page, or as the repository's top contributor. That moves it from 0–5 to 6–12 (+7).",
+      "evidence_ids": []
+    }
+  ],
+  "upgrade_trigger": null,
+  "status": "ok",
+  "status_reason": null,
+  "inputs": {
+    "evidence_records": 5,
+    "evidence_usable": 5,
+    "gather_failures": 0,
+    "extraction": {
+      "status": "ok",
+      "attempts": 1,
+      "facts": 15,
+      "dropped": 0,
+      "dropped_by_kind": {},
+      "error": null
+    }
+  }
+}

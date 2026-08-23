@@ -8,10 +8,6 @@ Sources from Hacker News, enriches from GitHub and company sites, scores against
 one stated thesis, and renders memos. Three stages, file-based handoff, fully
 replayable.
 
-> **Status: specification.** The spec, architecture, and decision records are
-> written; implementation starts next. See
-> [docs/worklog/](docs/worklog/) for where things stand.
-
 ## Quickstart
 
 ```bash
@@ -23,11 +19,12 @@ replayable.
 re-rendering the committed sample run — so it proves the toolchain works before
 you have obtained a single API key.
 
-Memos land in `memos/<run_id>/`. `./pipeline --help` documents everything, and a
-sample run is committed, so you can read real outputs without a key:
+Memos land in `memos/<run_id>/`. `./pipeline --help` documents everything, and
+[a sample run of 12 companies](memos/2026-08-23-ai-agent-infrastructure/) is committed, so you can read real
+outputs without a key:
 
 ```bash
-./pipeline memo --run <committed_run_id>   # re-render, zero network calls
+./pipeline memo --run 2026-08-23-ai-agent-infrastructure   # re-render, zero network calls
 pnpm test                                  # offline, no key required
 ```
 

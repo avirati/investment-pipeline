@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `d98efa0` · **Phase: stage 2a is complete and the stage 2b prompt exists. `prompts/extract.v1.md` asks for facts with citations and restates no part of the rubric; `src/llm/prompt.ts` loads prompts by version and refuses to render one with a hole in it. Still nothing calls the model — two prompts are now written and neither has been sent (inconsistency 72). Next: TICKET-0020, fact extraction**
+Last updated: 2026-08-22 · at commit `57e39f3` · **Phase: stage 2b is written and has never been run against a provider. `src/analyse/keys.ts` is the 24-key fact vocabulary the rubric will switch on; `src/analyse/extract.ts` renders a bundle, calls the model with the citable ids as a schema enum, drops per fact with a reason, retries once and marks the candidate `partial`. Three prompts and schemas are now written and none has been sent (inconsistency 72). Next: TICKET-0021, the rubric — it has the vocabulary it was waiting for**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -356,14 +356,58 @@ changed the code** — inconsistencies 62 and 63 below: a one-page site recorded
 client-rendered page was reported as merely thin because it had no named mount
 element. **TICKET-0016 is Done.**
 
+**Stage 2b is written** ([worklog 0031](./worklog/0031-fact-extraction.md),
+TICKET-0020). Two modules. `src/analyse/keys.ts` is the **fact key vocabulary**
+— 24 enumerated keys, each with the sentence the prompt shows beside it. It is
+enumerated rather than free-form because letting the model coin keys puts the
+vocabulary in its head and leaves `score.ts` pattern-matching English again
+(ADR-0002); the cost is paid knowingly, in that a true observation fitting no
+key is dropped rather than scored. There is **no dimension field and no
+weights** — which keys feed which dimension is the rubric's (invariant 7), and
+tests assert that no key or hint names a dimension, a point value or a ranking
+adjective. Inconsistency 73 is closed by this: `extract.v1`'s `{{keys}}` now
+names a vocabulary that exists, so the prompt stands at v1.
+
+`src/analyse/extract.ts` is the call. **The closed world is what was *shown*,
+not what was fetched** — `bundleIds` includes `fetch_failed` records because a
+memo may cite a 404 as evidence of absence, but those are not something to
+extract facts *from*, so they are not rendered and their ids are not citable.
+One function, `shownItems`, is read by both the renderer and the validator, so
+the two lists cannot drift. **Dropping is per fact and recorded** — index,
+claimed key, reason — and nothing is repaired: a fact citing one good id and one
+phantom is dropped whole, because a citation list we edited is one a reviewer
+opens and finds does not support the sentence. That check catches the malformed
+fixture's item 2, the one `parseOrDrop(Fact, …)` keeps and TICKET-0025 exists
+for; all eight of that fixture now drop, one stage earlier than the memo
+validator. Invalid structure retries once with the parse error appended, then
+the candidate is `partial` with zero facts and the run continues (ARCHITECTURE
+§5); a bundle with nothing readable never calls the model at all; and
+`LlmCallError` — a cold cache under `--replay`, a stale entry — passes straight
+through, because those are the operator's and retrying one would call the
+provider they asked us not to.
+
+**The citable ids are an enum in the requested schema**, which is the author's
+own note on worklog 0030 implemented: `extractionSchema(ids)` is built per
+bundle, so under constrained decoding the closed world is a shape the model
+cannot leave rather than a rule it is asked to follow. The client-side check
+stays and is not redundant — a provider that treats a schema as documentation,
+and any answer cached before the schema moved, arrive unconstrained. It has one
+cost, stated where the schema is defined: an out-of-enum id fails the *whole*
+response and costs the retry, where an invented key costs only its own fact.
+
+**Nothing here has been sent to a provider.** `MODEL_EXTRACT` is empty (D-1's
+default), so the ticket's last acceptance item — the first captured model output
+— is outstanding and is the author's: it needs a model name chosen and money
+spent. **TICKET-0020 is in review, not Done.**
+
 | Area | State |
 |---|---|
 | Thesis and rubric | Written, **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 670 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0028 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 19 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 1 Ready (0017), 10 Blocked. Status is in each ticket header |
+| Test strategy | Written; 785 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run), 46 evidence gather and run budget (0017), 22 prompt loading (0019), 10 fact vocabulary and 37 fact extraction (0020, all against a stub model and the committed model fixtures). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0031 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 21 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 1 in review (0020 — one acceptance item outstanding), 8 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -385,7 +429,9 @@ element. **TICKET-0016 is Done.**
 | Run request budget | `src/analyse/budget.ts` — `planRun(count, mode)` (uniform per-candidate allowance, planned before the loop), `requestMeter` (the wall, metered against GitHub's documented limit), `mapWithConcurrency` (0017, Done). Closes inconsistencies 60 and 66 |
 | Signal shape | `src/evidence/signal.ts` — `Signal`, `UnknownSignal`, `SignalSet` and the `collector` that makes invariant 4 structural. Shared by both stage-2 adapters, re-exported from `github.ts` (0016) |
 | LLM provider seam | `src/llm/provider.ts` — `createModel(role)` behind `await import`, `callModel` through the cache, `--replay` fails loudly on a cold cache, tokens recorded per call, `PRICES` ships empty so `cost_usd` is `null` (0018, Done). **Never run against a live provider** |
-| Prompts | `prompts/clarify-query.v1.md` and `prompts/CHANGELOG.md` — written, versioned, **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
+| Fact vocabulary | `src/analyse/keys.ts` — 24 enumerated keys, `FactKeyEnum`, `renderKeys()` for `{{keys}}`. No dimension, no weights, no bands (invariant 7). **Unvalidated** — written from SPEC §1–2, not measured (0020) |
+| Fact extraction (2b) | `src/analyse/extract.ts` — `shownItems` (the closed world), `renderEvidence`/`renderCompany`, `extractionSchema(ids)` with the citable ids as an enum, `parseFacts` (per-fact drops with reasons), one retry then `partial`, `no_evidence` without a call (0020, in review). **Never run against a live provider** |
+| Prompts | `prompts/clarify-query.v1.md`, `prompts/extract.v1.md` and `prompts/CHANGELOG.md` — written and versioned; `extract.v1` is **rendered and sent by `extract.ts`** (0020), `clarify-query.v1` is still **not wired** (0011). v1 asks for a bare JSON array, which `withStructuredOutput` cannot express — wiring it costs a v2 (inconsistency 52) |
 | Fixture capture | `scripts/capture-fixtures.ts` and `scripts/fixtures.ts` — `pnpm capture-fixtures`, a secret scan that refuses rather than redacts, `--refresh` as a deliberate act, and a generated `tests/fixtures/capture.json` (0014, Done). Not wired into `pnpm test`, never in CI |
 | Fixtures | 20 recorded: 6 HN (4 hand-captured and adopted, 1 thin topic, 1 derived), 8 GitHub payloads (owner, repo, README, contributors, commit activity), 2 real company pages, 4 authored model outputs, plus the hand-written `company-site.html` (0008/0014). Two gaps recorded rather than filled: no empty-shell page and no 404 body |
 | `setup.sh`, `./pipeline` | Steps 1–5 done (0004). Step 6, the offline self-verification, waits on 0026 and 0028 |
@@ -1069,6 +1115,16 @@ Real defects, listed rather than silently patched.
     Related: whether the model should be *shown* the signals it cannot
     contradict, or only the evidence text underneath them.
 
+    **Half-answered in TICKET-0020.** A mechanical signal *does* also become a
+    `Fact` — `traction.github_stars` and `org.github_account_type` are in the
+    vocabulary — because the memo needs a sentence to print and a signal has
+    none, while stage 3 is templating. The model is **not** shown the signals:
+    the GitHub projections already carry those numbers in the evidence text, and
+    injecting a derived value gives the model a number to repeat that it cannot
+    check against what it was given. What is still open is TICKET-0021's: when a
+    fact and a signal disagree about a count, the rubric should read the signal,
+    and nothing enforces that yet.
+
 59. **`RESERVED_OWNERS` is the ninth hand-written list in this codebase.**
     `github.com/topics/ebpf` would otherwise resolve to an account called
     "topics". Same class of labelled guess as `REPO_SUBPATHS`, `SHARED_SUFFIXES`,
@@ -1211,12 +1267,17 @@ Real defects, listed rather than silently patched.
     far, prose reviewed only by their author. TICKET-0020's captured fixtures
     are the first real signal.
 
-73. **`extract.v1`'s `{{keys}}` names a vocabulary that does not exist.** The
-    fact-key list is filled from the extraction schema at call time, and that
-    schema is TICKET-0020's. If 0020 decides keys are free-form rather than
-    enumerated, the prompt needs a v2 — the placeholder would have nothing to
-    interpolate and the instruction "file it under a key from this list" would
-    be false.
+    **Still true after TICKET-0020, and now with a schema behind it.** The
+    extraction schema, the 24-key vocabulary and the retry path are all tested
+    against stubs and committed fixtures. `MODEL_EXTRACT` is empty, so the first
+    captured output needs a model name chosen and money spent — it is the
+    author's, and it is the outstanding acceptance item on 0020.
+
+73. ~~**`extract.v1`'s `{{keys}}` names a vocabulary that does not exist.**~~
+    **Fixed** in TICKET-0020: `src/analyse/keys.ts` enumerates 24 keys and
+    `renderKeys()` fills the placeholder, so the instruction "file it under a key
+    from this list" is true and the prompt stands at v1. The branch that would
+    have cost a v2 — free-form keys — was not taken.
 
 74. **The prompt file is read on every call.** Deliberate — a few kilobytes,
     tens of calls — but it means a prompt edited while a run is in flight
@@ -1224,6 +1285,30 @@ Real defects, listed rather than silently patched.
     it after the fact. Nothing warns. Reading once per process would fix it and
     would also make a mid-run edit invisible instead, which is why it was not
     done blind.
+
+75. **A failed model attempt's token cost is invisible.** A response that fails
+    to parse was generated and billed, and `callModel` throws before it can
+    report usage, so `ExtractResult.calls[]` cannot record it.
+    `ExtractResult.attempts` says the attempt happened; nothing says what it
+    cost. Fixing it means `callModel` reporting usage on the failure path, which
+    is a change to TICKET-0018's module for a number only TICKET-0022's manifest
+    would print.
+
+76. **The 24 fact keys are the eleventh hand-written list in this codebase**
+    (see 59), and the most load-bearing of them. An observation that fits no key
+    is dropped — visibly to us, in `dropped[]` with a reason, and invisibly to
+    anyone reading the memo, who sees only a fact that is not there. The list
+    has had no human review and no eval harness to check it against.
+
+77. **Per-candidate drops are counted nowhere.** `extractFacts` reports its own
+    `dropped[]`; nothing sums them. A run where the model produced twelve facts
+    a candidate and eleven were dropped reads, from the manifest, like a run
+    with thin evidence. TICKET-0022 should sum them by kind into the manifest.
+
+78. **`Fact.confidence` is extracted and nothing reads it.** The contract has
+    carried it since TICKET-0005 and the prompt defines it carefully in terms of
+    the evidence rather than the company. Whether a `low`-confidence fact should
+    score, or should count towards coverage, is unanswered and is TICKET-0021's.
 
 ---
 
@@ -1365,22 +1450,28 @@ session should carry out of it:
    shape is absent here: `extract.v1` describes fields, and the structure comes
    from `withStructuredOutput` at the call site.
 
-**Nothing is blocking. One Ready ticket:**
+**Nothing is blocking. One ticket in review, one Ready:**
 
-- [TICKET-0020](./tickets/0020-ticket-fact-extraction.md) — **Ready.** Fact
-  extraction: the key vocabulary, the rendering of `bundleItems` into
-  `{{evidence}}`, `withStructuredOutput` against the `Fact` contract, ids
-  outside `bundleIds(bundle)` rejected at the boundary, and one retry on invalid
-  structure before the candidate is marked `partial`. It is also where the first
-  captured model output lands, which is the first evidence any of the prompt's
-  prose works (inconsistency 72).
+- [TICKET-0020](./tickets/0020-ticket-fact-extraction.md) — **in review**
+  ([worklog 0031](./worklog/0031-fact-extraction.md)). The vocabulary, the
+  rendering, the schema, the drops and the retry are in and tested offline. One
+  acceptance item is outstanding and it is the author's: **the first captured
+  model output**. It needs `MODEL_EXTRACT` filled in — D-1 left it empty on
+  purpose — and a live call that costs money. That capture is also the first
+  evidence any of the prompt's prose works (inconsistency 72), and it is the
+  natural moment to decide whether the 24 keys are the right 24.
+- [TICKET-0021](./tickets/0021-ticket-rubric-scoring.md) — **Ready in
+  substance.** What it was waiting on from 0020 is the key vocabulary, and that
+  exists. Three questions land on it: whether the rubric reads a `Signal` or a
+  `Fact` for the same number (inconsistency 58 — it should read the signal),
+  whether `confidence` is scored at all (78), and how a `partial` candidate
+  scores when the model never answered.
 - [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
   does not, and `{{thesis}}` waits on 0021. `loadPrompt` is now what it will use.
 
-Then the rest of stage 2: 0020 (extraction), 0021 (the rubric), 0022
-(wiring, and the live pass 0017 deferred). Two things the gate hands forward
-into them:
+Then 0022 (wiring, and the live pass 0017 deferred). Two things the gate hands
+forward into them:
 
 1. **`GET /users/<owner>` → `type: User | Organization`** separated all ten
    hobby projects from every real company in the gate's 48 (inconsistency 22).

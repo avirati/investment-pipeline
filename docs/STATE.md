@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-08-22 · at commit `57e39f3` · **Phase: stage 2b is written and has never been run against a provider. `src/analyse/keys.ts` is the 24-key fact vocabulary the rubric will switch on; `src/analyse/extract.ts` renders a bundle, calls the model with the citable ids as a schema enum, drops per fact with a reason, retries once and marks the candidate `partial`. Three prompts and schemas are now written and none has been sent (inconsistency 72). Next: TICKET-0021, the rubric — it has the vocabulary it was waiting for**
+Last updated: 2026-08-23 · at commit `325bf98` · **Phase: the rubric exists. `src/analyse/score.ts` is SPEC §1–3 as behaviour — five dimensions at 25/20/25/15/15, four cited disqualifiers, the coverage gate — pure, offline and tested at every band edge (98 tests, 883 total). Nothing calls it yet and no stage 2 module has ever run against a provider (inconsistency 72). Next: TICKET-0022, the wiring, which is also the first live stage-2 run**
 
 Read this first when picking the project up. It is the one document that is
 allowed to go stale, so update it at the end of every session.
@@ -400,14 +400,40 @@ default), so the ticket's last acceptance item — the first captured model outp
 — is outstanding and is the author's: it needs a model name chosen and money
 spent. **TICKET-0020 is in review, not Done.**
 
+**The rubric exists** ([worklog 0032](./worklog/0032-rubric-scoring.md),
+TICKET-0021). `src/analyse/score.ts` is SPEC §1–3 as behaviour and the only
+place in the repo where a score comes into existence. Facts and signals in;
+five dimensions at 25/20/25/15/15, a score, a coverage share, cited
+disqualifiers and a call out. Pure — no clock, no IO, no model — so it behaves
+the same on a reviewer's machine as here. Six rules hold it: it switches on
+fact **keys** and signal values and cannot read a `statement` (inconsistency
+79); a *number* comes from the `Signal` and never from the `Fact` describing it
+(closes 58); a band pays its top and a dimension with no primary source is not
+graded at all but takes the floor of the second band (81); a disqualifier is
+cited or it does not fire, because SPEC §1.1 forbids passing on inference;
+`Fact.confidence` is not scored (answers 78); and one declared key list per
+dimension drives both its citations and its coverage. 98 tests cover every band
+and both sides of every numeric edge, each disqualifier independently against a
+baseline that scores 100, the coverage arithmetic, the call at every threshold,
+and four properties over 400 generated fact sets.
+
+Three things it did not fix and one it discovered. The bands are still
+unvalidated against any real company and no test here can help (SCOPE, and
+TICKET-0028 is asked to record what clustering is actually observed). HN
+contributes prose and no metric, so SPEC D3's "HN front page" is unobservable —
+inconsistency 67 biting where it said it would. Six of the seven quantities the
+rubric uses are invented (82). And the discovery: **the coverage gate cannot
+fire** through `scoreCandidate` — two covered dimensions cannot reach 72 points
+— which is inconsistency 80 and is left honest rather than tuned.
+
 | Area | State |
 |---|---|
-| Thesis and rubric | Written, **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
+| Thesis and rubric | Implemented in `src/analyse/score.ts` (0021) and **unvalidated against any real company**. The gate validated the *input* to scoring, not the scoring |
 | Architecture and stage contracts | Written; contracts implemented in `src/contracts/` (0005) |
 | ADRs 0001–0008 | Written |
-| Test strategy | Written; 785 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run), 46 evidence gather and run budget (0017), 22 prompt loading (0019), 10 fact vocabulary and 37 fact extraction (0020, all against a stub model and the committed model fixtures). Offline, no key — see inconsistency 42 for the one commit where that was not true |
-| Worklogs 0001–0031 | Factual sections written; reflections pending (see D-4) |
-| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 21 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 1 in review (0020 — one acceptance item outstanding), 8 Blocked. Status is in each ticket header |
+| Test strategy | Written; 883 tests — 19 CLI (0003, 0012), 35 contracts (0005, 0011, 0012), 14 config (0006), 19 evidence store (0007), 45 fetch and extraction (0008), 48 HN parse, classifier and search (0009, incl. 5 from the gate's F2/F4), 72 canonicalisation, dedup and redirect resolution (0010, incl. 14 from the gate's F3/F5), 34 probe and query planning (0011), 24 run identity, 37 candidate derivation (incl. 3 from the gate's F1), 12 manifest and 28 stage-1 wiring (0012), 25 LLM cache and provider (0018, all against a stub model), 98 fixture capture and model fixtures (0014, of which 40 are per-file guards over the committed fixtures), 82 GitHub adapter (0015), 75 company-site adapter and shared signals (0016, of which 3 came from its own live run), 46 evidence gather and run budget (0017), 22 prompt loading (0019), 10 fact vocabulary and 37 fact extraction (0020, all against a stub model and the committed model fixtures), 98 rubric (0021 — every band edge, each disqualifier, the coverage gate and four properties over 400 generated fact sets). Offline, no key — see inconsistency 42 for the one commit where that was not true |
+| Worklogs 0001–0032 | Factual sections written; reflections pending (see D-4) |
+| Ticket backlog | [docs/tickets/](./tickets/) — 30 tickets: 21 Done (0009 and 0010 reopened by the gate and closed again; 0011 reopens for the clarifier call), 2 in review (0020 — one acceptance item outstanding; 0021), 1 Ready (0022), 6 Blocked. Status is in each ticket header |
 | Toolchain | `pnpm install/test/typecheck/lint` all pass, offline, no key (0001) |
 | CLI surface | `src/cli.ts` — four commands, flags and `--help` pinned and tested (0003) |
 | Exit codes | `src/exit-codes.ts` — 0/1/2/3, plus a temporary 70 for unimplemented stages (0003) |
@@ -1125,6 +1151,14 @@ Real defects, listed rather than silently patched.
     fact and a signal disagree about a count, the rubric should read the signal,
     and nothing enforces that yet.
 
+    **Closed by TICKET-0021.** Rule 2 of `src/analyse/score.ts`: a number is
+    read from the `Signal` and never from the `Fact` that describes it. The
+    band predicates are handed an `Observed` view whose `num()` and `text()`
+    accessors read signals only, so the fact is a citation and a sentence for
+    the memo and can no longer reach a number. A test gives the rubric a
+    `traction.github_stars` fact beside a `github.stars` signal saying 4, and
+    D3 scores zero.
+
 59. **`RESERVED_OWNERS` is the ninth hand-written list in this codebase.**
     `github.com/topics/ebpf` would otherwise resolve to an account called
     "topics". Same class of labelled guess as `REPO_SUBPATHS`, `SHARED_SUFFIXES`,
@@ -1310,6 +1344,60 @@ Real defects, listed rather than silently patched.
     the evidence rather than the company. Whether a `low`-confidence fact should
     score, or should count towards coverage, is unanswered and is TICKET-0021's.
 
+    **Answered by TICKET-0021: it is not scored.** The model's own confidence is
+    the model's judgement, and letting it move a band lets the model move the
+    score at one remove — CLAUDE.md invariant 1 with an extra step. A
+    `low`-confidence fact scores and counts towards coverage exactly like a
+    `high`-confidence one; a test asserts the two results are identical. It is
+    carried to the memo, where a partner can see it. Nothing else reads it, so
+    the field is now deliberate rather than vestigial.
+
+79. **The rubric reads presence, not meaning.** `src/analyse/score.ts` switches
+    on fact *keys* and on signal values, and is structurally unable to read a
+    `statement` — that is what keeps ADR-0002 honest (inconsistency 8). The
+    price is that SPEC D1's *technical* founder becomes "somebody is named, and
+    a named person is stated to have built something before": a marketing hire
+    with a prior role scores what a kernel maintainer with a prior role scores.
+    Several bands substitute an observation for SPEC's criterion — *the
+    incumbent is structurally unable to serve it* became "the job leans on a
+    capability or a runtime position"; *defensible against fast-followers for
+    ≥12 months* became "the timing thesis is attached to something that
+    accumulates". Every substitution carries a comment beside its band, and
+    that set of comments is the list of places the rubric is weakest. The only
+    alternative is asking the model for a verdict, which invariant 1 forbids.
+
+80. **The coverage gate is correct and arithmetically unreachable.** SPEC §3
+    caps a candidate at Watch below 60% coverage. Below 60% at most two of five
+    dimensions carry evidence, and two dimensions cannot reach 72 points with
+    the other three at their unknown floors — the ceiling is D1 + D3 at 25 each
+    plus 5 + 4 + 4, which is 63. So the gate is implemented, tested through
+    `decideCall`, and never fires through `scoreCandidate`. It was left exactly
+    as SPEC writes it rather than tuned into reachability: moving a floor or a
+    threshold to make a rule fire, before a single real run, is choosing a
+    number to fit a rule we also invented. A property test over 400 generated
+    fact sets pins the claim, so it fails loudly if it stops being true. The
+    decision to make at TICKET-0028 is whether the gate or the floors are wrong.
+
+81. **An uncovered dimension scores above the worst covered one.** SPEC §2 and
+    TICKET-0021 both say an uncovered dimension "scores at its band floor",
+    and invariant 4 says missing data never becomes a zero; read literally
+    those contradict, because every bottom band's floor is 0. The reading taken
+    is that every bottom band in SPEC §2 is a negative *finding* — *no
+    identifiable founders*, *could have been built in 2021* — and a finding
+    needs evidence, so absence lands one band up, at the second band's floor.
+    A company whose team page names nobody therefore scores 5 on D1 while a
+    company with no site at all scores 6 and loses a fifth of its coverage.
+    That is intended: the first is an observation, the second is a gap, and
+    only the gap can cap the call. It is listed because it is a decision that
+    changes numbers and was stated in no document before this one.
+
+82. **Twelve hand-written numbers, and six of them are the rubric's.** SPEC
+    names one threshold — ">200 stars". `STARS_CREDIBLE` aside, `SUSTAINED_WEEKS`
+    (12), `RECENT_PUSH_DAYS` (90), `RECENT_PROJECT_DAYS` (548),
+    `COMMUNITY_CONTRIBUTORS` (5) and `LOOP_CONTRIBUTORS` (10) were chosen to
+    make prose mechanical and measure nothing. Same class as inconsistency 59's
+    list, one layer up, and unlike those these move a partner's call.
+
 ---
 
 ## Next session — start here
@@ -1460,17 +1548,30 @@ session should carry out of it:
   purpose — and a live call that costs money. That capture is also the first
   evidence any of the prompt's prose works (inconsistency 72), and it is the
   natural moment to decide whether the 24 keys are the right 24.
-- [TICKET-0021](./tickets/0021-ticket-rubric-scoring.md) — **Ready in
-  substance.** What it was waiting on from 0020 is the key vocabulary, and that
-  exists. Three questions land on it: whether the rubric reads a `Signal` or a
-  `Fact` for the same number (inconsistency 58 — it should read the signal),
-  whether `confidence` is scored at all (78), and how a `partial` candidate
-  scores when the model never answered.
+- [TICKET-0021](./tickets/0021-ticket-rubric-scoring.md) — **in review**
+  ([worklog 0032](./worklog/0032-rubric-scoring.md)). `src/analyse/score.ts` and
+  98 tests; the full TESTING §1 list is met offline. Two of its three open
+  questions are answered — the rubric reads the `Signal` for a number
+  (inconsistency 58, closed) and does not score `confidence` (78, answered).
+  The third — **how a `partial` candidate scores when the model never
+  answered** — is not the rubric's after all: `scoreCandidate` scores whatever
+  facts it is handed, and zero facts is simply an uncovered candidate scoring
+  25 with 0% coverage and a PASS. What is missing is that the memo should say
+  *the model did not answer* rather than *there was nothing to find*, and that
+  distinction lives in the manifest and the `Analysis`, which is TICKET-0022's.
+  Four new gaps are recorded as inconsistencies 79–82; the one worth a decision
+  is **80, the unreachable coverage gate**.
 - [TICKET-0011](./tickets/0011-ticket-query-planning.md) — **reopened, not
   Ready.** The clarifier call: `callModel` exists, `prompts/clarify-query.v2.md`
   does not, and `{{thesis}}` waits on 0021. `loadPrompt` is now what it will use.
 
-Then 0022 (wiring, and the live pass 0017 deferred). Two things the gate hands
+**[TICKET-0022](./tickets/0022-ticket-stage-2-wiring.md) is now Ready and is the
+next step**: it joins `gatherRun` → `extractFacts` → `scoreCandidate`, writes
+the `Analysis` artifact and the run manifest, and carries the live pass 0017
+deferred. Three things land on it — summing per-candidate drops into the
+manifest (inconsistency 77), the `Analysis` fields SPEC §4's memo needs and the
+contract still lacks (9), and distinguishing a candidate the model failed to
+answer about from one with nothing to find. Two things the gate hands
 forward into them:
 
 1. **`GET /users/<owner>` → `type: User | Organization`** separated all ten
@@ -1505,8 +1606,10 @@ The shape of the whole thing, unchanged:
 8. **The extraction prompt** — ticket 0019 **Done**. Facts with citations, no
    rubric, loaded from a versioned file by `src/llm/prompt.ts`. Nothing renders
    it yet.
-9. Then extraction and the rubric, stage 3, and the sample run on
-   `AI agent infrastructure`.
+9. **Fact extraction and the rubric** — tickets 0020 and 0021, both **in
+   review**. The two stage-2 modules exist and neither has been wired or run.
+10. Then stage 2's wiring, stage 3, and the sample run on
+    `AI agent infrastructure`.
 
 ## Invariants a new session must not break
 

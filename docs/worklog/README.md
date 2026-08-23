@@ -72,3 +72,5 @@ are unfinished, not delegated.
 | [0028](./0028-company-site-adapter.md) | 2026-08-22 | The company-site adapter: budgeted crawl, dated signals, people found by hand; TICKET-0016 closes |
 | [0029](./0029-evidence-gather.md) | 2026-08-22 | Evidence gathering per candidate, the two-way join and the run-level budget; TICKET-0017 closes |
 | [0030](./0030-extraction-prompt.md) | 2026-08-22 | The extraction prompt and the prompt loader; TICKET-0019 closes |
+| [0031](./0031-fact-extraction.md) | 2026-08-22 | The 24-key fact vocabulary and stage 2b's call; TICKET-0020 to review |
+| [0032](./0032-rubric-scoring.md) | 2026-08-23 | The rubric: five dimensions, four cited disqualifiers, the call; TICKET-0021 to review |

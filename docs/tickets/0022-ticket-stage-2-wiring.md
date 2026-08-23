@@ -1,6 +1,6 @@
 # TICKET-0022 — Stage 2 wiring: `./pipeline analyse`
 
-Status: Blocked · 0020, 0021 · Depends on: 0003 (Done), 0017 (Done), 0020, 0021 · Blocks: 0023, 0024, 0027
+Status: **Ready** — 0020 and 0021 are both in review and their modules are in; the wiring has `gatherRun`, `extractFacts` and `scoreCandidate` to join · Depends on: 0003 (Done), 0017 (Done), 0020 (In review), 0021 (In review) · Blocks: 0023, 0024, 0027
 Reads: [ARCHITECTURE §1, §4, §5](../ARCHITECTURE.md)
 
 ## Why

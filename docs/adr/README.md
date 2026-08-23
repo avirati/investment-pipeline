@@ -17,3 +17,4 @@ answer are not recorded — that would be padding.
 | [0006](./0006-llm-provider-abstraction.md) | LangChain as a provider seam | Accepted |
 | [0007](./0007-thesis-selection.md) | Investment thesis as an executable rubric | Accepted |
 | [0008](./0008-query-planning.md) | Query planning: probe, then clarify | Accepted |
+| [0009](./0009-bundles-as-artifacts.md) | The evidence bundle is an artifact, and a replay reads it | Accepted |

@@ -33,6 +33,7 @@ seed  (topic query | url list)
 ┌─ STAGE 2 · ANALYSE ───────────────────────────────────────────┐
 │  a. gather   company site + GitHub org + HN thread            │
 │              ──► runs/<run_id>/evidence/<sha256>.json         │
+│              ──► runs/<run_id>/bundles/<slug>.json            │
 │              deterministic, cached, no LLM                    │
 │                                                                │
 │  b. extract  LLM(evidence bundle) ──► facts + evidence_ids[]   │
@@ -157,6 +158,9 @@ runs/<run_id>/
                      counts, timings, cost, per-candidate status
   query_plan.json    the seed as approved, and how it was approved
   candidates.jsonl
+  bundles/*.json     what stage 2a gathered per candidate: the join, the
+                     signals the rubric scores, unknowns, people, failures,
+                     and the evidence ids — in the order the model saw them
   evidence/*.json
   analyses/*.json
 .cache/llm/<hash>.json   keyed on sha256 over provider, model, prompt id,
@@ -166,8 +170,13 @@ runs/<run_id>/
 
 - `pipeline memo --run <id>` re-renders memos from committed analyses. Zero API
   calls, zero network.
-- `pipeline run --seed ... --replay` reuses the LLM cache, so re-running after a
-  template or rubric change costs nothing.
+- `pipeline run --seed ... --replay` and `pipeline analyse --run <id> --replay`
+  rebuild each bundle from `bundles/` and `evidence/` rather than re-fetching,
+  and answer the model calls from the LLM cache. Zero requests and zero tokens,
+  on a clone with no `.cache/http/` and no network — which is the state a
+  reviewer's clone is in (ADR-0009).
+- An `analyse` that is *not* a replay refuses to overwrite analyses already in
+  the run directory. `--force` overrides it.
 - A prompt or schema version bump changes the cache key, so stale responses can
   never silently survive a change. That is the point of versioning them.
 
